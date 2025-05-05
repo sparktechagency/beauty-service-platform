@@ -128,6 +128,7 @@ const changePasswordToDB = async ( user: JwtPayload, payload: IChangePassword) =
     if (!isExistUser) {
         throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
     }
+    console.log(isExistUser);
   
     //current password match
     if ( currentPassword && !(await User.isMatchPassword(currentPassword, isExistUser.password))) {
