@@ -1,39 +1,19 @@
 import { Model, Types } from 'mongoose';
 import { USER_ROLES } from '../../../enums/user';
 
-interface IStripeAccountInfo {
-    status: string;
-    stripeAccountId: string;
-    externalAccountId: string;
-    currency: string;
-}
-
-interface IAuthenticationProps {
-    isResetPassword: boolean;
-    oneTimeCode: number;
-    expireAt: Date;
-}
-
 export type IUser = {
     name: string;
     email: string;
     contact: string;
     location: string;
     dateOfBirth: Date;
-    nickName: string;
-    social?: {
-        facebook?: string;
-        twitter?: string;
-        linkedIn?: string;
-    };
+    nickName?: string;
+    social?: string;
     role: USER_ROLES;
     password: string;
-    license: string;
-    workImage: string; //TODO: ensure need to upload at list 5 images
-    
-    verified: boolean;
-    authentication?: IAuthenticationProps;
-    accountInformation?: IStripeAccountInfo;
+    license?: string;
+    workImage?: string; //TODO: ensure need to upload at list 5 images
+    backGroundImage?: string; //TODO: make user for validation for artist
 }
 
 export type UserModal = {
