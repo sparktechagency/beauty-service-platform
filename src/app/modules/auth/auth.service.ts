@@ -27,11 +27,6 @@ const loginUserFromDB = async (payload: ILoginData) => {
         throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
     }
   
-    //check verified and status
-    if (!isExistUser.verified) {
-        throw new ApiError(StatusCodes.BAD_REQUEST, 'Please verify your account, then try to login again');
-    }
-  
     //check match password
     if ( password && !(await User.isMatchPassword(password, isExistUser.password))) {
         throw new ApiError(StatusCodes.BAD_REQUEST, 'Password is incorrect!');
@@ -51,7 +46,9 @@ const loginUserFromDB = async (payload: ILoginData) => {
         config.jwt.jwtRefreshExpiresIn as string
     );
 
-    return { accessToken, refreshToken };
+    const role = isExistUser.role;
+
+    return { accessToken, refreshToken, role };
 };
 
 //forget password
@@ -81,60 +78,7 @@ const forgetPasswordToDB = async (email: string) => {
 };
   
 //verify email
-const verifyEmailToDB = async (payload: IVerifyEmail) => {
 
-    const { email, oneTimeCode } = payload;
-    const isExistUser = await User.findOne({ email }).select('+authentication');
-    if (!isExistUser) {
-        throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
-    }
-  
-    if (!oneTimeCode) {
-        throw new ApiError( StatusCodes.BAD_REQUEST, 'Please give the otp, check your email we send a code');
-    }
-  
-    if (isExistUser.authentication?.oneTimeCode !== oneTimeCode) {
-        throw new ApiError(StatusCodes.BAD_REQUEST, 'You provided wrong otp');
-    }
-  
-    const date = new Date();
-    if (date > isExistUser.authentication?.expireAt) {
-        throw new ApiError( StatusCodes.BAD_REQUEST, 'Otp already expired, Please try again');
-    }
-  
-    let message;
-    let data;
-  
-    if (!isExistUser.verified) {
-        await User.findOneAndUpdate(
-            { _id: isExistUser._id },
-            { verified: true, authentication: { oneTimeCode: null, expireAt: null } }
-        );
-        message = 'Email verify successfully';
-    } else {
-        await User.findOneAndUpdate(
-            { _id: isExistUser._id },
-            {
-                authentication: {
-                    isResetPassword: true,
-                    oneTimeCode: null,
-                    expireAt: null,
-                }
-            }
-        );
-  
-        //create token ;
-        const createToken = cryptoToken();
-        await ResetToken.create({
-            user: isExistUser._id,
-            token: createToken,
-            expireAt: new Date(Date.now() + 5 * 60000),
-        });
-        message = 'Verification Successful: Please securely store and utilize this code for reset password';
-        data = createToken;
-    }
-    return { data, message };
-};
   
 //forget password
 const resetPasswordToDB = async ( token: string, payload: IAuthResetPassword ) => {
@@ -149,9 +93,6 @@ const resetPasswordToDB = async ( token: string, payload: IAuthResetPassword ) =
   
     //user permission check
     const isExistUser = await User.findById(isExistToken.user).select('+authentication');
-    if (!isExistUser?.authentication?.isResetPassword) {
-        throw new ApiError(StatusCodes.UNAUTHORIZED, "You don't have permission to change the password. Please click again to 'Forgot Password'");
-    }
   
     //validity check
     const isValid = await ResetToken.isExpireToken(token);
@@ -352,7 +293,7 @@ const deleteUserFromDB = async (user: JwtPayload, password: string) => {
 };
 
 export const AuthService = {
-    verifyEmailToDB,
+    // verifyEmailToDB,
     loginUserFromDB,
     forgetPasswordToDB,
     resetPasswordToDB,

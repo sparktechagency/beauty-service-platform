@@ -29,23 +29,6 @@ router.post(
     AuthController.resendVerificationEmail
 );
 
-router.post(
-    '/verify-email',
-    async (req: Request, res: Response, next: NextFunction) => {
-
-        try {
-            const { email, oneTimeCode } = req.body;
-
-            req.body = { email, oneTimeCode: Number(oneTimeCode)};
-            next();
-
-        } catch (error) {
-            return res.status(500).json({ message: "Failed to convert string to number" });
-        }
-    },
-    validateRequest(AuthValidation.createVerifyEmailZodSchema),
-    AuthController.verifyEmail
-);
 
 router.post(
     '/reset-password',

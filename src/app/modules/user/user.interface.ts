@@ -8,11 +8,13 @@ export type IUser = {
     location: string;
     dateOfBirth: Date;
     nickName?: string;
+    status?: "active" | "inactive";
     social?: string;
     role: USER_ROLES;
     password: string;
     license?: string;
-    workImage?: string; //TODO: ensure need to upload at list 5 images
+    profile?:string;
+    workImage?: [string]; //TODO: ensure need to upload at list 5 images
     backGroundImage?: string; //TODO: make user for validation for artist
 }
 
