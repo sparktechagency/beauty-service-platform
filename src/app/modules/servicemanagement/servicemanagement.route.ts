@@ -10,8 +10,8 @@ import { USER_ROLES } from "../../../enums/user";
 const router = express.Router();
 
 // * create service management
-router.get(
-  "/",
+router.post(
+  "/create",
   auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
   fileUploadHandler() as any,
   async (req, res, next) => {
