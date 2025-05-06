@@ -4,7 +4,40 @@ import { ISubscription } from "./subscription.interface";
 import { Subscription } from "./subscription.model";
 import stripe from "../../../config/stripe";
 import { User } from "../user/user.model";
+import ApiError from "../../../errors/ApiErrors";
+import { Plan } from "../plan/plan.model";
 
+const subscriptionToDB = async (user: JwtPayload, priceId: string) => {
+    const packageData = await Plan.findOne({ price_id: priceId });
+    if (!packageData) {
+        throw new ApiError(404,"Package not found");
+    }
+    const subscription = await stripe.checkout.sessions.create({
+        mode: "subscription",
+        payment_method_types: ["card"],
+        line_items: [
+            {
+                price: priceId,
+                quantity: 1,
+            },
+        ],
+        customer_email: user.email,
+        success_url: `https://beauty-care-website.vercel.app/dashboard`,
+        cancel_url: `https://beauty-care-website.vercel.app/dashboard`,
+        metadata: {
+            data: JSON.stringify({
+                userId: user.id,
+                packageId: packageData.id,
+            }), 
+        }
+    });
+
+ 
+    
+
+    return subscription.url;
+
+}
 
 const subscriptionDetailsFromDB = async (user: JwtPayload): Promise<{ subscription: ISubscription | {} }> => {
 
@@ -111,5 +144,6 @@ const subscriptionsFromDB = async (query: Record<string, unknown>): Promise<ISub
 export const SubscriptionService = {
     subscriptionDetailsFromDB,
     subscriptionsFromDB,
-    companySubscriptionDetailsFromDB
+    companySubscriptionDetailsFromDB,
+    subscriptionToDB
 }

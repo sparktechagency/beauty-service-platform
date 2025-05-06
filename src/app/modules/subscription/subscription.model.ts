@@ -1,5 +1,9 @@
 import { model, Schema } from "mongoose";
 import { ISubscription, SubscriptionModel } from "./subscription.interface";
+import ApiError from "../../../errors/ApiErrors";
+import stripe from "../../../config/stripe";
+import { User } from "../user/user.model";
+import { StatusCodes } from "http-status-codes";
 
 
 const subscriptionSchema = new Schema<ISubscription, SubscriptionModel>(
@@ -19,7 +23,7 @@ const subscriptionSchema = new Schema<ISubscription, SubscriptionModel>(
         },
         package: {
             type: Schema.Types.ObjectId,
-            ref: "Package",
+            ref: "Plan",
             required: true
         },
         trxId: {
@@ -38,14 +42,10 @@ const subscriptionSchema = new Schema<ISubscription, SubscriptionModel>(
             type: String,
             required: true
         },
-        remaining: {
-            type: Number,
-            required: true
-        },
         status: {
             type: String,
-            enum: ["expired", "active", "cancel"],
-            default: "active",
+            enum: ["expired", "active", "cancel",'inactive'],
+            default: "inactive",
             required: true
         },
 
@@ -54,5 +54,6 @@ const subscriptionSchema = new Schema<ISubscription, SubscriptionModel>(
         timestamps: true
     }
 )
+
 
 export const Subscription = model<ISubscription, SubscriptionModel>("Subscription", subscriptionSchema)

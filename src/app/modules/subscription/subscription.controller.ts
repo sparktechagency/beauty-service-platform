@@ -4,7 +4,15 @@ import { SubscriptionService } from "./subscription.service";
 import sendResponse from "../../../shared/sendResponse";
 import { StatusCodes } from "http-status-codes";
 
-
+const subscribePlan = catchAsync( async(req: Request, res: Response)=>{
+    const result = await SubscriptionService.subscriptionToDB(req.user!, req.body.priceId);
+    sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "Subscription Created Successfully",
+        data: result
+    })
+});
 const subscriptions = catchAsync( async(req: Request, res: Response)=>{
     const result = await SubscriptionService.subscriptionsFromDB(req.query);
 
@@ -17,7 +25,7 @@ const subscriptions = catchAsync( async(req: Request, res: Response)=>{
 });
 
 const subscriptionDetails = catchAsync( async(req: Request, res: Response)=>{
-    const result = await SubscriptionService.subscriptionDetailsFromDB(req.user);
+    const result = await SubscriptionService.subscriptionDetailsFromDB(req.user!);
 
     sendResponse(res, {
         statusCode: StatusCodes.OK,
@@ -42,5 +50,6 @@ const companySubscriptionDetails= catchAsync( async(req: Request, res: Response)
 export const SubscriptionController = {
     subscriptions,
     subscriptionDetails,
-    companySubscriptionDetails
+    companySubscriptionDetails,
+    subscribePlan
 }

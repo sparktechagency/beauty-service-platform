@@ -29,6 +29,7 @@
     "typescript": "^5.5.4"
   },
   "dependencies": {
+    "@types/stripe": "^8.0.416",
     "bcrypt": "^5.1.1",
     "colors": "^1.4.0",
     "cors": "^2.8.5",

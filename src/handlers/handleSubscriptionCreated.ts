@@ -2,9 +2,9 @@ import { StatusCodes } from 'http-status-codes';
 import Stripe from 'stripe';
 import ApiError from '../errors/ApiErrors';
 import stripe from '../config/stripe';
-const User:any = "";
-const PricingPlan:any = "";
-const Subscription:any = "";
+import { Subscription } from '../app/modules/subscription/subscription.model';
+import { User } from '../app/modules/user/user.model';
+import { Plan } from '../app/modules/plan/plan.model';
 
 export const handleSubscriptionCreated = async (data: Stripe.Subscription) => {
 
@@ -13,7 +13,8 @@ export const handleSubscriptionCreated = async (data: Stripe.Subscription) => {
 
     // Retrieve the customer associated with the subscription
     const customer = (await stripe.customers.retrieve( subscription.customer as string)) as Stripe.Customer;
-
+   
+    
     // Extract the price ID from the subscription items
     const priceId = subscription.items.data[0]?.price?.id;
 
@@ -29,41 +30,49 @@ export const handleSubscriptionCreated = async (data: Stripe.Subscription) => {
     
         if (existingUser) {
             // Find the pricing plan by priceId
-            const pricingPlan = await PricingPlan.findOne({ priceId });
+            const pricingPlan = await Plan.findOne({ price_id: priceId });
     
             if (pricingPlan) {
 
                 // Find the current active subscription
                 const currentActiveSubscription = await Subscription.findOne({
-                    userId: existingUser._id,
+                    user: existingUser._id,
                     status: 'active',
                 });
     
                 if (currentActiveSubscription) {
                     throw new ApiError(StatusCodes.CONFLICT,'User already has an active subscription.');
                 }
-    
+               
+                
                 // Create a new subscription record
-                const newSubscription = new Subscription({
-                    userId: existingUser._id,
-                    customerId: customer?.id,
-                    packageId: pricingPlan._id,
-                    status: 'active',
-                    amountPaid,
-                    trxId,
-                });
-    
-                await newSubscription.save();
+                try {
+                    const newSubscription = await Subscription.create({
+                        user: existingUser._id,
+                        customerId: customer?.id,
+                        package: pricingPlan._id,
+                        status: 'active',
+                        price: amountPaid,
+                        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+                        currentPeriodStart: new Date(subscription.current_period_start * 1000),
+                        subscriptionId: subscription.id,
+                        trxId,
+                    });
         
-                // Update the user to reflect the active subscription
-                await User.findByIdAndUpdate(
-                    existingUser._id,
-                    {
-                        isSubscribed: true,
-                        hasAccess: true,
-                    },
-                    { new: true },
-                );
+            
+                    // Update the user to reflect the active subscription
+                    await User.findByIdAndUpdate(
+                        existingUser._id,
+                        {
+                            subscription:newSubscription._id,
+                        },
+                        { new: true },
+                    ); 
+                } catch (error) {
+                    console.log(error);
+                    
+                }
+   
             } else {
                 throw new ApiError(StatusCodes.NOT_FOUND, `Pricing plan with Price ID: ${priceId} not found!`);
             }

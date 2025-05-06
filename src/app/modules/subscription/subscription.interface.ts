@@ -6,9 +6,8 @@ export type ISubscription = {
     user: Types.ObjectId;
     package: Types.ObjectId;
     trxId: string;
-    remaining: number;
     subscriptionId: string;
-    status: 'expired' | 'active' | 'cancel';
+    status: 'expired' | 'active' | 'cancel'|"inactive";
     currentPeriodStart: string;
     currentPeriodEnd: string;
 };
