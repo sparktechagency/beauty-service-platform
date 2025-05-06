@@ -6,18 +6,7 @@ import { CategoryService } from './category.service'
 
 const createCategory = catchAsync(async (req: Request, res: Response) => {
   const serviceData = req.body;
-
-  let image = "";
-  if (req.files && "image" in req.files && req.files.image[0]) {
-    image = `/images/${req.files.image[0].filename}`;
-  }
-  const data = {
-    ...serviceData,
-    image,
-  };
-
-  const result = await CategoryService.createCategoryToDB(data)
-
+  const result = await CategoryService.createCategoryToDB(serviceData)
   sendResponse(res, {
     success: true,
     statusCode: StatusCodes.OK,
