@@ -26,7 +26,7 @@ router.post(
         ...payload,
         image,
       };
-      
+
       next();
     } catch (error) {
       res.status(500).json({ message: "Failed to upload Image" });
@@ -34,7 +34,6 @@ router.post(
   },
   CategoryController.createCategory
 );
-
 
 router
   .route("/:id")
@@ -52,6 +51,12 @@ router.get(
   "/",
   auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN, USER_ROLES.USER),
   CategoryController.getCategories
+);
+
+router.get(
+  "/:id",
+  auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN, USER_ROLES.USER),
+  CategoryController.getSingleCategory
 );
 
 export const CategoryRoutes = router;

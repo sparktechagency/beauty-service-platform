@@ -49,9 +49,18 @@ const deleteCategoryToDB = async (id: string): Promise<ICategory | null> => {
   return deleteCategory;
 };
 
+const getSingleCategoryFromDB = async (id: string) => {
+  const result = await Category.findById(id);
+  if (!result) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Category doesn't exist");
+  }
+  return result;
+};
+
 export const CategoryService = {
   createCategoryToDB,
   getCategoriesFromDB,
   updateCategoryToDB,
   deleteCategoryToDB,
+  getSingleCategoryFromDB,
 };
