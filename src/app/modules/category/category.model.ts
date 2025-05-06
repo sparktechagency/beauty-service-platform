@@ -1,7 +1,7 @@
 import { model, Schema } from 'mongoose'
-import { ICategory, CategoryModel } from './category.interface'
+import { ICategory } from './category.interface'
 
-const serviceSchema = new Schema<ICategory, CategoryModel>(
+const serviceSchema = new Schema<ICategory>(
   {
     name: {
       type: String,
@@ -16,4 +16,4 @@ const serviceSchema = new Schema<ICategory, CategoryModel>(
   { timestamps: true },
 )
 
-export const Category = model<ICategory, CategoryModel>('Category', serviceSchema)
+export const Category = model<ICategory>('Category', serviceSchema)
