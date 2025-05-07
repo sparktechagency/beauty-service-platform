@@ -8,6 +8,13 @@ const createSubscriptionZodSchema = z.object({
     }),
 });
 
+const createChangeSubscriptionZodSchema = z.object({
+    body: z.object({
+        status: z.enum(["active","inactive"])
+    }),
+})
+
 export const SubscriptionValidation = {
     createSubscriptionZodSchema,
+    createChangeSubscriptionZodSchema,
 };

@@ -35,17 +35,17 @@ const subscriptionSchema = new Schema<ISubscription, SubscriptionModel>(
             required: true
         },
         currentPeriodStart: {
-            type: String,
+            type: Date,
             required: true
         },
         currentPeriodEnd: {
-            type: String,
+            type: Date,
             required: true
         },
         status: {
             type: String,
             enum: ["expired", "active", "cancel",'inactive'],
-            default: "inactive",
+            default: "active",
             required: true
         },
 

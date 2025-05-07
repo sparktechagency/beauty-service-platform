@@ -8,8 +8,8 @@ export type ISubscription = {
     trxId: string;
     subscriptionId: string;
     status: 'expired' | 'active' | 'cancel'|"inactive";
-    currentPeriodStart: string;
-    currentPeriodEnd: string;
+    currentPeriodStart: Date;
+    currentPeriodEnd: Date;
 };
 
 export type SubscriptionModel = Model<ISubscription, Record<string, unknown>>;

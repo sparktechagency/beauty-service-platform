@@ -10,6 +10,7 @@ const createPlanZodSchema = z.object({
     price_offer: z.number({ required_error: 'Price offer is required' }),
     offers: z.array(z.string(), { required_error: 'Offers are required' }),
     for: z.enum([USER_ROLES.USER, USER_ROLES.ARTIST]),
+    service_charge: z.number({ required_error: 'Service charge is required' }),
   }),
 });
 
@@ -19,7 +20,8 @@ const updatePlanZodSchema = z.object({
     price: z.number().optional(),
     price_offer: z.number().optional(),
     offers: z.array(z.string()).optional(),
-    for: z.enum([USER_ROLES.ARTIST, USER_ROLES.USER]).optional(),
+    productId: z.string().optional(),
+    price_id: z.string().optional(),
   }),
 });
 

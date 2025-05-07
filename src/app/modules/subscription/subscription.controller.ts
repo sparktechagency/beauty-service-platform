@@ -13,14 +13,15 @@ const subscribePlan = catchAsync( async(req: Request, res: Response)=>{
         data: result
     })
 });
-const subscriptions = catchAsync( async(req: Request, res: Response)=>{
-    const result = await SubscriptionService.subscriptionsFromDB(req.query);
+const subscribers = catchAsync( async(req: Request, res: Response)=>{
+    const result = await SubscriptionService.subscriberFromDB(req.query);
 
     sendResponse(res, {
         statusCode: StatusCodes.OK,
         success: true,
         message: "Subscription List Retrieved Successfully",
-        data: result
+        data: result.data,
+        pagination:result.meta
     })
 });
 
@@ -35,21 +36,34 @@ const subscriptionDetails = catchAsync( async(req: Request, res: Response)=>{
     })
 });
 
-const companySubscriptionDetails= catchAsync( async(req: Request, res: Response)=>{
-    const result = await SubscriptionService.companySubscriptionDetailsFromDB(req.params.id);
-
+const changeSubscriptionStatus = catchAsync( async(req: Request, res: Response)=>{
+    const id = req.params.id;
+    const {status} = req.body;
+    const result = await SubscriptionService.changeSubscriptionStatus(id, status);
     sendResponse(res, {
         statusCode: StatusCodes.OK,
         success: true,
-        message: "Company Subscription Details Retrieved Successfully",
-        data: result.subscription
+        message: "Subscription Status Updated Successfully",
+        data: result
     })
-});
+})
+
+const overView = catchAsync(async(req:Request,res:Response)=>{
+    const query = req.query;
+    const result = await SubscriptionService.overViewOfSubscription( query);
+    sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "Subscription Overview Retrieved Successfully",
+        data: result
+    })
+})
 
 
 export const SubscriptionController = {
-    subscriptions,
+    subscribers,
     subscriptionDetails,
-    companySubscriptionDetails,
-    subscribePlan
+    subscribePlan,
+    changeSubscriptionStatus,
+    overView
 }

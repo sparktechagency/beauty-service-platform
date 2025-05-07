@@ -71,6 +71,11 @@ const userSchema = new Schema<IUser, UserModal>(
       type: String,
       required: false,
     },
+    subscription: {
+      type: Schema.Types.ObjectId,
+      ref: "Subscription",
+      required: false,
+    }
   },
   {
     timestamps: true,

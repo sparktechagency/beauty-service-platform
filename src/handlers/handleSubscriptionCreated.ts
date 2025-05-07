@@ -22,12 +22,14 @@ export const handleSubscriptionCreated = async (data: Stripe.Subscription) => {
     const invoice = await stripe.invoices.retrieve(subscription.latest_invoice as string);
 
     const trxId = invoice?.payment_intent;
+
     const amountPaid = invoice?.total / 100;
 
     if (customer?.email) {
         
         const existingUser = await User.findOne({ email: customer?.email });
-    
+        console.log(existingUser);
+        
         if (existingUser) {
             // Find the pricing plan by priceId
             const pricingPlan = await Plan.findOne({ price_id: priceId });
@@ -53,10 +55,10 @@ export const handleSubscriptionCreated = async (data: Stripe.Subscription) => {
                         package: pricingPlan._id,
                         status: 'active',
                         price: amountPaid,
-                        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-                        currentPeriodStart: new Date(subscription.current_period_start * 1000),
+                        currentPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString(),
+                        currentPeriodStart: new Date(subscription.current_period_start * 1000).toISOString(),
                         subscriptionId: subscription.id,
-                        trxId,
+                        trxId: trxId||'demo',
                     });
         
             

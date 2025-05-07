@@ -1,4 +1,4 @@
-import { Model, Types } from 'mongoose';
+import { Model, ObjectId, Types } from 'mongoose';
 import { USER_ROLES } from '../../../enums/user';
 
 export type IUser = {
@@ -16,7 +16,7 @@ export type IUser = {
     profile?:string;
     workImage?: [string]; //TODO: ensure need to upload at list 5 images
     backGroundImage?: string; //TODO: make user for validation for artist
-    subscription?: string;
+    subscription?: ObjectId;
 }
 
 export type UserModal = {

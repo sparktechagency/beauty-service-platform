@@ -10,6 +10,8 @@ export type IPlan = {
     for:USER_ROLES,
     paymentLink?:string,
     productId?:string,
+    service_charge?:number,
+    status:"active"|"delete",
 }
 
 export type PlanModel = Model<IPlan,Record<string,any>>

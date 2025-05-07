@@ -14,17 +14,26 @@ router.post("/",
 
 router.get("/", 
     auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN), 
-    SubscriptionController.subscriptions
+    SubscriptionController.subscribers
 );
 
 router.get("/details", 
     auth(USER_ROLES.USER), 
     SubscriptionController.subscriptionDetails
 );
+router.get("/overview",
+    auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+    SubscriptionController.overView)
 
-router.get("/:id", 
-    auth(USER_ROLES.USER), 
-    SubscriptionController.companySubscriptionDetails
-)
+router.route("/:id")
+    .patch(
+        auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
+        validateRequest(SubscriptionValidation.createChangeSubscriptionZodSchema),
+        auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
+        SubscriptionController.changeSubscriptionStatus
+    );
+
+
+
 
 export const SubscriptionRoutes = router;

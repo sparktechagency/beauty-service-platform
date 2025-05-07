@@ -36,8 +36,18 @@ const planSchema = new Schema<IPlan, PlanModel>({
         type: String,
         required: true,
     },
+    service_charge: {
+        type: Number,
+        required: false,
+        default: 0,
+    },
+    status:{
+        type:String,
+        enum:["active","delete"],
+        default:"active"
+    }
 }, {
     timestamps: true,
 });
 
-export const Plan = model<IPlan>('Plans', planSchema);
+export const Plan = model<IPlan>('Plan', planSchema);
