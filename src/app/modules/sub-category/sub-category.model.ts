@@ -20,4 +20,4 @@ const subCategorySchema = new Schema<ISubCategory>({
     timestamps: true,
 });
 
-export const SubCategory = model<ISubCategory>('Sub-category', subCategorySchema);
+export const SubCategory = model<ISubCategory>('SubCategory', subCategorySchema);

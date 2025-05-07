@@ -9,7 +9,7 @@
     "create-module": "ts-node ./src/gm.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Nadir Hossain",
+  "author": "Md Abdur Razzak Rakib",
   "license": "ISC",
   "description": "",
   "devDependencies": {

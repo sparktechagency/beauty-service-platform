@@ -11,6 +11,11 @@ type IData<T> = {
         total: number;
     };
     data?: T;
+    meta?: {
+        page: number;
+        limit: number;
+        total: number;
+    };
 };
 
 const sendResponse = <T>(res: Response, data: IData<T>) => {
@@ -18,7 +23,8 @@ const sendResponse = <T>(res: Response, data: IData<T>) => {
         success: data.success,
         message: data.message,
         pagination: data.pagination,
-        data: data.data,
+        meta: data.meta,
+        data: data.data
     };
     res.status(data.statusCode).json(resData);
 };
