@@ -19,6 +19,12 @@ router.post(
     UserController.createAdmin
 );
 
+router.post(
+    '/create-stripe-account',
+    auth(USER_ROLES.ARTIST),
+    UserController.createStripeAccount
+);
+
 router
     .route('/')
     .post(

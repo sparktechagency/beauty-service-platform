@@ -5,6 +5,8 @@ import bcrypt from "bcrypt";
 import ApiError from "../../../errors/ApiErrors";
 import { StatusCodes } from "http-status-codes";
 import config from "../../../config";
+import stripe from "../../../config/stripe";
+import Stripe from "stripe";
 
 const userSchema = new Schema<IUser, UserModal>(
   {
@@ -75,6 +77,15 @@ const userSchema = new Schema<IUser, UserModal>(
       type: Schema.Types.ObjectId,
       ref: "Subscription",
       required: false,
+    },
+    accountInfo: {
+      type:{
+        stripeAccountId: String,
+        stripeAccountLink: String,
+        status: String,
+        loginLink: String
+      },
+      default: null
     }
   },
   {
@@ -106,6 +117,39 @@ userSchema.statics.isMatchPassword = async (
 ): Promise<boolean> => {
   return await bcrypt.compare(password, hashPassword);
 };
+
+userSchema.statics.HandleConnectStripe = async (data:Stripe.Account) =>{
+  // Find the user by Stripe account ID
+
+  
+  const existingUser = await User.findOne({
+   email:data.email,
+});
+
+
+if (!existingUser) {
+   // throw new ApiError(StatusCodes.NOT_FOUND, 'User not found');
+   console.log('user not found')
+   return
+}
+
+
+// Check if the onboarding is complete
+
+   const loginLink = await stripe.accounts.createLoginLink(data.id);
+   // Save Stripe account information to the user record
+   await User.findOneAndUpdate(
+     { _id: existingUser?._id },
+     {
+       $set: {
+         'accountInfo.loginLink': loginLink.url,
+       }
+     },
+     { new: true }
+   );
+   
+
+}
 
 //check user
 userSchema.pre("save", async function (next) {

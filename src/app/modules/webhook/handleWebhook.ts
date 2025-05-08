@@ -1,7 +1,9 @@
 import e, { Request, Response } from "express";
 import config from "../../../config";
 import stripe from "../../../config/stripe";
-import { handleSubscriptionCreated } from "../../../handlers";
+import { handleSubscriptionCreated, handleSubscriptionDeleted } from "../../../handlers";
+import Stripe from "stripe";
+import { User } from "../user/user.model";
 
 export const handleWebHook =async (req:Request, res:Response) => {
     const sig = req.headers["stripe-signature"];
@@ -20,13 +22,18 @@ export const handleWebHook =async (req:Request, res:Response) => {
             console.log("subscription updated");
             break;
         case 'customer.subscription.deleted':
-            console.log("subscription deleted");
+            await handleSubscriptionDeleted(event.data.object);
+            
             break;
         case 'payment_intent.succeeded':
             break;
         case 'invoice.paid':
 
             break;
+            case "account.updated":
+          const account = event.data.object as Stripe.Account;
+          await User.HandleConnectStripe(account);
+          break;
         default:
             console.log(`Unhandled event type ${event.type}`);
     }

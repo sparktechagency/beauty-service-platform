@@ -1,5 +1,6 @@
 import { Model, ObjectId, Types } from 'mongoose';
 import { USER_ROLES } from '../../../enums/user';
+import Stripe from 'stripe';
 
 export type IUser = {
     name: string;
@@ -17,6 +18,12 @@ export type IUser = {
     workImage?: [string]; //TODO: ensure need to upload at list 5 images
     backGroundImage?: string; //TODO: make user for validation for artist
     subscription?: ObjectId;
+    accountInfo?:{
+        stripeAccountId:string,
+        stripeAccountLink:string
+        status:string;
+        loginLink:string;
+      },
 }
 
 export type UserModal = {
@@ -24,4 +31,5 @@ export type UserModal = {
     isExistUserByEmail(email: string): any;
     isAccountCreated(id: string): any;
     isMatchPassword(password: string, hashPassword: string): boolean;
+    HandleConnectStripe(data:Stripe.Account):Promise<void>
 } & Model<IUser>;
