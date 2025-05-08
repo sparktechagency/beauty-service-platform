@@ -20,6 +20,44 @@ const createUserTakeService = catchAsync(
   }
 );
 
+
+const getSingleService = catchAsync(
+  async (req: Request, res: Response) => {
+    const {id}= req.params
+    const result = await UserTakeServiceServices.getSingleUserService(
+      id
+    );
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "UserTakeService fetched successfully",
+      data: result,
+    });
+  }
+)
+
+const updateUserTakeService = catchAsync(
+  async (req: Request, res: Response) => {
+    const {id}= req.params
+    const user = req.user
+    const {...userTakeServiceData } = req.body;
+    const result = await UserTakeServiceServices.updateUserTakeServiceIntoDB(
+      id,
+      userTakeServiceData,
+      user!
+    );
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "UserTakeService updated successfully",
+      data: result, 
+    })
+  }
+)
+
+
 export const UserTakeServiceController = {
   createUserTakeService,
+  getSingleService,
+  updateUserTakeService
 };

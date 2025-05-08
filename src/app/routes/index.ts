@@ -7,6 +7,7 @@ import { CategoryRoutes } from "../modules/category/category.route";
 import { SubCategoryRoutes } from "../modules/sub-category/sub-category.route";
 import { ServiceManagementRoutes } from "../modules/servicemanagement/servicemanagement.route";
 import { UserTakeServiceRoutes } from "../modules/usertakeservice/usertakeservice.route";
+import { NotificationRoutes } from "../modules/notification/notification.routes";
 const router = express.Router();
 
 const apiRoutes = [
@@ -18,6 +19,7 @@ const apiRoutes = [
   { path: "/subCategory", route: SubCategoryRoutes },
   { path: "/serviceManagement", route: ServiceManagementRoutes },
   { path: "/service", route: UserTakeServiceRoutes },
+  { path: "/notification", route: NotificationRoutes },
 ];
 
 apiRoutes.forEach((route) => router.use(route.path, route.route));

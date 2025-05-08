@@ -11,4 +11,16 @@ router.post(
   UserTakeServiceController.createUserTakeService
 );
 
+router.get(
+  "/:id",
+  auth(USER_ROLES.ARTIST),
+  UserTakeServiceController.getSingleService
+);
+
+router.patch(
+  "/:id",
+  auth(USER_ROLES.ARTIST),
+  UserTakeServiceController.updateUserTakeService
+);
+
 export const UserTakeServiceRoutes = router;

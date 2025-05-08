@@ -1,57 +1,56 @@
-import { JwtPayload } from 'jsonwebtoken';
-import { INotification } from './notification.interface';
-import { Notification } from './notification.model';
+import { JwtPayload } from "jsonwebtoken";
+import { Notification } from "./notification.model";
+import QueryBuilder from "../../builder/queryBuilder";
+import { Types } from "mongoose";
 
-// get notifications
-const getNotificationFromDB = async ( user: JwtPayload ): Promise<INotification> => {
-
-    const result = await Notification.find({ receiver: user.id }).populate({
-        path: 'sender',
-        select: 'name profile',
-    });
-
-    const unreadCount = await Notification.countDocuments({
-        receiver: user.id,
-        read: false,
-    });
-
-    const data: any = {
-        result,
-        unreadCount
-    };
-
-  return data;
+// Just for single notification update to db
+const updateNotificationToDB = async (id: string) => {
+  const result = await Notification.findOneAndUpdate(
+    { _id: id, isRead: false },
+    { $set: { isRead: true } },
+    { new: true }
+  );
+  return result;
 };
 
-// read notifications only for user
-const readNotificationToDB = async ( user: JwtPayload): Promise<INotification | undefined> => {
 
-    const result: any = await Notification.updateMany(
-        { receiver: user.id, read: false },
-        { $set: { read: true } }
-    );
-    return result;
+// Mark all notifications as read
+const markAllNotificationsAsRead = async (user: JwtPayload) => {
+
+const userObjectId = new Types.ObjectId(user.id)
+  const result = await Notification.updateMany(
+    { isRead: false, receiver: userObjectId },
+    { $set: { isRead: true } }
+  );
+  return result;
 };
 
-// get notifications for admin
-const adminNotificationFromDB = async () => {
-    const result = await Notification.find({ type: 'ADMIN' });
-    return result;
-};
 
-// read notifications only for admin
-const adminReadNotificationToDB = async (): Promise<INotification | null> => {
-    const result: any = await Notification.updateMany(
-        { type: 'ADMIN', read: false },
-        { $set: { read: true } },
-        { new: true }
-    );
-    return result;
+// Get all notifications
+const allNotificationFromDB = async (
+  user: JwtPayload,
+  query: Record<string, any>
+) => {
+  const userObjectId = new Types.ObjectId(user.id);
+
+  const initialQuery = Notification.find({ receiver: userObjectId });
+
+  const result = new QueryBuilder(initialQuery, query)
+    .sort()
+    .paginate();
+
+  const data = await result.modelQuery.lean();
+  const pagination = await result.getPaginationInfo();
+
+  return {
+    pagination,
+    data,
+  };
 };
 
 export const NotificationService = {
-    adminNotificationFromDB,
-    getNotificationFromDB,
-    readNotificationToDB,
-    adminReadNotificationToDB
+
+  updateNotificationToDB,
+  allNotificationFromDB,
+  markAllNotificationsAsRead,
 };

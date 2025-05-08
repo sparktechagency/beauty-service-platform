@@ -14,7 +14,7 @@ export type IUser = {
   password: string;
   confirmPassword: string;
   license?: string;
-  latitude?: string;
+  latitude?: number;
   longitude?: string;
   verified?: boolean;
   description?: string;
@@ -34,6 +34,7 @@ export type IUser = {
     oneTimeCode: number;
     expireAt: Date;
   };
+  isActive?: boolean;
 };
 
 export type UserModal = {

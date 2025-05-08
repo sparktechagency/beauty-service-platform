@@ -1,10 +1,11 @@
-import bcrypt from 'bcrypt';
-import { StatusCodes } from 'http-status-codes';
-import { model, Schema } from 'mongoose';
-import config from '../../../config';
-import { USER_ROLES } from '../../../enums/user';
-import { IUser, UserModal } from './user.interface';
-import ApiError from '../../../errors/ApiErrors';
+import bcrypt from "bcrypt";
+import { StatusCodes } from "http-status-codes";
+import { model, Schema } from "mongoose";
+import config from "../../../config";
+import { USER_ROLES } from "../../../enums/user";
+import { IUser, UserModal } from "./user.interface";
+import ApiError from "../../../errors/ApiErrors";
+import { number, string } from "zod";
 
 const userSchema = new Schema<IUser, UserModal>(
   {
@@ -41,7 +42,7 @@ const userSchema = new Schema<IUser, UserModal>(
     },
     profile: {
       type: String,
-      default: 'https://i.ibb.co/z5YHLV9/profile.png',
+      default: "https://i.ibb.co/z5YHLV9/profile.png",
     },
     isDeleted: {
       type: Boolean,
@@ -82,10 +83,39 @@ const userSchema = new Schema<IUser, UserModal>(
         type: Boolean,
         default: false,
       },
-      stripeAccountId: {type: String },
+      stripeAccountId: { type: String },
       externalAccountId: { type: String },
       currency: { type: String },
-      accountUrl: { type: String }
+      accountUrl: { type: String },
+    },
+    isActive: {
+      type: Boolean,
+      default: false,
+    },
+    backGroundImage: {
+      type: String,
+    },
+    contact: {
+      type: String,
+    },
+    dateOfBirth: {
+      type: Date,
+    },
+    nickName: {
+      type: String,
+    },
+    status: {
+      type: String,
+      enum: ["active", "inactive"],
+    },
+    social: {
+      type: String,
+    },
+    license: {
+      type: String,
+    },
+    workImage: {
+      type: String,
     },
   },
   { timestamps: true }
@@ -111,11 +141,11 @@ userSchema.statics.isMatchPassword = async (
 };
 
 //check user
-userSchema.pre('save', async function (next) {
+userSchema.pre("save", async function (next) {
   //check user
   const isExist = await User.findOne({ email: this.email });
   if (isExist) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, 'Email already exist!');
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Email already exist!");
   }
 
   //password hash
@@ -126,4 +156,4 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
-export const User = model<IUser, UserModal>('User', userSchema);
+export const User = model<IUser, UserModal>("User", userSchema);

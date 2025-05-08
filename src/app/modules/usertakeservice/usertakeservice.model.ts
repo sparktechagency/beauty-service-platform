@@ -5,12 +5,17 @@ const userTakeServiceSchema = new Schema<IUserTakeService>(
   {
     serviceId: {
       type: Schema.Types.ObjectId,
-      ref: "Service",
+      ref: "ServiceManagement",
       required: true,
     },
     userId: {
       type: Schema.Types.ObjectId,
-      ref: "User"
+      ref: "User",
+      required: true,
+    },
+    artiestId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
     },
     latitude: {
       type: Number,
@@ -28,6 +33,14 @@ const userTakeServiceSchema = new Schema<IUserTakeService>(
     additionalInfo: {
       type: String,
     },
+    providerId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+    isBooked:{
+      type:Boolean,
+      default:false
+    }
   },
   {
     timestamps: true,
