@@ -30,11 +30,9 @@ const getAllNotification = catchAsync(async (req: Request, res: Response) => {
     success: true,
     message: "Notification retrieved successfully",
     data: result.data,
-    pagination:result.pagination
+    pagination: result.pagination,
   });
 });
-
-
 
 const markAllNotification = catchAsync(async (req: Request, res: Response) => {
   const user = req.user as JwtHeader;
@@ -45,10 +43,10 @@ const markAllNotification = catchAsync(async (req: Request, res: Response) => {
     message: "Notification updated successfully",
     data: result,
   });
-})
+});
 
 export const NotificationController = {
   updateNotificationById,
   getAllNotification,
-  markAllNotification   
+  markAllNotification,
 };
