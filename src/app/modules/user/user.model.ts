@@ -1,14 +1,3 @@
-<<<<<<< HEAD
-import { model, Schema } from "mongoose";
-import { USER_ROLES } from "../../../enums/user";
-import { IUser, UserModal } from "./user.interface";
-import bcrypt from "bcrypt";
-import ApiError from "../../../errors/ApiErrors";
-import { StatusCodes } from "http-status-codes";
-import config from "../../../config";
-import stripe from "../../../config/stripe";
-import Stripe from "stripe";
-=======
 import bcrypt from 'bcrypt';
 import { StatusCodes } from 'http-status-codes';
 import { model, Schema } from 'mongoose';
@@ -16,7 +5,8 @@ import config from '../../../config';
 import { USER_ROLES } from '../../../enums/user';
 import { IUser, UserModal } from './user.interface';
 import ApiError from '../../../errors/ApiErrors';
->>>>>>> origin/main
+import stripe from '../../../config/stripe';
+import Stripe from 'stripe';
 
 const userSchema = new Schema<IUser, UserModal>(
   {
@@ -89,22 +79,12 @@ const userSchema = new Schema<IUser, UserModal>(
       },
       select: 0,
     },
-    accountInformation: {
-      status: {
-        type: Boolean,
-        default: false,
-      },
-      stripeAccountId: {type: String },
-      externalAccountId: { type: String },
-      currency: { type: String },
-      accountUrl: { type: String }
-    },
     subscription: {
       type: Schema.Types.ObjectId,
       ref: "Subscription",
       required: false,
     },
-    accountInfo: {
+    accountInformation: {
       type:{
         stripeAccountId: String,
         stripeAccountLink: String,

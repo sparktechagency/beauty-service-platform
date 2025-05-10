@@ -119,7 +119,7 @@ const createStripeAccoutToDB = async (user:JwtPayload,stripe_id:string="")=>{
     if (!isExistUser) {
         throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
     }
-    if (isExistUser.accountInfo?.stripeAccountId) {
+    if (isExistUser.accountInformation?.stripeAccountId) {
         throw new ApiError(StatusCodes.BAD_REQUEST, "Account already exist!");
     }
     if (stripe_id) {
@@ -184,18 +184,10 @@ const getUsersFromDB = async (query:Record<string, any>) => {
 };
 
 export const UserService = {
-<<<<<<< HEAD
-    createUserToDB,
-    getUserProfileFromDB,
-    updateProfileToDB,
-    createAdminToDB,
-    createStripeAccoutToDB,
-    getUsersFromDB,
-};
-=======
   createUserToDB,
   getUserProfileFromDB,
   updateProfileToDB,
   verifyOTPIntoDB,
+  createStripeAccoutToDB,
+  getUsersFromDB,
 };
->>>>>>> origin/main

@@ -13,11 +13,6 @@ router.get(
     UserController.getUserProfile
 );
   
-router.post(
-    '/create-admin',
-    validateRequest(UserValidation.createAdminZodSchema),
-    UserController.createAdmin
-);
 
 router.post(
     '/create-stripe-account',
