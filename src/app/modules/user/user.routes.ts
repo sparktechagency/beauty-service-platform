@@ -34,6 +34,9 @@ router
         auth(USER_ROLES.ADMIN, USER_ROLES.USER),
         fileUploadHandler(),
         UserController.updateProfile
+    ).get(
+        auth(USER_ROLES.ADMIN,USER_ROLES.SUPER_ADMIN),
+        UserController.getUsers
     );
 
 export const UserRoutes = router;

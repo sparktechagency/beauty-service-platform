@@ -9,6 +9,7 @@ import { emailTemplate } from "../../../shared/emailTemplate";
 import { emailHelper } from "../../../helpers/emailHelper";
 import unlinkFile from "../../../shared/unlinkFile";
 import stripe from "../../../config/stripe";
+import QueryBuilder from "../../builder/QueryBuilder";
 
 const createAdminToDB = async (payload: any): Promise<IUser> => {
 
@@ -127,10 +128,21 @@ const createStripeAccoutToDB = async (user:JwtPayload,stripe_id:string="")=>{
     };
 }
 
+const getUsersFromDB = async (query:Record<string, any>) => {
+    const result = new QueryBuilder(User.find({$or:[{ role: USER_ROLES.USER },{ role: USER_ROLES.ARTIST },]},{password:0,accountInfo:0}),query).search(['name','email','contact','location']).filter().sort().paginate()
+    const users = await result.modelQuery.populate(['subscription']).select('-password ').lean().exec()
+    const pagination = await result.getPaginationInfo();
+    return {
+        users,
+        pagination,
+    }
+};
+
 export const UserService = {
     createUserToDB,
     getUserProfileFromDB,
     updateProfileToDB,
     createAdminToDB,
-    createStripeAccoutToDB
+    createStripeAccoutToDB,
+    getUsersFromDB,
 };

@@ -76,10 +76,22 @@ const createStripeAccount = catchAsync( async (req: Request, res: Response, next
     });
 })
 
+const getUsers = catchAsync( async (req: Request, res: Response, next: NextFunction) => {
+    const query = req.query;
+    const result = await UserService.getUsersFromDB(query);
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: 'Users retrieved successfully',
+        data: result
+    });
+})
+
 export const UserController = { 
     createUser, 
     createAdmin, 
     getUserProfile, 
     updateProfile,
-    createStripeAccount
+    createStripeAccount,
+    getUsers
 };
