@@ -28,7 +28,7 @@ passport.use(new FacebookStrategy({
 }, async (accessToken, refreshToken, profile, done) => {
     try {
         // @ts-ignore
-        let user = await User.findOne({ appId: profile.id });
+        let user:any = await User.findOne({ appId: profile.id });
 
         if (!user) {
             user = await User.create({

@@ -3,8 +3,14 @@ import { UserRoutes } from '../modules/user/user.routes';
 import { AuthRoutes } from '../modules/auth/auth.routes';
 import { clientAgreementRoute } from '../modules/clientAgreement/clientAgreement.route';
 import { ClientResponsibilityRoutes } from '../modules/clientresponsibility/clientresponsibility.route';
+<<<<<<< HEAD
 import { PlanRoutes } from '../modules/plan/plan.route';
 import { SubscriptionRoutes } from '../modules/subscription/subscription.routes';
+=======
+import { CategoryRoutes } from '../modules/category/category.route';
+import { SubCategoryRoutes } from '../modules/sub-category/sub-category.route';
+import { ServiceManagementRoutes } from '../modules/servicemanagement/servicemanagement.route';
+>>>>>>> origin/main
 const router = express.Router();
 
 const apiRoutes = [
@@ -12,8 +18,14 @@ const apiRoutes = [
     { path: "/auth", route: AuthRoutes },
     { path: "/clientAgreement", route: clientAgreementRoute},
     { path: "/clientResponsibility", route: ClientResponsibilityRoutes},
+<<<<<<< HEAD
     {path:"/plan",route:PlanRoutes},
     {path:"/subscription",route:SubscriptionRoutes},
+=======
+    {path:"/category", route:CategoryRoutes},
+    {path:"/subCategory", route:SubCategoryRoutes},
+    {path:"/serviceManagement", route:ServiceManagementRoutes},
+>>>>>>> origin/main
 ]
 
 apiRoutes.forEach(route => router.use(route.path, route.route));

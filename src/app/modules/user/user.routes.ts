@@ -4,7 +4,7 @@ import { UserController } from './user.controller';
 import { UserValidation } from './user.validation';
 import auth from '../../middlewares/auth';
 import validateRequest from '../../middlewares/validateRequest';
-import fileUploadHandler from '../../middlewares/fileUploaderHandler';
+import fileUploadHandler from '../../middlewares/fileUploadHandler';
 const router = express.Router();
 
 router.get(
