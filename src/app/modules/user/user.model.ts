@@ -31,15 +31,9 @@ const userSchema = new Schema<IUser, UserModal>(
       select: 0,
       minlength: 8,
     },
-    confirmPassword: {
-      type: String,
-      required: true,
-      select: 0,
-      minlength: 8,
-    },
     location: {
       type: String,
-      required: true,
+      required: false,
     },
     profile: {
       type: String,
@@ -84,7 +78,7 @@ const userSchema = new Schema<IUser, UserModal>(
       ref: "Subscription",
       required: false,
     },
-    accountInformation: {
+    accountInfo: {
       type:{
         stripeAccountId: String,
         stripeAccountLink: String,

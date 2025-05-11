@@ -22,12 +22,11 @@ export type IUser = {
   isDeleted?: boolean;
   workImage?: [string]; //TODO: ensure need to upload at list 5 images
   backGroundImage?: string; //TODO: make user for validation for artist
-  accountInformation?: {
+  accountInfo?: {
     status: boolean;
     stripeAccountId: string;
-    externalAccountId: string;
-    currency: string;
-    accountUrl: string;
+    loginLink: string;
+    stripeAccountLink: string;
   };
   authentication?: {
     isResetPassword: boolean;
@@ -35,6 +34,7 @@ export type IUser = {
     expireAt: Date;
   };
   subscription?: Types.ObjectId;
+  referralCode?: string;
 };
 
 export type UserModal = {

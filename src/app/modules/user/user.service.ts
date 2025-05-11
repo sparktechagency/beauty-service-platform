@@ -10,12 +10,22 @@ import { emailHelper } from "../../../helpers/emailHelper";
 import unlinkFile from "../../../shared/unlinkFile";
 import stripe from "../../../config/stripe";
 import QueryBuilder from "../../builder/QueryBuilder";
+import { ReferralService } from "../referral/referral.service";
+import { WalletService } from "../wallet/wallet.service";
 
 const createUserToDB = async (payload: Partial<IUser>): Promise<IUser> => {
   //set role
   const createUser = await User.create(payload);
   if (!createUser) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to create user");
+  }
+  if(createUser.role==USER_ROLES.ARTIST){
+    const wallet = await WalletService.createWallet(createUser._id);
+  }
+
+
+  if (createUser.role==USER_ROLES.ARTIST && payload.referralCode){
+    await ReferralService.acceptReferral(createUser._id, payload.referralCode);
   }
 
   const otp = generateOTP();
@@ -39,6 +49,7 @@ const createUserToDB = async (payload: Partial<IUser>): Promise<IUser> => {
     { $set: { authentication } },
     { new: true }
   );
+
 
   return createUser;
 };
@@ -119,7 +130,7 @@ const createStripeAccoutToDB = async (user:JwtPayload,stripe_id:string="")=>{
     if (!isExistUser) {
         throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
     }
-    if (isExistUser.accountInformation?.stripeAccountId) {
+    if (isExistUser.accountInfo?.stripeAccountId) {
         throw new ApiError(StatusCodes.BAD_REQUEST, "Account already exist!");
     }
     if (stripe_id) {
@@ -155,7 +166,7 @@ const createStripeAccoutToDB = async (user:JwtPayload,stripe_id:string="")=>{
     const accountLink = await stripe.accountLinks.create({
         account: account.id,
         refresh_url: 'https://your-website.com/reauth',
-        return_url: 'https://your-website.com/return',
+        return_url: 'https://your-website.com/dashboard',
         type: 'account_onboarding',
       });
     await User.findOneAndUpdate(

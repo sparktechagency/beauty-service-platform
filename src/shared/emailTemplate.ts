@@ -57,7 +57,44 @@ const resetPassword = (values: IResetPassword) => {
     return data;
 };
 
+interface ReferralEmailParams {
+    name: string;
+    email: string;
+    referral: string;
+    amount: number;
+    referralUserNamee: string;
+  }
+  
+  export const referralAcceptedEmail = ({ name, email, referral,amount,referralUserNamee }: ReferralEmailParams) => {
+    return {
+      to: email,
+      subject: "🎉 Your Referral Was Accepted!",
+      html: `
+      <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px; color: #333;">
+        <div style="max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+  
+          <h2 style="color: #28a745;">Congratulations, ${name}!</h2>
+  
+          <p style="font-size: 16px;">Your referral has been <strong>accepted</strong> by ${referralUserNamee}, and you've earned <strong>${amount} usd </strong></p>
+  
+          <div style="margin: 20px 0; padding: 15px; background-color: #f8f8f8; border-left: 5px solid #28a745;">
+            <p><strong>Referral Code:</strong> ${referral}</p>
+            <p><strong>Referral Bonus:</strong> ${amount}</p>
+          </div>
+  
+          <p>Thank you for referring others to our platform. Keep referring and keep earning!</p>
+  
+          <p style="margin-top: 30px; font-size: 14px; color: #888;">If you have any questions, feel free to contact our support team.</p>
+  
+          <p style="text-align: center; font-size: 12px; color: #bbb;">&copy; ${new Date().getFullYear()} Beuty Care. All rights reserved.</p>
+        </div>
+      </body>
+      `,
+    };
+  };
+
 export const emailTemplate = {
     createAccount,
-    resetPassword
+    resetPassword,
+    referralAcceptedEmail
 };
