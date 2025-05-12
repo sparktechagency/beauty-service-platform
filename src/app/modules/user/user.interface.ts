@@ -22,18 +22,19 @@ export type IUser = {
   isDeleted?: boolean;
   workImage?: [string]; //TODO: ensure need to upload at list 5 images
   backGroundImage?: string; //TODO: make user for validation for artist
-  accountInformation?: {
+  accountInfo?: {
     status: boolean;
     stripeAccountId: string;
-    externalAccountId: string;
-    currency: string;
-    accountUrl: string;
+    loginLink: string;
+    stripeAccountLink: string;
   };
   authentication?: {
     isResetPassword: boolean;
     oneTimeCode: number;
     expireAt: Date;
   };
+  subscription?: Types.ObjectId;
+  referralCode?: string;
 };
 
 export type UserModal = {
@@ -41,4 +42,5 @@ export type UserModal = {
   isExistUserByEmail(email: string): any;
   isAccountCreated(id: string): any;
   isMatchPassword(password: string, hashPassword: string): boolean;
+  HandleConnectStripe(data:any): Promise<any>;
 } & Model<IUser>;

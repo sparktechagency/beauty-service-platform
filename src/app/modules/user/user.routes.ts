@@ -13,10 +13,11 @@ router.get(
     UserController.getUserProfile
 );
   
+
 router.post(
-    '/create-admin',
-    validateRequest(UserValidation.createAdminZodSchema),
-    UserController.createAdmin
+    '/create-stripe-account',
+    auth(USER_ROLES.ARTIST),
+    UserController.createStripeAccount
 );
 
 router
@@ -28,6 +29,9 @@ router
         auth(USER_ROLES.ADMIN, USER_ROLES.USER),
         fileUploadHandler(),
         UserController.updateProfile
+    ).get(
+        auth(USER_ROLES.ADMIN,USER_ROLES.SUPER_ADMIN),
+        UserController.getUsers
     );
 
 export const UserRoutes = router;

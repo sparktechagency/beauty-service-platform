@@ -6,11 +6,10 @@ export type ISubscription = {
     user: Types.ObjectId;
     package: Types.ObjectId;
     trxId: string;
-    remaining: number;
     subscriptionId: string;
-    status: 'expired' | 'active' | 'cancel';
-    currentPeriodStart: string;
-    currentPeriodEnd: string;
+    status: 'expired' | 'active' | 'cancel'|"inactive";
+    currentPeriodStart: Date;
+    currentPeriodEnd: Date;
 };
 
 export type SubscriptionModel = Model<ISubscription, Record<string, unknown>>;

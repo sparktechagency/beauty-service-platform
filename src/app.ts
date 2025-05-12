@@ -6,12 +6,16 @@ import router from '../src/app/routes';
 import globalErrorHandler from './app/middlewares/globalErrorHandler';
 import session from "express-session";
 import passport from "./config/passport"; 
+import { handleWebHook } from "./app/modules/webhook/handleWebhook";
 const app = express();
+
 
 // morgan
 app.use(Morgan.successHandler);
 app.use(Morgan.errorHandler);
 
+// webhook
+app.post("/api/webhook",express.raw({ type: "application/json" }),handleWebHook);
 
 //body parser
 app.use(cors());

@@ -2,7 +2,7 @@ import { JwtPayload } from "jsonwebtoken";
 import { IReservation } from "./reservation.interface";
 import { Reservation } from "./reservation.model";
 import { StatusCodes } from "http-status-codes";
-import ApiError from "../../../errors/ApiError";
+import ApiError from "../../../errors/ApiErrors";
 import { Report } from "../report/report.model";
 import mongoose from "mongoose";
 import { sendNotifications } from "../../../helpers/notificationsHelper";

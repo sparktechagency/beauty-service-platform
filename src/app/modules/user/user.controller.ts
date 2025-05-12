@@ -16,23 +16,12 @@ const createUser = catchAsync( async (req: Request, res: Response, next: NextFun
     })
 });
 
-// register admin
-const createAdmin = catchAsync( async (req: Request, res: Response, next: NextFunction) => {
-    const { ...userData } = req.body;
-    const result = await UserService.createAdminToDB(userData);
 
-    sendResponse(res, {
-        success: true,
-        statusCode: StatusCodes.OK,
-        message: 'Admin created successfully',
-        data: result
-    });
-});
 
 // retrieved user profile
 const getUserProfile = catchAsync(async (req: Request, res: Response) => {
     const user = req.user;
-    const result = await UserService.getUserProfileFromDB(user);
+    const result = await UserService.getUserProfileFromDB(user!);
 
     sendResponse(res, {
         success: true,
@@ -55,7 +44,7 @@ const updateProfile = catchAsync( async (req: Request, res: Response, next: Next
         profile,
         ...req.body,
     };
-    const result = await UserService.updateProfileToDB(user, data);
+    const result = await UserService.updateProfileToDB(user!, data);
 
     sendResponse(res, {
         success: true,
@@ -65,9 +54,32 @@ const updateProfile = catchAsync( async (req: Request, res: Response, next: Next
     });
 });
 
+const createStripeAccount = catchAsync( async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user;
+    const result = await UserService.createStripeAccoutToDB(user!);
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: 'Stripe account created successfully',
+        data: result
+    });
+})
+
+const getUsers = catchAsync( async (req: Request, res: Response, next: NextFunction) => {
+    const query = req.query;
+    const result = await UserService.getUsersFromDB(query);
+    sendResponse(res, {
+        success: true,
+        statusCode: StatusCodes.OK,
+        message: 'Users retrieved successfully',
+        data: result
+    });
+})
+
 export const UserController = { 
     createUser, 
-    createAdmin, 
     getUserProfile, 
-    updateProfile
+    updateProfile,
+    createStripeAccount,
+    getUsers
 };
