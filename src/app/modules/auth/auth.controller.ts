@@ -5,6 +5,17 @@ import sendResponse from '../../../shared/sendResponse';
 import { AuthService } from './auth.service';
 
 
+const verifyEmail = catchAsync(async (req: Request, res: Response) => {
+    const { ...verifyData } = req.body;
+    const result = await AuthService.verifyEmailToDB(verifyData);
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: result.message,
+      data: result.data,
+    });
+  });
+
 
 const loginUser = catchAsync(async (req: Request, res: Response) => {
     const { ...loginData } = req.body;
@@ -46,7 +57,7 @@ const resetPassword = catchAsync(async (req: Request, res: Response) => {
 const changePassword = catchAsync(async (req: Request, res: Response) => {
     const user = req.user;
     const { ...passwordData } = req.body;
-    await AuthService.changePasswordToDB(user, passwordData);
+    await AuthService.changePasswordToDB(user!, passwordData);
 
     sendResponse(res, {
         success: true,
@@ -93,7 +104,7 @@ const socialLogin = catchAsync(async (req: Request, res: Response) => {
 
 // delete user
 const deleteUser = catchAsync(async (req: Request, res: Response) => {
-    const result = await AuthService.deleteUserFromDB(req.user, req.body.password);
+    const result = await AuthService.deleteUserFromDB(req.user!, req.body.password);
 
     sendResponse(res, {
         success: true,
@@ -111,5 +122,6 @@ export const AuthController = {
     newAccessToken,
     resendVerificationEmail,
     socialLogin,
-    deleteUser
+    deleteUser,
+    verifyEmail
 };
