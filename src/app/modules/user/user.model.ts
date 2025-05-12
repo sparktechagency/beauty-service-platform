@@ -37,7 +37,7 @@ const userSchema = new Schema<IUser, UserModal>(
     },
     profile: {
       type: String,
-      default: 'https://i.ibb.co/z5YHLV9/profile.png',
+      default: "https://i.ibb.co/z5YHLV9/profile.png",
     },
     isDeleted: {
       type: Boolean,
@@ -77,20 +77,59 @@ const userSchema = new Schema<IUser, UserModal>(
       type: Schema.Types.ObjectId,
       ref: "Subscription",
       required: false,
-    },
-    accountInfo: {
-      type:{
-        stripeAccountId: String,
-        stripeAccountLink: String,
-        status: String,
-        loginLink: String
+      accountInformation: {
+        status: {
+          type: Boolean,
+          default: false,
+        },
+        stripeAccountId: { type: String },
+        externalAccountId: { type: String },
+        currency: { type: String },
+        accountUrl: { type: String },
       },
-      default: null
-    }
+      isActive: {
+        type: Boolean,
+        default: false,
+      },
+      backGroundImage: {
+        type: String,
+      },
+      contact: {
+        type: String,
+      },
+      dateOfBirth: {
+        type: Date,
+      },
+      nickName: {
+        type: String,
+      },
+      status: {
+        type: String,
+        enum: ["active", "inactive"],
+      },
+      social: {
+        type: String,
+      },
+      license: {
+        type: String,
+      },
+      workImage: {
+        type: String,
+      },
+      accountInfo: {
+        type: {
+          stripeAccountId: String,
+          stripeAccountLink: String,
+          status: String,
+          loginLink: String,
+        },
+        default: null,
+      },
+    },
   },
   { timestamps: true }
 );
-
+// TODO: need to verify email
 //exist user check
 userSchema.statics.isExistUserById = async (id: string) => {
   const isExist = await User.findById(id);
@@ -110,45 +149,40 @@ userSchema.statics.isMatchPassword = async (
   return await bcrypt.compare(password, hashPassword);
 };
 
-userSchema.statics.HandleConnectStripe = async (data:Stripe.Account) =>{
+userSchema.statics.HandleConnectStripe = async (data: Stripe.Account) => {
   // Find the user by Stripe account ID
 
-  
   const existingUser = await User.findOne({
-   email:data.email,
-});
+    email: data.email,
+  });
 
+  if (!existingUser) {
+    // throw new ApiError(StatusCodes.NOT_FOUND, 'User not found');
+    console.log("user not found");
+    return;
+  }
 
-if (!existingUser) {
-   // throw new ApiError(StatusCodes.NOT_FOUND, 'User not found');
-   console.log('user not found')
-   return
-}
+  // Check if the onboarding is complete
 
-
-// Check if the onboarding is complete
-
-   const loginLink = await stripe.accounts.createLoginLink(data.id);
-   // Save Stripe account information to the user record
-   await User.findOneAndUpdate(
-     { _id: existingUser?._id },
-     {
-       $set: {
-         'accountInfo.loginLink': loginLink.url,
-       }
-     },
-     { new: true }
-   );
-   
-
-}
+  const loginLink = await stripe.accounts.createLoginLink(data.id);
+  // Save Stripe account information to the user record
+  await User.findOneAndUpdate(
+    { _id: existingUser?._id },
+    {
+      $set: {
+        "accountInfo.loginLink": loginLink.url,
+      },
+    },
+    { new: true }
+  );
+};
 
 //check user
-userSchema.pre('save', async function (next) {
+userSchema.pre("save", async function (next) {
   //check user
   const isExist = await User.findOne({ email: this.email });
   if (isExist) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, 'Email already exist!');
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Email already exist!");
   }
 
   //password hash
@@ -159,4 +193,4 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
-export const User = model<IUser, UserModal>('User', userSchema);
+export const User = model<IUser, UserModal>("User", userSchema);

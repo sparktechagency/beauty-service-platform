@@ -14,8 +14,8 @@ export type IUser = {
   password: string;
   confirmPassword: string;
   license?: string;
-  latitude?: string;
-  longitude?: string;
+  latitude?: number;
+  longitude?: number;
   verified?: boolean;
   description?: string;
   profile?: string;
@@ -35,6 +35,7 @@ export type IUser = {
   };
   subscription?: Types.ObjectId;
   referralCode?: string;
+  isActive?: boolean;
 };
 
 export type UserModal = {
@@ -42,5 +43,5 @@ export type UserModal = {
   isExistUserByEmail(email: string): any;
   isAccountCreated(id: string): any;
   isMatchPassword(password: string, hashPassword: string): boolean;
-  HandleConnectStripe(data:any): Promise<any>;
+  HandleConnectStripe(data: any): Promise<any>;
 } & Model<IUser>;
