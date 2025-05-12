@@ -10,4 +10,5 @@ export type IUserTakeService = {
   providerId?: Types.ObjectId;
   isBooked?: boolean;
   artiestId?: Types.ObjectId;
+  price: number;
 };

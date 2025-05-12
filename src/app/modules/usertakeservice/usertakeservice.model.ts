@@ -40,6 +40,9 @@ const userTakeServiceSchema = new Schema<IUserTakeService>(
     isBooked:{
       type:Boolean,
       default:false
+    },
+    price:{
+      type:Number,
     }
   },
   {

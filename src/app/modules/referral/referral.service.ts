@@ -37,7 +37,7 @@ const getReferral = async (user:JwtPayload,query:Record<string,any>)=>{
             path:'token_user',
             select:'name email'
         }
-        ]).lean().exec()
+        ]).lean()
         return {
             data:data,
             paginationInfo:paginationInfo
@@ -66,7 +66,7 @@ const acceptReferral = async (user:Types.ObjectId,id:string)=>{
 }
 
 const getRefferralById = async (id:string)=>{
-    const referral = await Referral.findById(id).populate(['referral_user','token_user'],['name','email']).lean().exec()
+    const referral = await Referral.findById(id).populate(['referral_user','token_user'],['name','email'])
     if(!referral) throw new Error("Referral not found")
     return referral
 }
