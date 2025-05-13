@@ -28,7 +28,7 @@ export const handleSubscriptionCreated = async (data: Stripe.Subscription) => {
     if (customer?.email) {
         
         const existingUser = await User.findOne({ email: customer?.email });
-        console.log(existingUser);
+       
         
         if (existingUser) {
             // Find the pricing plan by priceId

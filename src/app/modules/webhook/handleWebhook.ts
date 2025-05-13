@@ -4,6 +4,8 @@ import stripe from "../../../config/stripe";
 import { handleSubscriptionCreated, handleSubscriptionDeleted } from "../../../handlers";
 import Stripe from "stripe";
 import { User } from "../user/user.model";
+import { UserTakeService } from "../usertakeservice/usertakeservice.model";
+import { UserTakeServiceServices } from "../usertakeservice/usertakeservice.service";
 
 export const handleWebHook =async (req:Request, res:Response) => {
     const sig = req.headers["stripe-signature"];
@@ -11,6 +13,11 @@ export const handleWebHook =async (req:Request, res:Response) => {
     const event = stripe.webhooks.constructEvent(req.body,sig!,webhookSecret!);
     switch(event.type){
         case 'checkout.session.completed':
+            if(event.data.object.mode!='subscription'){
+            const payload = JSON.parse(event.data.object.metadata?.data!)
+            await UserTakeServiceServices.bookOrder({...payload,payment_intent:event.data.object.payment_intent})
+            }
+            
 
             break;
         case 'customer.subscription.created':

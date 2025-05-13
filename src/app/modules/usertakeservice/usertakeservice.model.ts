@@ -41,6 +41,21 @@ const userTakeServiceSchema = new Schema<IUserTakeService>(
       type: Boolean,
       default: false,
     },
+    price: {
+      type: Number,
+    },
+    addOns: {
+      type: [String],
+    },
+    app_fee: {
+      type: Number,
+    },
+    total_amount: {
+      type: Number,
+    },
+    payment_intent: {
+      type: String,
+    },
     address: {
       type: String,
       required: true,

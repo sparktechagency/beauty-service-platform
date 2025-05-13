@@ -4,7 +4,7 @@ import auth from "../../middlewares/auth";
 import validateRequest from "../../middlewares/validateRequest";
 import { CategoryController } from "./category.controller";
 import { CategoryValidation } from "./category.validation";
-import { getSingleFilePath } from "../../../shared/getFilePath";
+import { getMultipleFilesPath, getSingleFilePath } from "../../../shared/getFilePath";
 import fileUploadHandler from "../../middlewares/fileUploadHandler";
 const router = express.Router();
 
@@ -16,7 +16,7 @@ router.post(
   async (req, res, next) => {
     try {
       const payload = req.body;
-      const image = getSingleFilePath(req.files, "image");
+      const image = getMultipleFilesPath(req.files, "image");
 
       if (!image) {
         return res.status(400).json({ message: "Category image is required." });

@@ -2,7 +2,8 @@ import { StatusCodes } from "http-status-codes";
 import ApiError from "../../../errors/ApiErrors";
 import { IServiceManagement } from "./servicemanagement.interface";
 import { ServiceManagement } from "./servicemanagement.model";
-import QueryBuilder from "../../builder/queryBuilder";
+import QueryBuilder from "../../builder/QueryBuilder";
+
 
 const createServiceManagementIntoDB = async (payload: IServiceManagement) => {
   const result = await ServiceManagement.create(payload);

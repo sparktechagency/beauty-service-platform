@@ -77,54 +77,44 @@ const userSchema = new Schema<IUser, UserModal>(
       type: Schema.Types.ObjectId,
       ref: "Subscription",
       required: false,
-      accountInformation: {
-        status: {
-          type: Boolean,
-          default: false,
-        },
-        stripeAccountId: { type: String },
-        externalAccountId: { type: String },
-        currency: { type: String },
-        accountUrl: { type: String },
+    },
+    isActive: {
+      type: Boolean,
+      default: false,
+    },
+    backGroundImage: {
+      type: String,
+    },
+    contact: {
+      type: String,
+    },
+    dateOfBirth: {
+      type: Date,
+    },
+    nickName: {
+      type: String,
+    },
+    status: {
+      type: String,
+      enum: ["active", "inactive"],
+    },
+    social: {
+      type: String,
+    },
+    license: {
+      type: String,
+    },
+    workImage: {
+      type: String,
+    },
+    accountInfo: {
+      type: {
+        stripeAccountId: String,
+        stripeAccountLink: String,
+        status: String,
+        loginLink: String,
       },
-      isActive: {
-        type: Boolean,
-        default: false,
-      },
-      backGroundImage: {
-        type: String,
-      },
-      contact: {
-        type: String,
-      },
-      dateOfBirth: {
-        type: Date,
-      },
-      nickName: {
-        type: String,
-      },
-      status: {
-        type: String,
-        enum: ["active", "inactive"],
-      },
-      social: {
-        type: String,
-      },
-      license: {
-        type: String,
-      },
-      workImage: {
-        type: String,
-      },
-      accountInfo: {
-        type: {
-          stripeAccountId: String,
-          stripeAccountLink: String,
-          status: String,
-          loginLink: String,
-        },
-        default: null,
-      },
+      default: null,
     },
   },
   { timestamps: true }
