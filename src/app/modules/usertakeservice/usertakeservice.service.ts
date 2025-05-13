@@ -305,10 +305,6 @@ const cancelOrder = async (orderId:string,user:JwtPayload)=>{
 
 }
 
-
-
-// TODO: Need to create another api for isActive or not a Artist
-
 export const UserTakeServiceServices = {
   createUserTakeServiceIntoDB,
   getSingleUserService,
