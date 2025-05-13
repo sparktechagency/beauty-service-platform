@@ -1,11 +1,13 @@
 import { Model, Types } from "mongoose";
 
 export type IReview = {
-    customer: Types.ObjectId;
-    barber: Types.ObjectId;
-    service: Types.ObjectId;
-    comment: string;
+    user: Types.ObjectId;
+    artist: Types.ObjectId;
+    order: Types.ObjectId;
+    comment?: string;
     rating: number;
+    tip?: number;
+    trxId?: string;
 }
 
 export type ReviewModel = Model<IReview>;

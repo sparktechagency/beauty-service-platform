@@ -11,6 +11,18 @@ router.post(
   UserTakeServiceController.createUserTakeService
 );
 
+router.get(
+  "/",
+  auth(),
+  UserTakeServiceController.getAllBookings
+);
+
+router.get(
+  "/overview",
+  auth(USER_ROLES.ADMIN,USER_ROLES.SUPER_ADMIN),
+  UserTakeServiceController.getOverview
+);
+
 router.put(
   "/service/:id",
   auth(USER_ROLES.ARTIST),
@@ -24,9 +36,21 @@ router.get(
 );
 
 router.patch(
-  "/:id",
+  "/accept/:id",
   auth(USER_ROLES.ARTIST),
   UserTakeServiceController.updateUserTakeService
 );
+
+router.route("/cancel/:id").patch(
+  auth(USER_ROLES.ARTIST),
+  UserTakeServiceController.cancel_order
+);
+
+router.route("/payout/:id").patch(
+  auth(USER_ROLES.ADMIN,USER_ROLES.SUPER_ADMIN),
+  UserTakeServiceController.payoutOrder
+);
+
+
 
 export const UserTakeServiceRoutes = router;

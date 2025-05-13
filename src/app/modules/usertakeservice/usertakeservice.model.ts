@@ -27,7 +27,7 @@ const userTakeServiceSchema = new Schema<IUserTakeService>(
     },
     status: {
       type: String,
-      enum: ["pending", "inProgress", "completed"],
+      enum: ["pending", "inProgress", "completed", "cancelled", "processing"],
       default: "pending",
     },
     additionalInfo: {
@@ -60,6 +60,23 @@ const userTakeServiceSchema = new Schema<IUserTakeService>(
       type: String,
       required: true,
     },
+    artist_book_date:{
+      type:Date
+    },
+    cancelled_by:{
+      type:String,
+      enum:["user","artist","admin"]
+    },
+    cancelled_reason:{
+      type:String
+    },
+    cancel_status:{
+      type:String,
+      enum:["low","high"]
+    },
+    trxId:{
+      type:String
+    }
   },
   {
     timestamps: true,

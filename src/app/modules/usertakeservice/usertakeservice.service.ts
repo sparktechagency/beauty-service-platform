@@ -2,7 +2,7 @@ import { StatusCodes } from "http-status-codes";
 import ApiError from "../../../errors/ApiErrors";
 import { IUserTakeService } from "./usertakeservice.interface";
 import { UserTakeService } from "./usertakeservice.model";
-import { Types } from "mongoose";
+import { Query, Types } from "mongoose";
 import { sendNotifications } from "../../../helpers/notificationsHelper";
 import { User } from "../user/user.model";
 import { USER_ROLES } from "../../../enums/user";
@@ -14,6 +14,10 @@ import stripe from "../../../config/stripe";
 import { ServiceManagement } from "../servicemanagement/servicemanagement.model";
 import { Subscription } from "../subscription/subscription.model";
 import { Plan } from "../plan/plan.model";
+import { Wallet } from "../wallet/wallet.model";
+import QueryBuilder from "../../builder/QueryBuilder";
+import { populate } from "dotenv";
+import { Review } from "../review/review.model";
 
 const createUserTakeServiceIntoDB = async (
   payload: IUserTakeService,
@@ -171,7 +175,12 @@ const updateUserTakeServiceIntoDB = async (
   if (isExist?.isBooked === true) {
     throw new ApiError(StatusCodes.NOT_FOUND, "Service already booked !");
   }
+  const userData = await User.findById(user.id);
+  if(userData?.status== "inactive"){
+    throw new ApiError(StatusCodes.FORBIDDEN, "you account is inactive");
+  }
   payload.artiestId = user.id as any;
+  payload.artist_book_date = new Date()
   const result = await UserTakeService.findOneAndUpdate({ _id: id }, payload, {
     new: true,
   });
@@ -224,6 +233,7 @@ const updateUserTakeServiceIntoDB = async (
   return result;
 };
 
+// its after stripe payment
 const bookOrder = async (payload:IUserTakeService)=>{
   const result = await UserTakeService.create(payload);
   if (!result) {
@@ -246,7 +256,6 @@ const bookOrder = async (payload:IUserTakeService)=>{
         provider.latitude,
         Number(provider.longitude)
       );
-      console.log(distance);
       
       return distance <= 50;
     }
@@ -277,7 +286,7 @@ const bookOrder = async (payload:IUserTakeService)=>{
 
 // cacel order
 
-const cancelOrder = async (orderId:string,user:JwtPayload)=>{
+const cancelOrder = async (orderId:string,user:JwtPayload,resion?:string)=>{
   const order = await UserTakeService.findById(orderId);
   if (!order) {
     throw new ApiError(StatusCodes.NOT_FOUND, "Order not found");
@@ -287,22 +296,227 @@ const cancelOrder = async (orderId:string,user:JwtPayload)=>{
     throw new ApiError(StatusCodes.BAD_REQUEST, "Order is not cancellable");
   }
 
-  if(order.userId.toString() !== user.id){
-    throw new ApiError(StatusCodes.BAD_REQUEST, "You are not authorized to cancel this order");
+  if(user.role == USER_ROLES.ARTIST){
+    const orderTime = new Date(order.artist_book_date!);
+    const currentTime = new Date();
+    const timeDifference = currentTime.getTime() - orderTime.getTime();
+    const minutesDifference = Math.floor(timeDifference / (1000 * 60));
+    const  hoursDifference = Math.floor(minutesDifference / 60);
+    let status = "low"
+    if(hoursDifference < 24){
+      status = "high"
+    }
+    await stripe.refunds.create({
+      payment_intent: order.payment_intent,
+      amount:order.price
+    });
+    await UserTakeService.updateOne({_id:orderId},{status:'cancelled',cancelled_by:'artist',cancelled_reason:resion,cancel_status:status});
+    const high_order = await UserTakeService.countDocuments({cancel_status:'high',providerId:user.id});
+    if(high_order >= 5){
+      await User.findOneAndUpdate({_id:user.id},{isActive:false,status:'inactive'});
+    }
+    return {
+      message: "Order cancelled and refunded successfully",
+    }
+
   }
+
+  
   const temp:any = order;
+  if(!order.artist_book_date){
+    await stripe.refunds.create({
+      payment_intent: order.payment_intent,
+      amount:order.price
+    });
+    await UserTakeService.updateOne({_id:orderId},{status:'cancelled'});
+    return {
+      message: "Order cancelled and refunded successfully with 0% cost",
+    }
+  }
   const orderTime = new Date(temp.createdAt);
-  const currentTime = new Date();
+  const currentTime = new Date(temp.artist_book_date);
   const timeDifference = currentTime.getTime() - orderTime.getTime();
   const minutesDifference = Math.floor(timeDifference / (1000 * 60));
   const hoursDifference = Math.floor(minutesDifference / 60);
   let cost = 0;
-  if(hoursDifference<=24){
+  if(hoursDifference>24){
     cost = 0
   }
+  else if (hoursDifference>4 && hoursDifference<=24){
+    cost = 25
+  }
+  else if (hoursDifference>0 && hoursDifference<=4){
+    cost = 50
+  }
+  else{
+    cost = 50
+  }
+
+  const refund_amount = order.price! - (order.price! * (cost / 100));
+  await stripe.refunds.create({
+    payment_intent: order.payment_intent,
+    amount: refund_amount,
+  });
+  await UserTakeService.updateOne({_id:orderId},{status:'cancelled',cancelled_by:"user"});
+
+  return {
+    message: "Order cancelled and refunded successfully",
+  }
+
+}
+
+const payoutOrderInDB =async (orderId:string)=>{
+  const order = await UserTakeService.findById(orderId)
+  if (!order) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "Order not found");
+  }
+  if(order.status != 'processing'){
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Order is not payable");
+  }
+  const subscription = await Subscription.findOne({
+    user: order.artiestId,
+    status: "active",
+  }).populate("package");
+
+  const basicPackage = await Plan.findOne({
+    name: "Ah Basic",
+    for: USER_ROLES.ARTIST,
+  });
+
+  const packageData: any = subscription?.package;
+  const cost = packageData?.price_offer ?? basicPackage?.price_offer ?? 8;
+
+  const amount = order.price - (order.price * cost) / 100;
+
+  await Wallet.findOneAndUpdate(
+    { user: order.artiestId },
+    { $inc: { balance: amount } },
+  );
+  await UserTakeService.updateOne({_id:orderId},{status:'completed'});
+  return {
+    message: "Order completed and payout successfully",
+  };
+}
+
+
+const getAllBookingsFromDB = async (user:JwtPayload,query:Record<string,any>)=>{
+
+  const result = new QueryBuilder(UserTakeService.find([USER_ROLES.ADMIN,USER_ROLES.SUPER_ADMIN].includes(user.role)?{}:{
+    $or:[
+      {
+        userId:user.id
+      },
+      {
+        artiestId:user.id
+      }
+    ]
+  }),query).sort().filter().paginate()
+  const paginationInfo = await result.getPaginationInfo()
+  const data = await result.modelQuery.populate([
+    {
+      path:"serviceId",
+      select:['name','category','subCategory'],
+      populate:[
+        {
+          path:"category",
+          select:['name']
+        },
+        {
+          path:"subCategory",
+          select:['name']
+        }
+      ]
+    },
+    {
+      path:"userId",
+      select:['name','email','phone','profileImage','isActive','status','subscription'],
+      populate:[
+        {
+          path:"subscription",
+          select:['package','status'],
+          populate:[
+            {
+              path:"package",
+              select:['name','price','price_offer']
+            }
+          ]
+        }
+      ]
+    },
+    {
+      path:"artiestId",
+      select:['name','email','phone','profileImage','isActive','status','subscription'],
+      populate:[
+        {
+          path:"subscription",
+          select:['package','status'],
+          populate:[
+            {
+              path:"package",
+              select:['name','price','price_offer']
+            }
+          ]
+        }
+      ]
+    }
+  ]).lean().exec()
+  return {
+    paginationInfo,
+    data
+  }
+}
+
+const paymentOverview = async ()=>{
+  const today = new Date().toISOString().slice(0, 10);
+  let totalErning = 0;
+  let totalErningToday = 0;
+
+  let totalCommission = 0;
+  let totalCommissionToday = 0;
+
+  let totalTips = 0;
+  let totalTipsToday = 0;
+
+  const orders = await UserTakeService.find({}).lean()
+
+  orders.forEach((order:any) => {
+    console.log(order);
+    
+    if(order.status != 'cancelled'){
+      totalErning += order.price
+      if(order.createdAt.toISOString().slice(0, 10) == today){
+        totalErningToday += order.price
+      }
+    }
+    totalCommission += (order.app_fee||0)
+    if(order.createdAt.toISOString().slice(0, 10) == today){
+      totalCommissionToday += (order.app_fee||0)
+    }
+  })
+
+  const tips = await Review.find({}).lean()
+  tips.forEach((tip:any) => {
+    totalTips += (tip.tip||0)
+    if(tip.createdAt.toISOString().slice(0, 10) == today){
+      totalTipsToday += (tip.tip||0)
+    }
+    })
+    return {
+      earning:{
+        total:totalErning,
+        today:totalErningToday
+      },
+      commission:{
+        total:totalCommission,
+        today:totalCommissionToday
+      },
+      tips:{
+        total:totalTips,
+        today:totalTipsToday
+      }
+    }
+
   
-
-
 }
 
 export const UserTakeServiceServices = {
@@ -311,5 +525,9 @@ export const UserTakeServiceServices = {
   updateUserTakeServiceIntoDB,
   // * for artist all services in map
   getAllServiceAsArtistFromDB,
-  bookOrder
+  bookOrder,
+  cancelOrder,
+  payoutOrderInDB,
+  getAllBookingsFromDB,
+  paymentOverview,
 };

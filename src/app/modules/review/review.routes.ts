@@ -12,8 +12,8 @@ router.post("/",
     async (req: Request, res: Response, next: NextFunction) => {
         try {
             const {rating, ...othersData } = req.body;
-
-            req.body = { ...othersData, customer: req.user.id, rating: Number(rating)};
+            const user:any  = req.user;
+            req.body = { ...othersData, user: user.id, rating: Number(rating)};
             next();
 
         } catch (error) {

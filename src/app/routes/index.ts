@@ -11,6 +11,7 @@ import { PlanRoutes } from "../modules/plan/plan.route";
 import { SubscriptionRoutes } from "../modules/subscription/subscription.routes";
 import { ReferralRoutes } from "../modules/referral/referral.route";
 import { WalletRoutes } from "../modules/wallet/wallet.route";
+import { ReviewRoutes } from "../modules/review/review.routes";
 const router = express.Router();
 
 const apiRoutes = [
@@ -26,6 +27,7 @@ const apiRoutes = [
   { path: "/referral", route: ReferralRoutes },
   { path: "/notification", route: NotificationRoutes },
   { path: "/wallet", route: WalletRoutes },
+  {path:"/review",route:ReviewRoutes}
 ];
 
 apiRoutes.forEach((route) => router.use(route.path, route.route));

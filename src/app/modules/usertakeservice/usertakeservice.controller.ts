@@ -9,7 +9,7 @@ const createUserTakeService = catchAsync(
 
     const result = await UserTakeServiceServices.createUserTakeServiceIntoDB(
       userTakeServiceData,
-      req.user as string
+      req.user!
     );
     sendResponse(res, {
       statusCode: 200,
@@ -67,9 +67,61 @@ const getAllServiceForArtist = catchAsync(
   }
 );
 
+const cancel_order = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const {reason} = req.body;
+  const result = await UserTakeServiceServices.cancelOrder(id,req.user!,reason);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "UserTakeService updated successfully",
+    data: result,
+  });
+});
+
+
+const payoutOrder = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const result = await UserTakeServiceServices.payoutOrderInDB(id);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "UserTakeService updated successfully",
+    data: result,
+  });
+});
+
+const getAllBookings = catchAsync(async (req: Request, res: Response) => {
+  const user = req.user;
+  const query = req.query;
+  const result = await UserTakeServiceServices.getAllBookingsFromDB(user!, query);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "UserTakeService fetched successfully",
+    data: result.data,
+    pagination: result.paginationInfo
+  });
+});
+
+const getOverview = catchAsync(async (req: Request, res: Response) => {
+  const user = req.user;
+  const result = await UserTakeServiceServices.paymentOverview();
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "UserTakeService fetched successfully",
+    data: result,
+  });
+});
+
 export const UserTakeServiceController = {
   createUserTakeService,
   getSingleService,
   updateUserTakeService,
-  getAllServiceForArtist
+  getAllServiceForArtist,
+  cancel_order,
+  payoutOrder,
+  getAllBookings,
+  getOverview,
 };
