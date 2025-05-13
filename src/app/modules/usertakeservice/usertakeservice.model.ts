@@ -37,10 +37,14 @@ const userTakeServiceSchema = new Schema<IUserTakeService>(
       type: Schema.Types.ObjectId,
       ref: "User",
     },
-    isBooked:{
-      type:Boolean,
-      default:false
-    }
+    isBooked: {
+      type: Boolean,
+      default: false,
+    },
+    address: {
+      type: String,
+      required: true,
+    },
   },
   {
     timestamps: true,
