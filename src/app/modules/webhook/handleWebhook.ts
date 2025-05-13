@@ -13,8 +13,12 @@ export const handleWebHook =async (req:Request, res:Response) => {
     const event = stripe.webhooks.constructEvent(req.body,sig!,webhookSecret!);
     switch(event.type){
         case 'checkout.session.completed':
+            if(event.data.object.mode!='subscription'){
             const payload = JSON.parse(event.data.object.metadata?.data!)
-            await UserTakeServiceServices.bookOrder(payload)
+            await UserTakeServiceServices.bookOrder({...payload,payment_intent:event.data.object.payment_intent})
+            }
+            
+
             break;
         case 'customer.subscription.created':
             await handleSubscriptionCreated(event.data.object)

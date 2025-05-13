@@ -9,7 +9,7 @@ const serviceSchema = new Schema<ICategory>(
       unique: true,
     },
     image: {
-      type: String,
+      type: [String],
       required: true
     },
   },

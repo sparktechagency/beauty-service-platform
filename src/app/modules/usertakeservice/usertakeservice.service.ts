@@ -12,6 +12,8 @@ import { number } from "zod";
 import { locationHelper } from "../../../helpers/locationHelper";
 import stripe from "../../../config/stripe";
 import { ServiceManagement } from "../servicemanagement/servicemanagement.model";
+import { Subscription } from "../subscription/subscription.model";
+import { Plan } from "../plan/plan.model";
 
 const createUserTakeServiceIntoDB = async (
   payload: IUserTakeService,
@@ -20,12 +22,38 @@ const createUserTakeServiceIntoDB = async (
   if (!userId) {
     throw new ApiError(StatusCodes.UNAUTHORIZED, "Unauthorized access");
   }
+
+  const userData = await User.findById(userId.id);
+  
   const data = {
     ...payload,
     userId: new Types.ObjectId(userId.id),
   };
 
-  const userData = await User.findById(userId.id);
+  const subscription = await Subscription.findOne({
+    user: userId.id,
+    status: "active",
+  });
+
+  let fee = 0;
+  if (!subscription || subscription.price === 0) {
+    fee = 10
+  }
+
+  if(subscription){
+  const plan = await Plan.findOne({
+    _id: subscription?.package,
+  });
+
+ if(plan?.name.toLowerCase().includes('glow')){
+  fee=5
+ }
+ else if(plan?.name.toLowerCase().includes('luxe')){
+  fee=0
+ }
+}
+payload.app_fee =payload.price*(fee/100)
+payload.total_amount = payload.price + payload.app_fee;
 
   const service = await ServiceManagement.findById(payload.serviceId);
 
@@ -37,7 +65,7 @@ const createUserTakeServiceIntoDB = async (
           product_data: {
             name: service?.name||"demo",
           },
-          unit_amount: payload.price * 100,
+          unit_amount: payload.total_amount* 100,
         },
         quantity: 1,
       },
@@ -48,7 +76,7 @@ const createUserTakeServiceIntoDB = async (
     success_url: `https://www.your.com/user/payment-success`,
     cancel_url: `https://www.your.com/user/payment-cancel`,
     metadata:{
-      data:JSON.stringify(data)
+      data:JSON.stringify({...payload,userId:userId.id})
     }
   });
 
@@ -56,7 +84,7 @@ const createUserTakeServiceIntoDB = async (
 return session.url
 };
 
-const nearByOrderByLatitudeAndLongitude = async (
+export const nearByOrderByLatitudeAndLongitude = async (
   latitude: number,
   longitude: number
 ) => {
@@ -246,6 +274,38 @@ const bookOrder = async (payload:IUserTakeService)=>{
     }
     return result;
 }
+
+// cacel order
+
+const cancelOrder = async (orderId:string,user:JwtPayload)=>{
+  const order = await UserTakeService.findById(orderId);
+  if (!order) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "Order not found");
+  }
+
+  if(['completed','cancelled'].includes(order.status)){
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Order is not cancellable");
+  }
+
+  if(order.userId.toString() !== user.id){
+    throw new ApiError(StatusCodes.BAD_REQUEST, "You are not authorized to cancel this order");
+  }
+  const temp:any = order;
+  const orderTime = new Date(temp.createdAt);
+  const currentTime = new Date();
+  const timeDifference = currentTime.getTime() - orderTime.getTime();
+  const minutesDifference = Math.floor(timeDifference / (1000 * 60));
+  const hoursDifference = Math.floor(minutesDifference / 60);
+  let cost = 0;
+  if(hoursDifference<=24){
+    cost = 0
+  }
+  
+
+
+}
+
+
 
 // TODO: Need to create another api for isActive or not a Artist
 

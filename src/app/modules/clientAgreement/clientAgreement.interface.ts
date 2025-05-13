@@ -1,3 +1,5 @@
 export type IClientAgreement = {
-    name: string;
+    content: string;
+    type:"agreement"|"responsibility"
+    for: "user"|"artist"
   }
