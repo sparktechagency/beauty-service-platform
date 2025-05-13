@@ -15,5 +15,5 @@ export type IUserTakeService = {
   app_fee?:number,
   total_amount?:number,
   payment_intent: string;
-  address:string
+  address:string;
 };
