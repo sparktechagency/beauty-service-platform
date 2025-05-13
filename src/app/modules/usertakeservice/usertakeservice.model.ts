@@ -37,24 +37,28 @@ const userTakeServiceSchema = new Schema<IUserTakeService>(
       type: Schema.Types.ObjectId,
       ref: "User",
     },
-    isBooked:{
-      type:Boolean,
-      default:false
+    isBooked: {
+      type: Boolean,
+      default: false,
     },
-    price:{
-      type:Number,
+    price: {
+      type: Number,
     },
-    addOns:{
-      type:[String]
+    addOns: {
+      type: [String],
     },
-    app_fee:{
-      type:Number
+    app_fee: {
+      type: Number,
     },
-    total_amount:{
-      type:Number
+    total_amount: {
+      type: Number,
     },
-    payment_intent:{
-      type:String
+    payment_intent: {
+      type: String,
+    },
+    address: {
+      type: String,
+      required: true,
     },
     artist_book_date:{
       type:Date

@@ -20,6 +20,5 @@ export type IUserTakeService = {
   cancelled_reason?: string;
   cancel_status?:"low"|"high",
   trxId?:string,
-  
-
+  address:string
 };

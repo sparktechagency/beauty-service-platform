@@ -25,6 +25,12 @@ router.post(
 );
 
 router.post(
+    '/verify-email',
+    validateRequest(AuthValidation.createVerifyEmailZodSchema),
+    AuthController.verifyEmail
+  );
+
+router.post(
     '/resend-otp',
     AuthController.resendVerificationEmail
 );

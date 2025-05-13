@@ -519,10 +519,6 @@ const paymentOverview = async ()=>{
   
 }
 
-
-
-// TODO: Need to create another api for isActive or not a Artist
-
 export const UserTakeServiceServices = {
   createUserTakeServiceIntoDB,
   getSingleUserService,
