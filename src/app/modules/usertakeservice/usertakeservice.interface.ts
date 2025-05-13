@@ -6,7 +6,7 @@ export type IUserTakeService = {
   latitude: number;
   longitude: number;
   additionalInfo?: string;
-  status: "pending" | "inProgress" | "completed" | "cancelled";
+  status: "pending" | "inProgress"| "processing" | "completed" | "cancelled";
   providerId?: Types.ObjectId;
   isBooked?: boolean;
   artiestId?: Types.ObjectId;
@@ -15,4 +15,11 @@ export type IUserTakeService = {
   app_fee?:number,
   total_amount?:number,
   payment_intent: string;
+  artist_book_date?: Date;
+  cancelled_by?: "user" | "artist"|"admin",
+  cancelled_reason?: string;
+  cancel_status?:"low"|"high",
+  trxId?:string,
+  
+
 };

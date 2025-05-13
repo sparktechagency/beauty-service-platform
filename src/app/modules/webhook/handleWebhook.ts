@@ -6,6 +6,7 @@ import Stripe from "stripe";
 import { User } from "../user/user.model";
 import { UserTakeService } from "../usertakeservice/usertakeservice.model";
 import { UserTakeServiceServices } from "../usertakeservice/usertakeservice.service";
+import { ReviewService } from "../review/review.service";
 
 export const handleWebHook =async (req:Request, res:Response) => {
     const sig = req.headers["stripe-signature"];
@@ -14,8 +15,15 @@ export const handleWebHook =async (req:Request, res:Response) => {
     switch(event.type){
         case 'checkout.session.completed':
             if(event.data.object.mode!='subscription'){
-            const payload = JSON.parse(event.data.object.metadata?.data!)
-            await UserTakeServiceServices.bookOrder({...payload,payment_intent:event.data.object.payment_intent})
+            const metadata = JSON.parse(event.data.object?.metadata?.data!)
+
+            if(metadata.tip){
+                await ReviewService.handleTip(metadata)
+            }
+            else{
+                const payload = JSON.parse(event.data.object.metadata?.data!)
+                await UserTakeServiceServices.bookOrder({...payload,payment_intent:event.data.object.payment_intent})
+            }
             }
             
 
