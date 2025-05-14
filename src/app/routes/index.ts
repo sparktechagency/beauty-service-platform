@@ -12,6 +12,7 @@ import { SubscriptionRoutes } from "../modules/subscription/subscription.routes"
 import { ReferralRoutes } from "../modules/referral/referral.route";
 import { WalletRoutes } from "../modules/wallet/wallet.route";
 import { ReviewRoutes } from "../modules/review/review.routes";
+import { DisclaimerRoutes } from "../modules/disclaimer/disclaimer.route";
 const router = express.Router();
 
 const apiRoutes = [
@@ -27,7 +28,8 @@ const apiRoutes = [
   { path: "/referral", route: ReferralRoutes },
   { path: "/notification", route: NotificationRoutes },
   { path: "/wallet", route: WalletRoutes },
-  {path:"/review",route:ReviewRoutes}
+  {path:"/review",route:ReviewRoutes},
+  {path:"/disclaimer",route:DisclaimerRoutes},
 ];
 
 apiRoutes.forEach((route) => router.use(route.path, route.route));
