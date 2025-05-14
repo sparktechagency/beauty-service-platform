@@ -15,7 +15,7 @@ const createPlan = catchAsync(async (req: Request, res: Response) => {
 
 const getPlans = catchAsync(async (req: Request, res: Response) => {
     const user = req.user;
-  const result = await PlanService.getPlansFromDB(req.query,user!);
+  const result = await PlanService.getPlansFromDB(req.query!);
   sendResponse(res, {
     statusCode: 200,
     success: true,

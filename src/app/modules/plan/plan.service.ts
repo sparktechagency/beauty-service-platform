@@ -34,8 +34,8 @@ const createPlanToDB = async (payload: IPlan): Promise<IPlan | null> => {
   return plan;
 };
 
-const getPlansFromDB = async (query: Record<string, any>,user:JwtPayload) => {
-  const result = new QueryBuilder(Plan.find([USER_ROLES.ADMIN,USER_ROLES.SUPER_ADMIN].includes(user.role) ? {status:{$ne:'delete'}} : {for:user.role, status:{$ne:'delete'}}), query).filter()
+const getPlansFromDB = async (query: Record<string, any>) => {
+  const result = new QueryBuilder(Plan.find({status:{$ne:'delete'}}), query).filter()
   return await result.modelQuery.sort({price:1}).lean();
 };
 

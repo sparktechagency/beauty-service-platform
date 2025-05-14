@@ -9,7 +9,7 @@ const router = express.Router();
 
 router.route('/')
 .post(auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN), validateRequest(PlanValidation.createPlanZodSchema), PlanController.createPlan)
-.get(auth(), PlanController.getPlans)
+.get( PlanController.getPlans)
 
 router.route('/:id')
 .get(auth(), PlanController.getPlan)
