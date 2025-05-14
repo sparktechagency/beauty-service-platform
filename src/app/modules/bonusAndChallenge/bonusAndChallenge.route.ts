@@ -3,31 +3,31 @@ import { BonusAndChallengeController } from "./bonusAndChallenge.controller";
 import auth from "../../middlewares/auth";
 import { USER_ROLES } from "../../../enums/user";
 
-const route = Router();
-route.post(
+const router = Router();
+router.post(
   "/",
   auth(USER_ROLES.SUPER_ADMIN),
   BonusAndChallengeController.createBonusAndChallenge
 );
-route.get(
+router.get(
   "/",
   auth(USER_ROLES.SUPER_ADMIN),
   BonusAndChallengeController.getAllBonusAndChallenge
 );
-route.get(
+router.get(
   "/:id",
   auth(USER_ROLES.SUPER_ADMIN),
   BonusAndChallengeController.getSingleBonusAndChallenge
 );
-route.patch(
+router.patch(
   "/:id",
   auth(USER_ROLES.SUPER_ADMIN),
   BonusAndChallengeController.updateBonusAndChallenge
 );
-route.delete(
+router.delete(
   "/:id",
   auth(USER_ROLES.SUPER_ADMIN),
   BonusAndChallengeController.deleteBonusAndChallenge
 );
 
-export const BonusAndChallengeRoute = route;
+export const BonusAndChallengeRoute = router;
