@@ -26,6 +26,20 @@ const getAllSubCategory = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+
+//  ! it's for category to service call function
+const getAllServiceFromDB = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const result = await SubCategoryServices.getAServiceFromDB(id, req.query);
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "SubCategory retrieved successfully",
+    meta: result.meta,
+    data: result.data,
+  });
+});
+
 const getSingleSubCategory = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const result = await SubCategoryServices.getSingleSubCategoryFromDB(id);
@@ -66,4 +80,5 @@ export const SubCategoryController = {
   getSingleSubCategory,
   updateSubCategory,
   deleteSubCategory,
+  getAllServiceFromDB,
 };

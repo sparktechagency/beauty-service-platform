@@ -9,22 +9,23 @@ import { emailTemplate } from "../../../shared/emailTemplate";
 import { emailHelper } from "../../../helpers/emailHelper";
 import unlinkFile from "../../../shared/unlinkFile";
 import stripe from "../../../config/stripe";
-import QueryBuilder from "../../builder/QueryBuilder";
+// import QueryBuilder from "../../builder/QueryBuilder";
 import { ReferralService } from "../referral/referral.service";
 import { WalletService } from "../wallet/wallet.service";
+import QueryBuilder from "../../builder/QueryBuilder";
 
 const createUserToDB = async (payload: Partial<IUser>): Promise<IUser> => {
   //set role
   const createUser = await User.create(payload);
+  
   if (!createUser) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to create user");
   }
-  if(createUser.role==USER_ROLES.ARTIST){
+  if (createUser.role == USER_ROLES.ARTIST) {
     const wallet = await WalletService.createWallet(createUser._id);
   }
 
-
-  if (createUser.role==USER_ROLES.ARTIST && payload.referralCode){
+  if (createUser.role == USER_ROLES.ARTIST && payload.referralCode) {
     await ReferralService.acceptReferral(createUser._id, payload.referralCode);
   }
 
@@ -50,7 +51,6 @@ const createUserToDB = async (payload: Partial<IUser>): Promise<IUser> => {
     { new: true }
   );
 
-
   return createUser;
 };
 
@@ -66,6 +66,8 @@ const getUserProfileFromDB = async (
   return isExistUser;
 };
 
+
+
 const updateProfileToDB = async (
   user: JwtPayload,
   payload: Partial<IUser>
@@ -76,15 +78,9 @@ const updateProfileToDB = async (
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
   }
 
-  //unlink file here
-  if (payload.profile) {
-    unlinkFile(isExistUser.profile);
-  }
-
   const updateDoc = await User.findOneAndUpdate({ _id: id }, payload, {
     new: true,
   });
-
   return updateDoc;
 };
 
@@ -124,74 +120,91 @@ const verifyOTPIntoDB = async (
 
   return true;
 };
-const createStripeAccoutToDB = async (user:JwtPayload,stripe_id:string="")=>{
-    const isExistUser = await User.findById(user.id);
-    
-    if (!isExistUser) {
-        throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
-    }
-    if (isExistUser.accountInfo?.stripeAccountId) {
-        throw new ApiError(StatusCodes.BAD_REQUEST, "Account already exist!");
-    }
-    if (stripe_id) {
-        await User.findOneAndUpdate(
-            { _id: user.id},
-            { $set: { 'accountInfo.stripeAccountId': stripe_id } }
-        );
-        return isExistUser;
-    }
+const createStripeAccoutToDB = async (
+  user: JwtPayload,
+  stripe_id: string = ""
+) => {
+  const isExistUser = await User.findById(user.id);
 
-    const account = await stripe.accounts.create({
-        type: 'express',
-        country: 'US',
-        email: user.email,
-        capabilities: {
-            card_payments: { requested: true },
-            transfers: { requested: true },
-            
-        },
-        business_type: 'individual',
-        individual: {
-            first_name: isExistUser.name,
-            email: isExistUser.email,
-        },
-        business_profile:{
-                mcc: "7299",
-                product_description: "Freelance services on demand",
-                url: "https://yourplatform.com",
-        }
-    });
-    
-    
-    const accountLink = await stripe.accountLinks.create({
-        account: account.id,
-        refresh_url: 'https://your-website.com/reauth',
-        return_url: 'https://your-website.com/dashboard',
-        type: 'account_onboarding',
-      });
+  if (!isExistUser) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+  if (isExistUser.accountInfo?.stripeAccountId) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Account already exist!");
+  }
+  if (stripe_id) {
     await User.findOneAndUpdate(
-        { _id: user.id },
-        { accountInfo:{
-            stripeAccountId: account.id,
-            stripeAccountLink: accountLink.url,
-        } } 
+      { _id: user.id },
+      { $set: { "accountInfo.stripeAccountId": stripe_id } }
     );
-    if (!account) {
-        throw new ApiError(StatusCodes.BAD_REQUEST, 'Failed to create account');
-    }
-    return {
-        accountLink,
-    };
-}
+    return isExistUser;
+  }
 
-const getUsersFromDB = async (query:Record<string, any>) => {
-    const result = new QueryBuilder(User.find({$or:[{ role: USER_ROLES.USER },{ role: USER_ROLES.ARTIST },]},{password:0,accountInfo:0}),query).search(['name','email','contact','location']).filter().sort().paginate()
-    const users = await result.modelQuery.populate(['subscription']).select('-password ').lean().exec()
-    const pagination = await result.getPaginationInfo();
-    return {
-        users,
-        pagination,
+  const account = await stripe.accounts.create({
+    type: "express",
+    country: "US",
+    email: user.email,
+    capabilities: {
+      card_payments: { requested: true },
+      transfers: { requested: true },
+    },
+    business_type: "individual",
+    individual: {
+      first_name: isExistUser.name,
+      email: isExistUser.email,
+    },
+    business_profile: {
+      mcc: "7299",
+      product_description: "Freelance services on demand",
+      url: "https://yourplatform.com",
+    },
+  });
+
+  const accountLink = await stripe.accountLinks.create({
+    account: account.id,
+    refresh_url: "https://your-website.com/reauth",
+    return_url: "https://your-website.com/dashboard",
+    type: "account_onboarding",
+  });
+  await User.findOneAndUpdate(
+    { _id: user.id },
+    {
+      accountInfo: {
+        stripeAccountId: account.id,
+        stripeAccountLink: accountLink.url,
+      },
     }
+  );
+  if (!account) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to create account");
+  }
+  return {
+    accountLink,
+  };
+};
+
+const getUsersFromDB = async (query: Record<string, any>) => {
+  const result = new QueryBuilder(
+    User.find(
+      { $or: [{ role: USER_ROLES.USER }, { role: USER_ROLES.ARTIST }] },
+      { password: 0, accountInfo: 0 }
+    ),
+    query
+  )
+    .search(["name", "email", "contact", "location"])
+    .filter()
+    .sort()
+    .paginate();
+  const users = await result.modelQuery
+    .populate(["subscription"])
+    .select("-password ")
+    .lean()
+    .exec();
+  const pagination = await result.getPaginationInfo();
+  return {
+    users,
+    pagination,
+  };
 };
 
 export const UserService = {

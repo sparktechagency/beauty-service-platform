@@ -1,85 +1,81 @@
-import { NextFunction, Request, Response } from 'express';
-import { StatusCodes } from 'http-status-codes';
-import { UserService } from './user.service';
-import catchAsync from '../../../shared/catchAsync';
-import sendResponse from '../../../shared/sendResponse';
+import { NextFunction, Request, Response } from "express";
+import { StatusCodes } from "http-status-codes";
+import { UserService } from "./user.service";
+import catchAsync from "../../../shared/catchAsync";
+import sendResponse from "../../../shared/sendResponse";
 
 // register user
-const createUser = catchAsync( async (req: Request, res: Response, next: NextFunction) => {
+const createUser = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
     const { ...userData } = req.body;
     const result = await UserService.createUserToDB(userData);
-
+    console.log("result", result);
     sendResponse(res, {
-        success: true,
-        statusCode: StatusCodes.OK,
-        message: 'Your account has been successfully created. Verify Your Email By OTP. Check your email',
-    })
-});
-
-
+      success: true,
+      statusCode: StatusCodes.OK,
+      message:
+        "Your account has been successfully created. Verify Your Email By OTP. Check your email",
+    });
+  }
+);
 
 // retrieved user profile
 const getUserProfile = catchAsync(async (req: Request, res: Response) => {
-    const user = req.user;
-    const result = await UserService.getUserProfileFromDB(user!);
+  const user: any = req.user;
+  const result = await UserService.getUserProfileFromDB(user);
 
-    sendResponse(res, {
-        success: true,
-        statusCode: StatusCodes.OK,
-        message: 'Profile data retrieved successfully',
-        data: result
-    });
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: "Profile data retrieved successfully",
+    data: result,
+  });
 });
 
 //update profile
-const updateProfile = catchAsync( async (req: Request, res: Response, next: NextFunction) => {
+const updateProfile = catchAsync(
+  async (req: Request, res: Response) => {
     const user = req.user;
-    
-    let profile;
-    if (req.files && 'image' in req.files && req.files.image[0]) {
-        profile = `/images/${req.files.image[0].filename}`;
-    }
-
-    const data = {
-        profile,
-        ...req.body,
-    };
-    const result = await UserService.updateProfileToDB(user!, data);
-
+    const result = await UserService.updateProfileToDB(user!, req.body);
     sendResponse(res, {
-        success: true,
-        statusCode: StatusCodes.OK,
-        message: 'Profile updated successfully',
-        data: result
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: "Profile updated successfully",
+      data: result,
     });
-});
+  }
+);
 
-const createStripeAccount = catchAsync( async (req: Request, res: Response, next: NextFunction) => {
+const createStripeAccount = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
     const user = req.user;
     const result = await UserService.createStripeAccoutToDB(user!);
     sendResponse(res, {
-        success: true,
-        statusCode: StatusCodes.OK,
-        message: 'Stripe account created successfully',
-        data: result
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: "Stripe account created successfully",
+      data: result,
     });
-})
+  }
+);
 
-const getUsers = catchAsync( async (req: Request, res: Response, next: NextFunction) => {
+const getUsers = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
     const query = req.query;
     const result = await UserService.getUsersFromDB(query);
     sendResponse(res, {
-        success: true,
-        statusCode: StatusCodes.OK,
-        message: 'Users retrieved successfully',
-        data: result
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: "Users retrieved successfully",
+      data: result,
     });
-})
+  }
+);
 
-export const UserController = { 
-    createUser, 
-    getUserProfile, 
-    updateProfile,
-    createStripeAccount,
-    getUsers
+export const UserController = {
+  createUser,
+  getUserProfile,
+  updateProfile,
+  createStripeAccount,
+  getUsers,
 };

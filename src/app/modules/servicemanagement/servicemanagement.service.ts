@@ -24,14 +24,14 @@ const getAllServiceManagementFromDB = async (
     serviceQuery,
     query
   );
-  const searchAbleFields = ["name", "basePrice", "category", "SubCategory"];
+  // const searchAbleFields = ["name", "basePrice", "category", "SubCategory"];
   const selectedFields = { category: "name", subCategory: "name" };
   const resultQuery = queryBuilder
-    .search(searchAbleFields)
+    // .search(searchAbleFields)
     .filter()
     .sort()
     .paginate()
-    .populate(["category", "SubCategory"], selectedFields);
+    .populate(["category", "subCategory"], selectedFields);
   const data = await resultQuery.modelQuery;
   const pagination = await queryBuilder.getPaginationInfo();
   if (!data) {

@@ -105,7 +105,7 @@ const userSchema = new Schema<IUser, UserModal>(
       type: String,
     },
     workImage: {
-      type: String,
+      type: [String],
     },
     accountInfo: {
       type: {

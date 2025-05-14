@@ -50,6 +50,18 @@ router.get(
   SubCategoryController.getAllSubCategory
 );
 
+// * Get all service management base on sub-category
+router.get(
+  "/service-management/:id",
+  auth(
+    USER_ROLES.SUPER_ADMIN,
+    USER_ROLES.ADMIN,
+    USER_ROLES.ARTIST,
+    USER_ROLES.USER
+  ),
+  SubCategoryController.getAllServiceFromDB
+);
+
 // * Get single sub-category
 router.get(
   "/:id",
