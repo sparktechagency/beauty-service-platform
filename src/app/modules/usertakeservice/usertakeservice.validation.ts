@@ -17,7 +17,14 @@ const createServiceZodSchema = z.object({
     providerId: z.string({
       required_error: "providerId is required",
     }),
-    addOns: z.array(z.string()).optional(),
+    addOns: z.array(z.object({
+      name: z.string({
+        required_error: "name is required",
+      }).optional(),
+      price: z.number({
+        required_error: "price is required",
+      }).optional(),
+    })).optional(),
     additionalInfo: z.string().optional(),
   }),
 });

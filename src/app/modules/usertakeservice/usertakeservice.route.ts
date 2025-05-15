@@ -41,9 +41,14 @@ router.patch(
   UserTakeServiceController.updateUserTakeService
 );
 
-router.route("/cancel/:id").patch(
+router.route("/cancel/:id").delete(
   auth(USER_ROLES.ARTIST),
   UserTakeServiceController.cancel_order
+);
+
+router.route("/confirm/:id").patch(
+  auth(USER_ROLES.USER),
+  UserTakeServiceController.confirmOrder
 );
 
 router.route("/payout/:id").patch(

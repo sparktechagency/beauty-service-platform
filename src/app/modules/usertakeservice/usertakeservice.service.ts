@@ -2,7 +2,7 @@ import { StatusCodes } from "http-status-codes";
 import ApiError from "../../../errors/ApiErrors";
 import { IUserTakeService } from "./usertakeservice.interface";
 import { UserTakeService } from "./usertakeservice.model";
-import { Query, Types } from "mongoose";
+import { ObjectId, Query, Types } from "mongoose";
 import { sendNotifications } from "../../../helpers/notificationsHelper";
 import { User } from "../user/user.model";
 import { USER_ROLES } from "../../../enums/user";
@@ -35,6 +35,18 @@ const createUserTakeServiceIntoDB = async (
     userId: new Types.ObjectId(userId.id),
   };
 
+  return await UserTakeService.create(data);
+
+};
+
+const confirmOrderToDB = async (
+  orderId:ObjectId,
+  userId:JwtPayload
+)=>{
+  const order = await UserTakeService.findById(orderId);
+  if (!order) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "Order not found");
+  }
   const subscription = await Subscription.findOne({
     user: userId.id,
     status: "active",
@@ -57,10 +69,10 @@ const createUserTakeServiceIntoDB = async (
   fee=0
  }
 }
-payload.app_fee =payload.price*(fee/100)
-payload.total_amount = payload.price + payload.app_fee;
+order!.app_fee =order.price*(fee/100)
+order.total_amount = order.price + order.app_fee;
 
-  const service = await ServiceManagement.findById(payload.serviceId);
+  const service = await ServiceManagement.findById(order.serviceId);
 
   const session = await stripe.checkout.sessions.create({
     line_items: [
@@ -70,24 +82,24 @@ payload.total_amount = payload.price + payload.app_fee;
           product_data: {
             name: service?.name||"demo",
           },
-          unit_amount: payload.total_amount* 100,
+          unit_amount: order.total_amount* 100,
         },
         quantity: 1,
       },
     ],
-    customer_email:userData?.email,
+    customer_email:userId?.email,
     payment_method_types: ["card"],
     mode: "payment",
     success_url: `https://www.your.com/user/payment-success`,
     cancel_url: `https://www.your.com/user/payment-cancel`,
     metadata:{
-      data:JSON.stringify({...payload,userId:userId.id})
+      data:JSON.stringify({orderId})
     }
   });
 
+  return session.url;
 
-return session.url
-};
+}
 
 export const nearByOrderByLatitudeAndLongitude = async (
   latitude: number,
@@ -169,7 +181,6 @@ const getSingleUserService = async (
 
 const updateUserTakeServiceIntoDB = async (
   id: string,
-  payload: Partial<IUserTakeService>,
   user: JwtPayload
 ): Promise<IUserTakeService | null> => {
   const isExist = await UserTakeService.findOne({ _id: id });
@@ -180,11 +191,9 @@ const updateUserTakeServiceIntoDB = async (
   if(userData?.status== "inactive"){
     throw new ApiError(StatusCodes.FORBIDDEN, "you account is inactive");
   }
-  payload.artiestId = user.id as any;
-  payload.artist_book_date = new Date()
-  const result = await UserTakeService.findOneAndUpdate({ _id: id }, payload, {
-    new: true,
-  });
+  
+  const result = await UserTakeService.findOneAndUpdate({ _id: id }, {artiestId:user.id,artist_book_date:new Date(),isBooked:true}, { new: true });
+
   if (!result) {
     throw new ApiError(StatusCodes.NOT_FOUND, "UserTakeService not found!");
   }
@@ -200,7 +209,7 @@ const updateUserTakeServiceIntoDB = async (
     type: "service-request",
     filePath: "request",
     serviceId: result._id,
-    data: payload,
+    data: result,
   });
 
   const allProviders = await User.find({
@@ -235,8 +244,8 @@ const updateUserTakeServiceIntoDB = async (
 };
 
 // its after stripe payment
-const bookOrder = async (payload:IUserTakeService)=>{
-  const result = await UserTakeService.create(payload);
+const bookOrder = async (payload:ObjectId,payment_intent:string)=>{
+  const result = await UserTakeService.findOne({_id:payload});
   if (!result) {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
@@ -244,16 +253,18 @@ const bookOrder = async (payload:IUserTakeService)=>{
     );
   }
 
+  const updateOrder = await UserTakeService.findOneAndUpdate({_id:payload},{status:"inProgress",payment_intent:payment_intent},{new:true});
+
   const allProviders = await User.find({
     role: USER_ROLES.ARTIST,
     isActive: true,
   });
-  // // 📍 Filter by 5km radius
+  //  📍 Filter by 5km radius
   const nearbyProviders = allProviders.filter((provider) => {
     if (provider.latitude && provider.longitude) {
       const distance = calculateDistanceInKm(
-        payload.latitude,
-        payload.longitude,
+        result.latitude,
+        result.longitude,
         provider.latitude,
         Number(provider.longitude)
       );
@@ -271,18 +282,17 @@ const bookOrder = async (payload:IUserTakeService)=>{
         type: "service-request",
         filePath: "request",
         serviceId: result._id,
-        // @ts-ignore
-        userId: payload.userId,
+        userId: result.userId,
         data: payload,
       });
     }
-    const nearbyOrders = await nearByOrderByLatitudeAndLongitude(payload.latitude, payload.longitude);
+    const nearbyOrders = await nearByOrderByLatitudeAndLongitude(result.latitude, result.longitude);
 
     
     for(const provider of nearbyProviders){
       locationHelper({ receiver: provider._id, data: nearbyOrders });
     }
-    return result;
+    return updateOrder;
 }
 
 // cacel order
@@ -316,6 +326,7 @@ const cancelOrder = async (orderId:string,user:JwtPayload,resion?:string)=>{
     if(high_order >= 5){
       await User.findOneAndUpdate({_id:user.id},{isActive:false,status:'inactive'});
     }
+
     return {
       message: "Order cancelled and refunded successfully",
     }
@@ -564,4 +575,5 @@ export const UserTakeServiceServices = {
   payoutOrderInDB,
   getAllBookingsFromDB,
   paymentOverview,
+  confirmOrderToDB
 };

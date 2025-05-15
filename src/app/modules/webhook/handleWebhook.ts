@@ -22,10 +22,9 @@ export const handleWebHook =async (req:Request, res:Response) => {
             }
             else{
                 const payload = JSON.parse(event.data.object.metadata?.data!)
-                await UserTakeServiceServices.bookOrder({...payload,payment_intent:event.data.object.payment_intent})
+                await UserTakeServiceServices.bookOrder(payload.orderId,event.data.object.payment_intent as string)
             }
             }
-            
 
             break;
         case 'customer.subscription.created':

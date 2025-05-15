@@ -11,7 +11,10 @@ export type IUserTakeService = {
   isBooked?: boolean;
   artiestId?: Types.ObjectId;
   price: number;
-  addOns?:string[],
+  addOns?:{
+    name:string,
+    price:number
+  },
   app_fee?:number,
   total_amount?:number,
   payment_intent: string;

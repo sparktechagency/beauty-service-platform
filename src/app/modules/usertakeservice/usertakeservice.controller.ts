@@ -38,7 +38,6 @@ const updateUserTakeService = catchAsync(
     const { ...userTakeServiceData } = req.body;
     const result = await UserTakeServiceServices.updateUserTakeServiceIntoDB(
       id,
-      userTakeServiceData,
       user!
     );
     sendResponse(res, {
@@ -115,6 +114,18 @@ const getOverview = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const confirmOrder = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const user = req.user;
+  const result = await UserTakeServiceServices.confirmOrderToDB(id as any, user!);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "UserTakeService updated successfully",
+    data: result,
+  });
+});
+
 export const UserTakeServiceController = {
   createUserTakeService,
   getSingleService,
@@ -124,4 +135,5 @@ export const UserTakeServiceController = {
   payoutOrder,
   getAllBookings,
   getOverview,
+  confirmOrder,
 };

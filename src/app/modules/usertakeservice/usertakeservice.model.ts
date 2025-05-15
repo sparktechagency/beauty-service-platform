@@ -45,7 +45,12 @@ const userTakeServiceSchema = new Schema<IUserTakeService>(
       type: Number,
     },
     addOns: {
-      type: [String],
+      type: [{
+        type: {
+          name: String,
+          price: Number,
+        },
+      }],
     },
     app_fee: {
       type: Number,
