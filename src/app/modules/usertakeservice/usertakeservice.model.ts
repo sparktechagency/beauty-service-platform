@@ -76,6 +76,9 @@ const userTakeServiceSchema = new Schema<IUserTakeService>(
     },
     trxId:{
       type:String
+    },
+    artist_app_fee:{
+      type:Number
     }
   },
   {

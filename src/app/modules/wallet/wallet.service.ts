@@ -3,11 +3,13 @@ import { IWallet } from "./wallet.interface";
 import { Wallet } from "./wallet.model";
 import ApiError from "../../../errors/ApiErrors";
 import { Widthdraw } from "./withdraw/withdraw.model";
-import QueryBuilder from "../../builder/QueryBuilder";
+
 import { WITHDRAW_STATUS } from "../../../enums/withdraw";
 import { User } from "../user/user.model";
 import stripe from "../../../config/stripe";
 import crypto from "crypto";
+import QueryBuilder from "../../builder/queryBuilder";
+
 const createWallet = async (user:Types.ObjectId): Promise<IWallet | null> => {
     const isExist = await Wallet.findOne({ user });
     if (isExist) {
@@ -22,7 +24,7 @@ const createWallet = async (user:Types.ObjectId): Promise<IWallet | null> => {
 };
 
 const getWallet = async (user:Types.ObjectId): Promise<IWallet | null> => {
-    const wallet = await Wallet.findOne({ user });
+    let wallet = await Wallet.findOne({ user });
     if (!wallet) {
         const newWallet = await createWallet(user);
         return newWallet;
@@ -30,12 +32,12 @@ const getWallet = async (user:Types.ObjectId): Promise<IWallet | null> => {
     return wallet;
 };
 const updateWallet = async (user:Types.ObjectId, amount:number): Promise<IWallet | null> => {
-    const wallet = await Wallet.findOne({ user });
+    let wallet = await Wallet.findOne({ user });
     if (!wallet) {
-        throw new ApiError(404,"Wallet not found");
+        wallet = await createWallet(user) as any
     }
-    wallet.balance += amount;
-    await wallet.save();
+    wallet!.balance !+= amount;
+    await wallet!.save();
     return wallet;
 };
 

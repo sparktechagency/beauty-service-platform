@@ -9,4 +9,10 @@ const createAdminZodSchema = z.object({
     })
 });
 
-export const UserValidation = { createAdminZodSchema };  
+const createDeletePasswordZodSchema = z.object({
+    body: z.object({
+        password: z.string({ required_error: 'Password is required' }),
+    })
+});
+
+export const UserValidation = { createAdminZodSchema,createDeletePasswordZodSchema };  

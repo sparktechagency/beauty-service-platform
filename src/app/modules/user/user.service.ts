@@ -12,7 +12,8 @@ import stripe from "../../../config/stripe";
 // import QueryBuilder from "../../builder/QueryBuilder";
 import { ReferralService } from "../referral/referral.service";
 import { WalletService } from "../wallet/wallet.service";
-import QueryBuilder from "../../builder/QueryBuilder";
+import QueryBuilder from "../../builder/queryBuilder";
+import { compare } from "bcrypt";
 
 const createUserToDB = async (payload: Partial<IUser>): Promise<IUser> => {
   //set role
@@ -207,6 +208,35 @@ const getUsersFromDB = async (query: Record<string, any>) => {
   };
 };
 
+const deleteAccount = async (user: JwtPayload,password:string) => {
+  const isExistUser = await User.findOne({ _id: user.id }).select("+password");
+  
+
+  if (!isExistUser) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+  if(isExistUser.isDeleted){
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Account already deleted!");
+  }
+  
+  const comonPass = await compare(password, isExistUser.password);
+  if(!comonPass){
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid password!");
+  }
+
+  
+  await User.findByIdAndUpdate(user.id, {
+    $set: {
+      isDeleted: true,
+      isActive: false,
+      isVerified: false,
+    },
+  });
+  return {
+    message: "Account deleted successfully",
+  };
+};
+
 export const UserService = {
   createUserToDB,
   getUserProfileFromDB,
@@ -214,4 +244,5 @@ export const UserService = {
   verifyOTPIntoDB,
   createStripeAccoutToDB,
   getUsersFromDB,
+  deleteAccount,
 };

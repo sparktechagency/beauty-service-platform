@@ -15,9 +15,10 @@ import { ServiceManagement } from "../servicemanagement/servicemanagement.model"
 import { Subscription } from "../subscription/subscription.model";
 import { Plan } from "../plan/plan.model";
 import { Wallet } from "../wallet/wallet.model";
-import QueryBuilder from "../../builder/QueryBuilder";
+import QueryBuilder from "../../builder/queryBuilder";
 import { populate } from "dotenv";
 import { Review } from "../review/review.model";
+import { WalletService } from "../wallet/wallet.service";
 
 const createUserTakeServiceIntoDB = async (
   payload: IUserTakeService,
@@ -392,7 +393,40 @@ const payoutOrderInDB =async (orderId:string)=>{
     { user: order.artiestId },
     { $inc: { balance: amount } },
   );
-  await UserTakeService.updateOne({_id:orderId},{status:'completed'});
+  await UserTakeService.updateOne({_id:orderId},{status:'completed',artist_app_fee:((order.price * cost) / 100)||0});
+
+  //Bonus section after the completion of the order
+  const clienBookings = await UserTakeService.countDocuments({userId:order.userId,status:'completed'});
+  if(clienBookings==1){
+    await WalletService.updateWallet(order.userId,5)
+  }
+  if(clienBookings==5){
+    await WalletService.updateWallet(order.userId,5)
+  }
+
+  const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0, 23, 59, 59, 999);
+
+
+  const monthlyBookings = await UserTakeService.countDocuments({
+    createdAt: { $gte: startOfMonth, $lte: endOfMonth},
+    status:'completed',
+    userId:order.userId
+  });
+
+
+  if(monthlyBookings==3){
+    await WalletService.updateWallet(order.userId,10)
+  }
+
+  const artistBookings = await UserTakeService.countDocuments({
+    status:'completed',
+    artiestId:order.artiestId
+  });
+  if(artistBookings==10){
+    await WalletService.updateWallet(order.artiestId!,10)
+  }
+  
   return {
     message: "Order completed and payout successfully",
   };

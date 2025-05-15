@@ -2,7 +2,7 @@ import { JwtPayload } from "jsonwebtoken";
 import crypto from 'crypto';
 import { Referral } from "./referral.model";
 import { USER_ROLES } from "../../../enums/user";
-import QueryBuilder from "../../builder/QueryBuilder";
+
 import { Types } from "mongoose";
 import { User } from "../user/user.model";
 import ApiError from "../../../errors/ApiErrors";
@@ -11,6 +11,7 @@ import { emailHelper } from "../../../helpers/emailHelper";
 import { emailTemplate } from "../../../shared/emailTemplate";
 import { Wallet } from "../wallet/wallet.model";
 import { WalletService } from "../wallet/wallet.service";
+import QueryBuilder from "../../builder/queryBuilder";
 const createReferral = async (user:JwtPayload)=>{
     const referralCode = crypto.randomBytes(16).toString('hex');
     const userData = await User.findById(user.id)

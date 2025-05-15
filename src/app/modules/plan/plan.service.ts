@@ -1,6 +1,6 @@
 import { JwtPayload } from "jsonwebtoken";
 import stripe from "../../../config/stripe";
-import QueryBuilder from "../../builder/QueryBuilder";
+import QueryBuilder from "../../builder/queryBuilder";
 import { IPlan } from "./plan.interface";
 import { Plan } from "./plan.model";
 import { USER_ROLES } from "../../../enums/user";

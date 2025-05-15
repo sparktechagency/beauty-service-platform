@@ -8,6 +8,7 @@ export type IReview = {
     rating: number;
     tip?: number;
     trxId?: string;
+    createdAt?: Date;
 }
 
 export type ReviewModel = Model<IReview>;

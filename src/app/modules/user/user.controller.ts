@@ -36,6 +36,7 @@ const getUserProfile = catchAsync(async (req: Request, res: Response) => {
 const updateProfile = catchAsync(
   async (req: Request, res: Response) => {
     const user = req.user;
+    
     const result = await UserService.updateProfileToDB(user!, req.body);
     sendResponse(res, {
       success: true,
@@ -72,10 +73,25 @@ const getUsers = catchAsync(
   }
 );
 
+const deleteAccount = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user;
+    const {password} = req.body;
+    const result = await UserService.deleteAccount(user!,password);
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: "Account deleted successfully",
+      data: result,
+    });
+  }
+);
+
 export const UserController = {
   createUser,
   getUserProfile,
   updateProfile,
   createStripeAccount,
   getUsers,
+  deleteAccount
 };

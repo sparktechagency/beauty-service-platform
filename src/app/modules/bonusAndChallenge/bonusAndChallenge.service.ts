@@ -1,7 +1,7 @@
 import { StatusCodes } from "http-status-codes";
 import ApiError from "../../../errors/ApiErrors";
 import { BonusAndChallenge } from "./bonusAndChallenge.model";
-import QueryBuilder from "../../builder/QueryBuilder";
+import QueryBuilder from "../../builder/queryBuilder";
 
 const createBonusAndChallenge = async (payload: any) => {
   const result = await BonusAndChallenge.create(payload);

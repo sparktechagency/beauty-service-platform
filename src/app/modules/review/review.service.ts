@@ -7,6 +7,7 @@ import { UserTakeService } from "../usertakeservice/usertakeservice.model";
 import crypto from "crypto";
 import { Wallet } from "../wallet/wallet.model";
 import stripe from "../../../config/stripe";
+import { WalletService } from "../wallet/wallet.service";
 const createReviewToDB = async (payload: IReview) => {
   const session = await mongoose.startSession();
   try {
@@ -85,8 +86,42 @@ const createReviewToDB = async (payload: IReview) => {
           }),
         },
       });
+    
+     
+
       return stripesession.url;
     }
+    const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0, 23, 59, 59, 999);
+
+  
+    const artistReviews = await Review.find({ artist: order.artiestId,createdAt:{
+      $gte: startOfMonth,
+      $lte: endOfMonth,
+
+    } }).sort(
+      { createdAt: -1 }
+    );
+
+ 
+    
+
+    if(review.rating==5){
+      let totalRating = 0;
+      for (const reviewItem of artistReviews) {
+        if(reviewItem.rating<5){
+          break
+        }
+        totalRating += 1;
+      }
+      if(totalRating==5){
+        await WalletService.updateWallet(order.artiestId!,10)
+      }
+    
+      
+    }
+    
+    
     return review;
   } catch (error: any) {
     console.error(error);

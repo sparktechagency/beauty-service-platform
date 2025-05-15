@@ -83,6 +83,11 @@ router
       USER_ROLES.ARTIST
     ),
     UserController.getUsers
+  )
+  .delete(
+    auth(),
+    validateRequest(UserValidation.createDeletePasswordZodSchema),
+    UserController.deleteAccount
   );
 
 export const UserRoutes = router;

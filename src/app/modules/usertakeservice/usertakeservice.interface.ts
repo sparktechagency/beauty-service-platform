@@ -18,7 +18,9 @@ export type IUserTakeService = {
   artist_book_date?: Date;
   cancelled_by?: "user" | "artist"|"admin",
   cancelled_reason?: string;
+  artist_app_fee?:number,
   cancel_status?:"low"|"high",
   trxId?:string,
-  address:string
+  address:string,
+  createdAt?: Date;
 };

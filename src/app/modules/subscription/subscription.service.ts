@@ -6,7 +6,7 @@ import stripe from "../../../config/stripe";
 import { User } from "../user/user.model";
 import ApiError from "../../../errors/ApiErrors";
 import { Plan } from "../plan/plan.model";
-import QueryBuilder from "../../builder/QueryBuilder";
+import QueryBuilder from "../../builder/queryBuilder";
 import { paginateHelper } from "../../../helpers/paginateHelper";
 import { date } from "zod";
 
