@@ -6,6 +6,7 @@ import colors from 'colors';
 import { socketHelper } from "./helpers/socketHelper";
 import { Server } from "socket.io";
 import seedSuperAdmin from "./DB";
+import { cleanUp } from "./cleanup/cleanUp";
 
 
 //uncaught exception
@@ -22,6 +23,7 @@ async function main() {
 
         // create super admin
         seedSuperAdmin();
+       await cleanUp()
 
 
         mongoose.connect(config.database_url as string);
@@ -46,6 +48,8 @@ async function main() {
         global.io = io;
 
     } catch (error) {
+        console.log(error);
+        
         errorLogger.error(colors.red('🤢 Failed to connect Database'));
     }
   

@@ -16,11 +16,6 @@ const referralSchema = new Schema<IReferral, ReferralModel>(
       ref: "User",
       required: true,
     },
-    status: {
-      type: String,
-      enum: ["pending", "accepted", "rejected"],
-      default: "pending",
-    },
     amount: {
       type: Number,
       required: true,

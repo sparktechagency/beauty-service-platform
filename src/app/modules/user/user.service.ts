@@ -14,9 +14,11 @@ import { ReferralService } from "../referral/referral.service";
 import { WalletService } from "../wallet/wallet.service";
 import QueryBuilder from "../../builder/queryBuilder";
 import { compare } from "bcrypt";
-
+import cryptoToken from "../../../util/cryptoToken";
 const createUserToDB = async (payload: Partial<IUser>): Promise<IUser> => {
   //set role
+  const rafferalCode = cryptoToken(5);
+  payload.reffralCodeDB = rafferalCode;
   const createUser = await User.create(payload);
   
   if (!createUser) {
@@ -26,7 +28,7 @@ const createUserToDB = async (payload: Partial<IUser>): Promise<IUser> => {
     const wallet = await WalletService.createWallet(createUser._id);
   }
 
-  if (createUser.role == USER_ROLES.ARTIST && payload.referralCode) {
+  if (payload.referralCode) {
     await ReferralService.acceptReferral(createUser._id, payload.referralCode);
   }
 
@@ -131,7 +133,9 @@ const createStripeAccoutToDB = async (
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
   }
   if (isExistUser.accountInfo?.stripeAccountId) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "Account already exist!");
+    return {
+      accountInfo: isExistUser.accountInfo,
+    }
   }
   if (stripe_id) {
     await User.findOneAndUpdate(

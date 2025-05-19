@@ -36,6 +36,7 @@ export type IUser = {
   subscription?: Types.ObjectId;
   referralCode?: string;
   isActive?: boolean;
+  reffralCodeDB?: string;
 };
 
 export type UserModal = {

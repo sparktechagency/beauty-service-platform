@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 
-const cryptoToken = () => {
-  return crypto.randomBytes(32).toString('hex');
+const cryptoToken = (length: number=32) => {
+  return crypto.randomBytes(length).toString('hex');
 };
 export default cryptoToken;

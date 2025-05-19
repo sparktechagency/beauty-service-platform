@@ -5,12 +5,14 @@ import { WalletService } from "./wallet.service";
 
 const getWallet = catchAsync(async (req: Request, res: Response) => {
     const user:any = req.user;
-    const result = await WalletService.getWallet(user.id!);
+    const query = req.query;
+    const result = await WalletService.getWallet(user.id!,query);
     sendResponse(res, {
         statusCode: 200,
         success: true,
         message: "Wallet fetched successfully",
-        data: result,
+        data: result?.data,
+        pagination: result.paginationResult,
     });
 });
 
@@ -57,10 +59,24 @@ const applyForWidthdraw = catchAsync(async (req: Request, res: Response) => {
         data: result,
     });
 });
+
+const userEarnings = catchAsync(async (req: Request, res: Response) => {
+    const user:any = req.user;
+    const query = req.query;
+    const result = await WalletService.userEarnings(user, query);
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Earnings fetched successfully",
+        data: result.data,
+        pagination: result.paginationResult,
+    });
+});
 export const WalletController = {
     getWallet,
     getAllWithdrawsData,
     getSingleWithdraw,
     acceptOrRejectWithdraw,
     applyForWidthdraw,
+    userEarnings,
 };

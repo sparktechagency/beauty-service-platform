@@ -9,6 +9,8 @@ import { User } from "../user/user.model";
 import stripe from "../../../config/stripe";
 import crypto from "crypto";
 import QueryBuilder from "../../builder/queryBuilder";
+import { JwtPayload } from "jsonwebtoken";
+import { UserTakeService } from "../usertakeservice/usertakeservice.model";
 
 const createWallet = async (user:Types.ObjectId): Promise<IWallet | null> => {
     const isExist = await Wallet.findOne({ user });
@@ -23,13 +25,18 @@ const createWallet = async (user:Types.ObjectId): Promise<IWallet | null> => {
     return wallet;
 };
 
-const getWallet = async (user:Types.ObjectId): Promise<IWallet | null> => {
+const getWallet = async (user:Types.ObjectId,query:Record<string,any>)=> {
     let wallet = await Wallet.findOne({ user });
-    if (!wallet) {
-        const newWallet = await createWallet(user);
-        return newWallet;
+    const queryBuilder = new QueryBuilder(Widthdraw.find({user:user,status:WITHDRAW_STATUS.PENDING}),query).sort().paginate()
+    const paginationResult = await queryBuilder.getPaginationInfo()
+    const withdraws = await queryBuilder.modelQuery.lean().exec()
+    return {
+        data:{
+            wallet,
+            withdraws
+        },
+        paginationResult:paginationResult
     }
-    return wallet;
 };
 const updateWallet = async (user:Types.ObjectId, amount:number): Promise<IWallet | null> => {
     let wallet = await Wallet.findOne({ user });
@@ -51,9 +58,11 @@ const applyForWidthdraw = async (user:Types.ObjectId, amount:number): Promise<IW
     }
     wallet.balance -= amount;
     await wallet.save();
+    const transactionId = "Trx"+crypto.randomBytes(7).toString("hex")
     const widthdrawData = await Widthdraw.create({
         user: user,
         amount: amount,
+        transactionId:transactionId,
     });
     return wallet;
 };
@@ -104,7 +113,6 @@ const acceptOrRejectWithdraw = async (id:string,status:WITHDRAW_STATUS)=>{
             }
             )
               withdraw.status = status
-              withdraw.transactionId = crypto.randomBytes(8).toString("hex").toUpperCase()
               await withdraw.save()
         }
         else if (status == WITHDRAW_STATUS.REJECTED){
@@ -128,6 +136,28 @@ const acceptOrRejectWithdraw = async (id:string,status:WITHDRAW_STATUS)=>{
 
 }
 
+const userEarnings = async (user:JwtPayload,query:Record<string,any>)=>{
+    const result = new QueryBuilder(UserTakeService.find({artiestId:user.id,status:"completed"}),query).sort().paginate()
+    const paginationResult = await result.getPaginationInfo()
+    const data = await result.modelQuery.populate('serviceId','name').lean().exec()
+    const mappedData = data.map((item:any)=>{
+        const date = new Date(item.createdAt).toDateString().slice(4,10)
+        return {
+            title:`${date} - ${item?.serviceId?.name||"demo"}`,
+            amount:`$${item.price}/$${item.price-(item?.artist_app_fee??0)}`,
+        }
+    })
+    const lastWidthdraw:any = await Widthdraw.findOne({user:user.id,status:WITHDRAW_STATUS.APPROVED}).sort({createdAt:-1}).lean().exec()
+    const lastWithdrawDate = lastWidthdraw?.createdAt
+    return {
+        data:{
+            lastWithdrawDate,
+            data:mappedData
+        },
+        paginationResult,
+    }
+}
+
 export const WalletService = {
     createWallet,
     getWallet,
@@ -135,5 +165,6 @@ export const WalletService = {
     applyForWidthdraw,
     getAllWithdraws,
     getSingleWithdraw,
-    acceptOrRejectWithdraw
+    acceptOrRejectWithdraw,
+    userEarnings
 };

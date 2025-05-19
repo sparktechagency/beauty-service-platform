@@ -116,6 +116,9 @@ const userSchema = new Schema<IUser, UserModal>(
       },
       default: null,
     },
+    reffralCodeDB: {
+      type: String,
+    }
   },
   { timestamps: true }
 );
