@@ -72,6 +72,19 @@ const userEarnings = catchAsync(async (req: Request, res: Response) => {
         pagination: result.paginationResult,
     });
 });
+
+
+const weeklyEarnings = catchAsync(async (req: Request, res: Response) => {
+    const user:any = req.user;
+    const query = req.query;
+    const result = await WalletService.weeklyEarningFromDb(user);
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Earnings fetched successfully",
+        data: result
+    });
+});
 export const WalletController = {
     getWallet,
     getAllWithdrawsData,
@@ -79,4 +92,5 @@ export const WalletController = {
     acceptOrRejectWithdraw,
     applyForWidthdraw,
     userEarnings,
+    weeklyEarnings
 };

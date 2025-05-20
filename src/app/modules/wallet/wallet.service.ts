@@ -11,6 +11,8 @@ import crypto from "crypto";
 import QueryBuilder from "../../builder/queryBuilder";
 import { JwtPayload } from "jsonwebtoken";
 import { UserTakeService } from "../usertakeservice/usertakeservice.model";
+import { Subscription } from "../subscription/subscription.model";
+import { Plan } from "../plan/plan.model";
 
 const createWallet = async (user:Types.ObjectId): Promise<IWallet | null> => {
     const isExist = await Wallet.findOne({ user });
@@ -158,6 +160,30 @@ const userEarnings = async (user:JwtPayload,query:Record<string,any>)=>{
     }
 }
 
+const weeklyEarningFromDb = async (user:JwtPayload)=>{
+    const startOfWeek = new Date();
+    startOfWeek.setDate(startOfWeek.getDate() - 7);
+    const endOfWeek = new Date();
+    const query = {
+        updatedAt: {
+            $gte: startOfWeek,
+            $lte: endOfWeek
+        },
+        status:"completed"
+    };
+    const earnings = await UserTakeService.find(query).lean().exec();
+    
+    const totalEarnings = earnings.reduce((total, item) => total + item.price, 0);
+    const walletPrice = await Wallet.findOne({user:user.id}).lean().exec();
+    const subscription:any = await Subscription.findOne({user:user.id}).populate('package').lean().exec();
+    return {
+        weekly:totalEarnings,
+        currentBalance:walletPrice?.balance,
+        subscription:subscription?.package?.name||"free",
+
+    }
+}
+
 export const WalletService = {
     createWallet,
     getWallet,
@@ -166,5 +192,6 @@ export const WalletService = {
     getAllWithdraws,
     getSingleWithdraw,
     acceptOrRejectWithdraw,
-    userEarnings
+    userEarnings,
+    weeklyEarningFromDb
 };

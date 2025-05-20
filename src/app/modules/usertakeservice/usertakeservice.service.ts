@@ -246,6 +246,7 @@ const updateUserTakeServiceIntoDB = async (
 // its after stripe payment
 const bookOrder = async (payload:ObjectId,payment_intent:string)=>{
   const result = await UserTakeService.findOne({_id:payload});
+  
   if (!result) {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
@@ -466,10 +467,6 @@ const getAllBookingsFromDB = async (user:JwtPayload,query:Record<string,any>)=>{
           path:"category",
           select:['name']
         },
-        {
-          path:"subCategory",
-          select:['name']
-        }
       ]
     },
     {
@@ -505,6 +502,7 @@ const getAllBookingsFromDB = async (user:JwtPayload,query:Record<string,any>)=>{
       ]
     }
   ]).lean().exec()
+
   return {
     paginationInfo,
     data

@@ -17,8 +17,12 @@ router.route('/withdraw')
 router.route('/earnings')
     .get(auth(USER_ROLES.ARTIST), WalletController.userEarnings);
 
+router.route('/weekly')
+    .get(auth(USER_ROLES.ARTIST), WalletController.weeklyEarnings);
+
 router.route('/withdraw/:id')
     .get(auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN), WalletController.getSingleWithdraw)
     .patch(auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),validateRequest(WalletValidation.createAcceptorRejectWithdrawZodSchema), WalletController.acceptOrRejectWithdraw);
+
 
 export const WalletRoutes = router;
