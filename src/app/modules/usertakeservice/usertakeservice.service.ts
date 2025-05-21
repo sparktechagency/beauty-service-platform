@@ -37,7 +37,47 @@ const createUserTakeServiceIntoDB = async (
     userId: new Types.ObjectId(userId.id),
   };
 
-  return await UserTakeService.create(data);
+  const result = await UserTakeService.create(data);
+  const allProviders = await User.find({
+    role: USER_ROLES.ARTIST,
+    isActive: true,
+  });
+  //  📍 Filter by 5km radius
+  const nearbyProviders = allProviders.filter((provider) => {
+    if (provider.latitude && provider.longitude) {
+      const distance = calculateDistanceInKm(
+        result.latitude,
+        result.longitude,
+        provider.latitude,
+        Number(provider.longitude)
+      );
+
+      return distance <= 50;
+    }
+  });
+
+  for (const provider of nearbyProviders) {
+    await sendNotifications({
+      receiver: provider._id,
+      title: "New service request near you",
+      message: "A new service request has been created near you",
+      type: "service-request",
+      filePath: "request",
+      serviceId: result._id,
+      userId: result.userId,
+      data: payload,
+    });
+  }
+  const nearbyOrders = await nearByOrderByLatitudeAndLongitude(
+    result.latitude,
+    result.longitude
+  );
+
+  for (const provider of nearbyProviders) {
+    locationHelper({ receiver: provider._id, data: nearbyOrders });
+  }
+
+  return result;
 };
 
 const confirmOrderToDB = async (orderId: ObjectId, userId: JwtPayload) => {
@@ -262,44 +302,6 @@ const bookOrder = async (payload: ObjectId, payment_intent: string) => {
       { new: true }
     );
 
-    const allProviders = await User.find({
-      role: USER_ROLES.ARTIST,
-      isActive: true,
-    });
-    //  📍 Filter by 5km radius
-    const nearbyProviders = allProviders.filter((provider) => {
-      if (provider.latitude && provider.longitude) {
-        const distance = calculateDistanceInKm(
-          result.latitude,
-          result.longitude,
-          provider.latitude,
-          Number(provider.longitude)
-        );
-
-        return distance <= 50;
-      }
-    });
-
-    for (const provider of nearbyProviders) {
-      await sendNotifications({
-        receiver: provider._id,
-        title: "New service request near you",
-        message: "A new service request has been created near you",
-        type: "service-request",
-        filePath: "request",
-        serviceId: result._id,
-        userId: result.userId,
-        data: payload,
-      });
-    }
-    const nearbyOrders = await nearByOrderByLatitudeAndLongitude(
-      result.latitude,
-      result.longitude
-    );
-
-    for (const provider of nearbyProviders) {
-      locationHelper({ receiver: provider._id, data: nearbyOrders });
-    }
     return updateOrder;
   } catch (error) {
     logger.error(error);

@@ -60,9 +60,64 @@ const getReportById = catchAsync(async (req: Request, res: Response, next: NextF
     });
 })
 
+const createSupportMessage = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const user:any = req.user;
+    const payload = {
+        ...req.body,
+        customer: user.id
+    };
+    const result = await ReportService.createSupportMessageToDB(payload);
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Support Message Created Successfully",
+        data: result,
+    });
+})
+
+const getSupportMessages = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const query = req.query;
+    const result = await ReportService.getSupportMessageFromDB(query);
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Support Messages fetched Successfully",
+        data: result.supports,
+        pagination: result.pagination,
+    });
+})
+
+
+const getSupportMessageById = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+    const result = await ReportService.getSupportMessageByIdFromDB(id);
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Support Message fetched Successfully",
+        data: result,
+    });
+})
+
+const sentReplyToSupportMessage = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+    const { reply } = req.body;
+    const result = await ReportService.sentReplyToSupportMessage(id, reply);
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Reply Sent Successfully",
+        data: result,
+    });
+})
+
 export const ReportController = {
     createReport,
     getAllReports,
     changeReportStatus,
-    getReportById
+    getReportById,
+    createSupportMessage,
+    getSupportMessages,
+    getSupportMessageById,
+    sentReplyToSupportMessage
 }

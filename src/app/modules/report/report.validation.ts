@@ -16,4 +16,16 @@ const changeReportStatusZodSchema = z.object({
     })
 })
 
-export const ReportValidation = {createReportZodSchema, changeReportStatusZodSchema}
+const createSupportMessageZodSchema = z.object({
+    body: z.object({
+        message: z.string({ required_error: 'Message is required' }),
+    })
+})
+
+const changeSupportStatusZodSchema = z.object({
+    body: z.object({
+        reply: z.string({ required_error: 'Reply is required' }),
+    })
+})
+
+export const ReportValidation = {createReportZodSchema, changeReportStatusZodSchema, createSupportMessageZodSchema, changeSupportStatusZodSchema}

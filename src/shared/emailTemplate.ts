@@ -1,3 +1,4 @@
+import config from '../config';
 import { ICreateAccount, IResetPassword } from '../types/emailTemplate';
 
 const createAccount = (values: ICreateAccount) => {
@@ -93,8 +94,91 @@ interface ReferralEmailParams {
     };
   };
 
+  const sendSupportMessage = (values:{name:string,email:string,message:string}) => {
+    return {
+      to: config.admin.email!,
+      subject: `Support Message from ${values.name}`,
+      html: `
+  <body style="margin: 0; padding: 0; background-color: #f6f8fa; font-family: 'Segoe UI', Tahoma, sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f6f8fa; padding: 40px 0;">
+      <tr>
+        <td align="center">
+          <table width="520" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);">
+            <tr>
+              <td style="padding: 24px 32px; color: #333333; font-size: 16px; line-height: 1.6;">
+                <p style="margin-top: 0;">
+                  <strong>Support Message from:</strong> ${values.name} &lt;${values.email}&gt;
+                </p>
+
+                <p style="margin: 20px 0 0;">
+                  ${values.message}
+                </p>
+
+                <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0;" />
+
+                <p style="font-size: 14px; color: #888888; margin-bottom: 0;">
+                  Please respond via the admin panel or directly to the client's email.
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td align="center" style="font-size: 12px; color: #aaaaaa; padding: 20px;">
+                &copy; 2025 Ah | Internal Support Notification
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+      `,
+    };
+  };
+
+  const sendSupportMessageToUser = (values:{name:string,email:string,message:string})=>{
+    return {
+        to: values.email,
+        subject: `Support Message From AH`,
+        html: ` <body style="margin: 0; padding: 0; background-color: #f0f2f5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f0f2f5; padding: 40px 0;">
+      <tr>
+        <td align="center">
+          <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);">
+            <tr>
+              <td align="center" style="background-color: #4a90e2; padding: 30px;">
+                <h1 style="margin: 0; font-size: 28px; color: #ffffff;">Support Team</h1>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 30px; color: #333333; font-size: 16px; line-height: 1.7;">
+                <p style="margin-top: 0;">Hi <strong>${values.name}</strong>,</p>
+                <p>
+                ${values.message}
+                </p>
+          <br />
+                  <br />
+                  Best regards,<br />
+                  <strong>The Support Team</strong>
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td align="center" style="background-color: #f0f0f0; color: #888888; font-size: 13px; padding: 20px;">
+                &copy; 2025 AH All rights reserved.<br />
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>`
+    }
+  }
+
 export const emailTemplate = {
     createAccount,
     resetPassword,
-    referralAcceptedEmail
+    referralAcceptedEmail,
+    sendSupportMessage,
+    sendSupportMessageToUser
 };

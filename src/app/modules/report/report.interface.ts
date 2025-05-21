@@ -10,5 +10,13 @@ export type IReport = {
     note?:string;
 };
 
+export type ISupport = {
+    customer?: Types.ObjectId;
+    message: string;
+    status?: "pending"|'resolved';
+    reply?: string;
+}
 
+
+export type SupportModel = Model<ISupport, Record<string, unknown>>;
 export type ReportModel = Model<IReport, Record<string, unknown>>;

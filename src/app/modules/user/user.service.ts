@@ -132,9 +132,9 @@ const createStripeAccoutToDB = async (
   if (!isExistUser) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
   }
-  if (isExistUser.accountInfo?.stripeAccountId) {
+  if (isExistUser.accountInfo?.loginLink) {
     return {
-      accountInfo: isExistUser.accountInfo,
+      url: isExistUser.accountInfo.loginLink,
     }
   }
   if (stripe_id) {
@@ -184,7 +184,7 @@ const createStripeAccoutToDB = async (
     throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to create account");
   }
   return {
-    accountLink,
+    url:accountLink.url,
   };
 };
 

@@ -7,7 +7,7 @@ import { ReportValidation } from './report.validation';
 const router = express.Router();
 
 
-router.route('/')
+router.route('/report')
 .post( 
     auth(USER_ROLES.USER, USER_ROLES.ARTIST),
     validateRequest(ReportValidation.createReportZodSchema),
@@ -18,7 +18,7 @@ router.route('/')
     ReportController.getAllReports
 )
 
-router.route('/:id')
+router.route('/report/:id')
 .patch(
     auth(USER_ROLES.ADMIN,USER_ROLES.SUPER_ADMIN),
     validateRequest(ReportValidation.changeReportStatusZodSchema),
@@ -27,5 +27,28 @@ router.route('/:id')
     auth(USER_ROLES.ADMIN,USER_ROLES.SUPER_ADMIN),
     ReportController.getReportById
 )
+
+router.route('/support')
+.post(
+    auth(USER_ROLES.USER,USER_ROLES.ARTIST),
+    validateRequest(ReportValidation.createSupportMessageZodSchema),
+    ReportController.createSupportMessage
+)
+.get(
+    auth(USER_ROLES.ADMIN,USER_ROLES.SUPER_ADMIN),
+    ReportController.getSupportMessages
+)
+
+router.route('/support/:id')
+.get(
+    auth(USER_ROLES.ADMIN,USER_ROLES.SUPER_ADMIN),
+    ReportController.getSupportMessageById
+)
+.patch(
+    auth(USER_ROLES.ADMIN,USER_ROLES.SUPER_ADMIN),
+    validateRequest(ReportValidation.changeSupportStatusZodSchema),
+    ReportController.sentReplyToSupportMessage
+)
+
 
 export const ReportRoutes = router;
