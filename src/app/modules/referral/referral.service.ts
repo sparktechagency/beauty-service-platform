@@ -12,6 +12,7 @@ import { emailTemplate } from "../../../shared/emailTemplate";
 import { Wallet } from "../wallet/wallet.model";
 import { WalletService } from "../wallet/wallet.service";
 import QueryBuilder from "../../builder/queryBuilder";
+import { Reward } from "../reward/reward.model";
 
 const getReferral = async (user:JwtPayload,query:Record<string,any>)=>{
     
@@ -57,8 +58,33 @@ const getRefferralById = async (id:string)=>{
     return referral
 }
 
+
+const getReferralAndBonusesFromDB = async (user:JwtPayload)=>{
+
+    const referrals = await Referral.find({referral_user:user.id}).populate([
+        {
+            path:'token_user',
+            select:'name email'
+        }
+    ])
+
+    
+    const bonuses = await Reward.find({user:user.id}).select('title amount')
+
+    const totalBonus = bonuses.reduce((acc,curr)=>acc+curr.amount,0)
+    const totalReferral = referrals.reduce((acc,curr)=>acc+curr.amount,0)
+
+    return {
+        totalBonus:totalBonus,
+        totalReferral:totalReferral,
+        referrals:referrals,
+        bonuses:bonuses
+    }
+}
+
 export const ReferralService={
     getReferral,
     acceptReferral,
-    getRefferralById
+    getRefferralById,
+    getReferralAndBonusesFromDB
 }

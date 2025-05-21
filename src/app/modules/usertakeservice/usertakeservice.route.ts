@@ -2,12 +2,15 @@ import express from "express";
 import { UserTakeServiceController } from "./usertakeservice.controller";
 import auth from "../../middlewares/auth";
 import { USER_ROLES } from "../../../enums/user";
+import validateRequest from "../../middlewares/validateRequest";
+import { UserTakeServiceValidations } from "./usertakeservice.validation";
 
 const router = express.Router();
 
 router.post(
   "/create",
   auth(USER_ROLES.USER),
+  validateRequest(UserTakeServiceValidations.createServiceZodSchema),
   UserTakeServiceController.createUserTakeService
 );
 
@@ -43,6 +46,7 @@ router.patch(
 
 router.route("/cancel/:id").delete(
   auth(USER_ROLES.ARTIST),
+  validateRequest(UserTakeServiceValidations.cancelOrderZodSchema),
   UserTakeServiceController.cancel_order
 );
 

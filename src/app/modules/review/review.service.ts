@@ -8,6 +8,7 @@ import crypto from "crypto";
 import { Wallet } from "../wallet/wallet.model";
 import stripe from "../../../config/stripe";
 import { WalletService } from "../wallet/wallet.service";
+import { Reward } from "../reward/reward.model";
 const createReviewToDB = async (payload: IReview) => {
   const session = await mongoose.startSession();
   try {
@@ -60,6 +61,43 @@ const createReviewToDB = async (payload: IReview) => {
       artist: order.artiestId,
     });
 
+    const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0, 23, 59, 59, 999);
+
+  
+    const artistReviews = await Review.find({ artist: order.artiestId,createdAt:{
+      $gte: startOfMonth,
+      $lte: endOfMonth,
+
+    } }).sort(
+      { createdAt: -1 }
+    );
+
+ 
+    
+
+    if(review.rating==5){
+      let totalRating = 0;
+      for (const reviewItem of artistReviews) {
+        if(reviewItem.rating<5){
+          break
+        }
+        totalRating += 1;
+      }
+      if(totalRating==5){
+        await WalletService.updateWallet(order.artiestId!,10)
+        await Reward.create({
+          user:order.artiestId,
+          amount:10,
+          occation:"Review",
+          occationId:review._id,
+          title:`Strike of 5 star review`,
+        })
+      }
+    
+      
+    }
+
     if (payload.tip) {
       const stripesession = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
@@ -91,35 +129,7 @@ const createReviewToDB = async (payload: IReview) => {
 
       return stripesession.url;
     }
-    const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-    const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0, 23, 59, 59, 999);
 
-  
-    const artistReviews = await Review.find({ artist: order.artiestId,createdAt:{
-      $gte: startOfMonth,
-      $lte: endOfMonth,
-
-    } }).sort(
-      { createdAt: -1 }
-    );
-
- 
-    
-
-    if(review.rating==5){
-      let totalRating = 0;
-      for (const reviewItem of artistReviews) {
-        if(reviewItem.rating<5){
-          break
-        }
-        totalRating += 1;
-      }
-      if(totalRating==5){
-        await WalletService.updateWallet(order.artiestId!,10)
-      }
-    
-      
-    }
     
     
     return review;

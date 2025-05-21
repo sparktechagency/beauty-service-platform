@@ -14,9 +14,6 @@ const createServiceZodSchema = z.object({
     longitude: z.number({
       required_error: "longitude is required",
     }),
-    providerId: z.string({
-      required_error: "providerId is required",
-    }),
     addOns: z.array(z.object({
       name: z.string({
         required_error: "name is required",
@@ -36,7 +33,18 @@ const updateServiceZodSchema = z.object({
   }),
 });
 
+const cancelOrderZodSchema = z.object(
+{
+  body:z.object({
+    reason: z.string({
+      required_error: "reason is required",
+    }),
+  })
+}
+)
+
 export const UserTakeServiceValidations = {
   createServiceZodSchema,
   updateServiceZodSchema,
+  cancelOrderZodSchema,
 };

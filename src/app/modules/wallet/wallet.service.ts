@@ -50,23 +50,44 @@ const updateWallet = async (user:Types.ObjectId, amount:number): Promise<IWallet
     return wallet;
 };
 
-const applyForWidthdraw = async (user:Types.ObjectId, amount:number): Promise<IWallet | null> => {
+const applyForWidthdraw = async (user:Types.ObjectId, amount:number) => {
+   const transaction = await mongoose.startSession();
+   try{
+    await transaction.startTransaction();
+    const userData = await User.findById(user).lean().exec()
+    if(!userData){
+        throw new ApiError(404,"User not found")
+    }
+    if(!userData.accountInfo){
+        throw new ApiError(400,"Please add you stripe account info")
+    }
     const wallet = await Wallet.findOne({ user });
     if (!wallet) {
-        throw new ApiError(404,"Wallet not found");
+        throw new ApiError(404, "Wallet not found");
     }
     if (wallet.balance < amount) {
-        throw new ApiError(400,"Insufficient balance");
+        throw new ApiError(400, "Insufficient balance");
     }
     wallet.balance -= amount;
     await wallet.save();
-    const transactionId = "Trx"+crypto.randomBytes(7).toString("hex")
-    const widthdrawData = await Widthdraw.create({
-        user: user,
-        amount: amount,
-        transactionId:transactionId,
+    const widthdraw = await Widthdraw.create({
+        user,
+        amount,
+        status: WITHDRAW_STATUS.APPROVED,
     });
-    return wallet;
+    await stripe.transfers.create({
+        amount: amount * 100,
+        currency: "usd",
+        destination: userData.accountInfo.stripeAccountId,
+    });
+    await transaction.commitTransaction();
+    await transaction.endSession();
+    return widthdraw;
+   }
+   catch(error:any){
+    await transaction.abortTransaction();
+    throw new ApiError(400,error.message);
+   }
 };
 
 const getAllWithdraws = async (query:Record<string,any>)=> {

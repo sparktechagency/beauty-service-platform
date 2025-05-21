@@ -1,12 +1,19 @@
 import { z } from "zod"
-import { objectIdZodSchema } from "../../../helpers/checkObjectIdZodSchemaHelper"
 
 const createReportZodSchema = z.object({
     body: z.object({
-        customer: objectIdZodSchema("Customer Object Id is required"),
-        service: objectIdZodSchema("Service Object Id is required"),
-        reason: z.array(z.string({ required_error: 'Reason is required' }))
+        customer: z.string({ required_error: 'Customer Object Id is required' }).optional(),
+        reservation: z.string({ required_error: 'Service Object Id is required' }).optional(),
+        reason: z.array(z.string({ required_error: 'Reason is required' })).optional(),
+        artist: z.string({ required_error: 'Artist Object Id is required' }),
     })  
 })
 
-export const ReportValidation = {createReportZodSchema}
+const changeReportStatusZodSchema = z.object({
+    body: z.object({
+        status: z.enum(["pending", "resolved"], { required_error: 'Status is required' }),
+        note: z.string({ required_error: 'Note is required' }).optional(),
+    })
+})
+
+export const ReportValidation = {createReportZodSchema, changeReportStatusZodSchema}
