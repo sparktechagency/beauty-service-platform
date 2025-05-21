@@ -21,6 +21,7 @@ import { Review } from "../review/review.model";
 import { WalletService } from "../wallet/wallet.service";
 import { Reward } from "../reward/reward.model";
 import { logger } from "../../../shared/logger";
+import { sendNotificationToFCM } from "../../../helpers/firebaseNotificationHelper";
 
 const createUserTakeServiceIntoDB = async (
   payload: IUserTakeService,
@@ -65,6 +66,12 @@ const createUserTakeServiceIntoDB = async (
       filePath: "request",
       serviceId: result._id,
       userId: result.userId,
+      data: payload,
+    });
+    await sendNotificationToFCM({
+      token: "Hello i'm token",
+      title: "New service request near you",
+      body: "A new service request has been created near you",
       data: payload,
     });
   }
