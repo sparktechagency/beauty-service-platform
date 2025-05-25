@@ -23,7 +23,7 @@ async function main() {
 
         // create super admin
         seedSuperAdmin();
-       await cleanUp()
+       cleanUp()
 
 
         mongoose.connect(config.database_url as string);

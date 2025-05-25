@@ -24,15 +24,31 @@ const getCategoriesFromDB = async (): Promise<ICategory[]> => {
 };
 
 const updateCategoryToDB = async (id: string, payload: ICategory) => {
-  const isExistCategory: any = await Category.findById(id);
+  const isExistCategory = await Category.findById(id);
 
   if (!isExistCategory) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "Category doesn't exist");
   }
 
+ 
+  let temp:any = payload
+  
+  
+  temp.existImage = typeof temp.existImage === "string" ? [temp.existImage] : temp.existImage
   if (payload.image) {
-    unlinkFile(isExistCategory?.image);
+    isExistCategory.image.forEach(item=>{
+      if(!temp.existImage.includes(item)){
+        unlinkFile(item)
+      }
+    })
+
   }
+
+    if(temp.existImage){
+      payload.image=payload.image?[...payload.image,...temp.existImage]:[...temp.existImage]
+    }
+ 
+  
 
   const updateCategory = await Category.findOneAndUpdate({ _id: id }, payload, {
     new: true,

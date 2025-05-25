@@ -9,20 +9,11 @@ import { Wallet } from "../wallet/wallet.model";
 import stripe from "../../../config/stripe";
 import { WalletService } from "../wallet/wallet.service";
 import { Reward } from "../reward/reward.model";
+import { JwtPayload } from "jsonwebtoken";
+import QueryBuilder from "../../builder/queryBuilder";
 const createReviewToDB = async (payload: IReview) => {
   const session = await mongoose.startSession();
   try {
-    const existReview = await Review.findOne({
-      user: payload.user,
-      order: payload.order,
-    });
-
-    if (existReview) {
-      throw new ApiError(
-        StatusCodes.BAD_REQUEST,
-        "You have already reviewed this order"
-      );
-    }
 
     const order = await UserTakeService.findOne({ _id: payload.order });
 
@@ -31,7 +22,7 @@ const createReviewToDB = async (payload: IReview) => {
     }
 
     if (
-      ["cancelled", "completed", "pending", "processing"].includes(order.status)
+      ["pending"].includes(order.status)
     ) {
       throw new ApiError(
         StatusCodes.BAD_REQUEST,
@@ -39,26 +30,14 @@ const createReviewToDB = async (payload: IReview) => {
       );
     }
 
-    const trxId = crypto.randomBytes(7).toString("hex");
-
-    const updateOrder = await UserTakeService.findByIdAndUpdate(
-      order._id,
-      { status: "processing", trxId },
-      { new: true }
-    );
-
-    if (!updateOrder) {
-      throw new ApiError(
-        StatusCodes.NOT_FOUND,
-        "Order not found during update"
-      );
-    }
+    const trxId = 'trx'+crypto.randomBytes(7).toString("hex");
 
     const review = await Review.create({
       ...payload,
       tip: 0,
       trxId,
       artist: order.artiestId,
+      service: order.serviceId,
     });
 
     const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
@@ -114,8 +93,8 @@ const createReviewToDB = async (payload: IReview) => {
           },
         ],
         mode: "payment",
-        success_url: `https://www.your.com/review-success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `https://www.your.com`,
+      success_url: `https://www.your.com/user/payment-success`,
+      cancel_url: `https://www.your.com/user/payment-cancel`,
         metadata: {
           data: JSON.stringify({
             orderId: order._id.toString(),
@@ -149,4 +128,26 @@ const handleTip = async ({ tip, orderId, artist_id }: any) => {
   );
   await Review.findOneAndUpdate({ order: orderId }, { tip });
 };
-export const ReviewService = { createReviewToDB, handleTip };
+
+const getAllReviews = async (service:string,artist:string,query:Record<string, any>) => {
+  const result = new QueryBuilder(Review.find({
+    service:service,
+    artist:artist
+  },{user:1,rating:1,comment:1,createdAt:1,tip:1}), query).sort().paginate()
+
+  const reviews = await result.modelQuery.populate([
+    {
+      path: "user",
+      select: "name email profile",
+    },
+  ])
+
+  const paginationInfo = await result.getPaginationInfo()
+  return {
+    reviews,
+    paginationInfo
+  }
+}
+
+
+export const ReviewService = { createReviewToDB, handleTip, getAllReviews };

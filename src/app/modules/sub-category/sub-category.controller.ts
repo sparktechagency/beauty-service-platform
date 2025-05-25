@@ -18,7 +18,8 @@ const createSubCategory = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getAllSubCategory = catchAsync(async (req: Request, res: Response) => {
-  const result = await SubCategoryServices.getAllSubCategoryFromDB();
+  const { id } = req.query
+  const result = await SubCategoryServices.getAllSubCategoryFromDB(id as string);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
@@ -27,7 +28,7 @@ const getAllSubCategory = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-//  ! it's for category to service call function
+
 const getAllServiceFromDB = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const result = await SubCategoryServices.getAServiceFromDB(id, req.query);

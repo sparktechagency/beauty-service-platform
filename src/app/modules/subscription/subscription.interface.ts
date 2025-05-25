@@ -10,6 +10,7 @@ export type ISubscription = {
     status: 'expired' | 'active' | 'cancel'|"inactive";
     currentPeriodStart: Date;
     currentPeriodEnd: Date;
+    createdAt: Date;
 };
 
 export type SubscriptionModel = Model<ISubscription, Record<string, unknown>>;

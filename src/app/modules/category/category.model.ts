@@ -6,7 +6,6 @@ const serviceSchema = new Schema<ICategory>(
     name: {
       type: String,
       required: true,
-      unique: true,
     },
     image: {
       type: [String],

@@ -9,6 +9,7 @@ export type IReview = {
     tip?: number;
     trxId?: string;
     createdAt?: Date;
+    service:Types.ObjectId;
 }
 
 export type ReviewModel = Model<IReview>;

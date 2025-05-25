@@ -3,6 +3,7 @@ import ApiError from "../../../errors/ApiErrors";
 import { IServiceManagement } from "./servicemanagement.interface";
 import { ServiceManagement } from "./servicemanagement.model";
 import QueryBuilder from "../../builder/queryBuilder";
+import unlinkFile from "../../../shared/unlinkFile";
 
 
 const createServiceManagementIntoDB = async (payload: IServiceManagement) => {
@@ -53,6 +54,13 @@ const updateServiceManagementIntoDB = async (
   id: string,
   payload: Partial<IServiceManagement>
 ) => {
+  const existServiceManagement = await ServiceManagement.findById(id);
+  if (!existServiceManagement) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "ServiceManagement not found");
+  }
+  if(payload.image){
+    unlinkFile(existServiceManagement.image)
+  }
   const result = await ServiceManagement.findOneAndUpdate(
     { _id: id },
     payload,

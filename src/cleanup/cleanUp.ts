@@ -17,9 +17,14 @@ const expireSubscriptions = async ()=>{
         });
     });
 }
-export const cleanUp =async ()=>{
+export const cleanUp =()=>{
    cron.schedule("0 0 * * *", async()=>{
         await expireSubscriptions();
         console.log("Expired subscriptions");
-    });
+   },{
+    scheduled: true,
+    timezone: "Asia/Dhaka",
+   }
+
+);
 }

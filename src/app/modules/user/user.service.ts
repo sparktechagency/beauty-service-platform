@@ -15,10 +15,12 @@ import { WalletService } from "../wallet/wallet.service";
 import QueryBuilder from "../../builder/queryBuilder";
 import { compare } from "bcrypt";
 import cryptoToken from "../../../util/cryptoToken";
+import { UserTakeService } from "../usertakeservice/usertakeservice.model";
 const createUserToDB = async (payload: Partial<IUser>): Promise<IUser> => {
   //set role
   const rafferalCode = cryptoToken(5);
   payload.reffralCodeDB = rafferalCode;
+
   const createUser = await User.create(payload);
   
   if (!createUser) {
@@ -191,17 +193,24 @@ const createStripeAccoutToDB = async (
 const getUsersFromDB = async (query: Record<string, any>) => {
   const result = new QueryBuilder(
     User.find(
-      { $or: [{ role: USER_ROLES.USER }, { role: USER_ROLES.ARTIST }] },
+      { role: { $ne: USER_ROLES.SUPER_ADMIN } },
       { password: 0, accountInfo: 0 }
     ),
     query
   )
-    .search(["name", "email", "contact", "location"])
+    .search(["name", "email", "contact"])
     .filter()
     .sort()
     .paginate();
   const users = await result.modelQuery
-    .populate(["subscription"])
+    .populate([{
+      path:"subscription",
+      select:"package",
+      populate:{
+        path:"package",
+        select:"name"
+      }
+    }])
     .select("-password ")
     .lean()
     .exec();
@@ -241,6 +250,55 @@ const deleteAccount = async (user: JwtPayload,password:string) => {
   };
 };
 
+const getUserDataUsingIdFromDB = async (id:string,query: Record<string, any>) => {
+  const user = await User.findOne({_id:id}).select("-password").populate([{
+    path:"subscription",
+    populate:{
+      path:"package",
+    }
+  }])
+  .lean();
+  if(!user){
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+  const userRecentOrder = new QueryBuilder(
+    UserTakeService.find({userId:id,status:'completed'}),
+    query
+  ).sort().paginate()
+  const userRecentOrderData = await userRecentOrder.modelQuery.populate([{
+    path:"serviceId",
+    select:"name"
+  },{
+    path:"userId",
+    select:"name profile email"
+  },
+  {
+    path:'artiestId',
+    select:"name profile email"
+  }
+
+]).lean().exec();
+  const pagination = await userRecentOrder.getPaginationInfo();
+
+  return {
+    data:{
+      user,
+      userRecentOrderData
+    },
+    pagination
+  }
+}
+
+const updateUserDataById = async (id:string,payload:Partial<IUser>) => {
+  const isExistUser = await User.findOne({_id:id});
+  if(!isExistUser){
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+  const updateDoc = await User.findOneAndUpdate({_id:id},payload,{
+    new:true
+  })
+  return updateDoc;
+}
 export const UserService = {
   createUserToDB,
   getUserProfileFromDB,
@@ -249,4 +307,6 @@ export const UserService = {
   createStripeAccoutToDB,
   getUsersFromDB,
   deleteAccount,
+  getUserDataUsingIdFromDB,
+  updateUserDataById
 };

@@ -51,11 +51,12 @@ const updateUserTakeService = catchAsync(
 
 const getAllServiceForArtist = catchAsync(
   async (req: Request, res: Response) => {
-    const { latitude, longitude } = req.body;
+    const { latitude, longitude,status } = req.body;
     const result = await UserTakeServiceServices.getAllServiceAsArtistFromDB(
       req.user!,
       latitude as number,
-      longitude as number
+      longitude as number,
+      status
     );
     sendResponse(res, {
       statusCode: 200,

@@ -22,7 +22,7 @@ export const handleWebHook =async (req:Request, res:Response) => {
             }
             else{
                 const payload = JSON.parse(event.data.object.metadata?.data!)
-                await UserTakeServiceServices.bookOrder(payload.orderId,event.data.object.payment_intent as string)
+                await UserTakeServiceServices.bookOrder(payload.orderId,event.data.object.payment_intent as string,payload.app_fee,payload.total_amount)
             }
             }
 

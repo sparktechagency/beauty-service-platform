@@ -27,14 +27,15 @@ router.get(
 );
 
 router.put(
-  "/service/:id",
+  "/online",
   auth(USER_ROLES.ARTIST),
+  validateRequest(UserTakeServiceValidations.activeUserValidationZodSchema),
   UserTakeServiceController.getAllServiceForArtist
 );
 
 router.get(
   "/:id",
-  auth(USER_ROLES.ARTIST),
+  auth(),
   UserTakeServiceController.getSingleService
 );
 
@@ -55,8 +56,8 @@ router.route("/confirm/:id").patch(
   UserTakeServiceController.confirmOrder
 );
 
-router.route("/payout/:id").patch(
-  auth(USER_ROLES.ADMIN,USER_ROLES.SUPER_ADMIN),
+router.route("/complete/:id").patch(
+  auth(USER_ROLES.USER),
   UserTakeServiceController.payoutOrder
 );
 

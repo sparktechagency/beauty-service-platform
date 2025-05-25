@@ -3,7 +3,7 @@ import { IUserTakeService } from "../app/modules/usertakeservice/usertakeservice
 
 export interface ILocationHelper {
   receiver: Types.ObjectId;
-  data: IUserTakeService[];
+  data: IUserTakeService;
 }
 
 export const locationHelper = (data: ILocationHelper) => {
@@ -13,6 +13,15 @@ export const locationHelper = (data: ILocationHelper) => {
     socketIo.emit(`get-location::${data?.receiver}`, data);
   }
 };
+
+export const locationRemover = (data:any) => {
+  // @ts-ignore
+  const socketIo = global.io;
+  if (socketIo) {
+    socketIo.emit(`get-location-remove::${data?.receiver}`, data);
+  }
+};
+
 
 const getNearbyProviders = async (data: any) => {
   // @ts-ignore

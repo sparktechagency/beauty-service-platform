@@ -8,7 +8,8 @@ const createCategoryZodSchema = z.object({
 
 const updateCategoryZodSchema = z.object({
   body: z.object({
-    name: z.string().optional()
+    name: z.string().optional(),
+    existImages: z.array(z.string()).optional(),
   }),
 })
 

@@ -4,7 +4,7 @@ export type IReport = {
     customer?: Types.ObjectId;
     artist?: Types.ObjectId;
     reservation?: Types.ObjectId;
-    reason: [];
+    reason: string;
     type:"report"|'cancel';
     status?: "pending"|'resolved';
     note?:string;

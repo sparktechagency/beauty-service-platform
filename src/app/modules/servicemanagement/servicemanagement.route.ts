@@ -21,7 +21,7 @@ router.post(
       if (!image) {
         return res
           .status(400)
-          .json({ message: "Sub-Category image is required." });
+          .json({ message: "Service image is required." });
       }
 
       req.body = {
@@ -51,8 +51,8 @@ router.get(
 );
 
 // * get single service management
-router.get(
-  "/:id",
+router.route("/:id")
+  .get(
   auth(
     USER_ROLES.ADMIN,
     USER_ROLES.SUPER_ADMIN,
@@ -60,22 +60,22 @@ router.get(
     USER_ROLES.USER
   ),
   ServiceManagementController.getSingleServiceManagement
-);
-
-// * update service management
-router.patch(
-  "/:id",
+).patch(
   auth(
     USER_ROLES.ADMIN,
     USER_ROLES.SUPER_ADMIN,
     USER_ROLES.ARTIST,
     USER_ROLES.USER
   ),
-  fileUploadHandler() as any,
+  fileUploadHandler(),
   async (req, res, next) => {
     try {
       const data = req.body;
       const image = getSingleFilePath(req.files, "image");
+      const addOns = req.body.addOns;
+      if(addOns){
+        req.body.addOns = JSON.parse(addOns)
+      }
       req.body = {
         ...data,
         image,
@@ -84,13 +84,9 @@ router.patch(
     } catch (error) {
       throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid request data.");
     }
-  }
-);
-
-// * delete service management
-
-router.delete(
-  "/:id",
+  },
+  ServiceManagementController.updateServiceManagement
+).delete(
   auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
   ServiceManagementController.deleteServiceManagement
 );

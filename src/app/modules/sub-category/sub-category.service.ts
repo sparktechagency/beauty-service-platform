@@ -15,8 +15,8 @@ const createSubCategoryIntoDB = async (payload: ISubCategory) => {
   return result;
 };
 
-const getAllSubCategoryFromDB = async () => {
-  const result = await SubCategory.find().populate({
+const getAllSubCategoryFromDB = async (category?: string) => {
+  const result = await SubCategory.find(category?{category}:{}).populate({
     path: "category",
     select: "name image",
   });

@@ -6,7 +6,8 @@ import validateRequest from "../../middlewares/validateRequest";
 import { ReviewValidation } from "./review.validation";
 const router = express.Router();
 
-router.post("/",
+router.route('/')
+.post(
     auth(USER_ROLES.USER),
     validateRequest(ReviewValidation.reviewZodSchema),
     async (req: Request, res: Response, next: NextFunction) => {
@@ -21,8 +22,14 @@ router.post("/",
             return res.status(500).json({ message: "Failed to convert string to number" });
         }
     },
-    auth(USER_ROLES.USER), ReviewController.createReview
-);
+    ReviewController.createReview
+)
+.get(
+    auth(USER_ROLES.USER,USER_ROLES.ARTIST),
+    validateRequest(ReviewValidation.getAllReviewsZodSchema),
+    ReviewController.getAllReviews
+)
+
 
 
 export const ReviewRoutes = router;

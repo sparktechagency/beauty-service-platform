@@ -68,7 +68,8 @@ const getUsers = catchAsync(
       success: true,
       statusCode: StatusCodes.OK,
       message: "Users retrieved successfully",
-      data: result,
+      data: result.users,
+      pagination: result.pagination,
     });
   }
 );
@@ -87,11 +88,41 @@ const deleteAccount = catchAsync(
   }
 );
 
+const getUserById = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const id = req.params.id;
+    const query = req.query;
+    const result = await UserService.getUserDataUsingIdFromDB(id,query);
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: "User retrieved successfully",
+      data: result.data,
+      pagination: result.pagination,
+    });
+  }
+);
+
+const updateUserById = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const id = req.params.id;
+    const result = await UserService.updateUserDataById(id, req.body);
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: "User updated successfully",
+      data: result,
+    });
+  }
+);
+
 export const UserController = {
   createUser,
   getUserProfile,
   updateProfile,
   createStripeAccount,
   getUsers,
-  deleteAccount
+  deleteAccount,
+  getUserById,
+  updateUserById,
 };

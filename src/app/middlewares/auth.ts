@@ -8,6 +8,8 @@ import ApiError from '../../errors/ApiErrors';
 const auth = (...roles: string[]) => async (req: Request, res: Response, next: NextFunction) => {
     try {
         const tokenWithBearer = req.headers.authorization;
+      
+        
         if (!tokenWithBearer) {
             throw new ApiError(StatusCodes.UNAUTHORIZED, 'You are not authorized');
         }

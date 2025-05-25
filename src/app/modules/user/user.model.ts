@@ -37,7 +37,7 @@ const userSchema = new Schema<IUser, UserModal>(
     },
     profile: {
       type: String,
-      default: "https://i.ibb.co/z5YHLV9/profile.png",
+      default: "/default/profile.jpg",
     },
     isDeleted: {
       type: Boolean,
@@ -82,9 +82,6 @@ const userSchema = new Schema<IUser, UserModal>(
       type: Boolean,
       default: false,
     },
-    backGroundImage: {
-      type: String,
-    },
     contact: {
       type: String,
     },
@@ -100,12 +97,6 @@ const userSchema = new Schema<IUser, UserModal>(
     },
     social: {
       type: String,
-    },
-    license: {
-      type: String,
-    },
-    workImage: {
-      type: [String],
     },
     accountInfo: {
       type: {

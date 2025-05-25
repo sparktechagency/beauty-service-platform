@@ -15,6 +15,9 @@ const subscriptionToDB = async (user: JwtPayload, priceId: string) => {
     if (!packageData) {
         throw new ApiError(404,"Package not found");
     }
+    if(packageData.for!==user.role){
+        throw new ApiError(404,"Package not found");
+    }
     const subscription = await stripe.checkout.sessions.create({
         mode: "subscription",
         payment_method_types: ["card"],

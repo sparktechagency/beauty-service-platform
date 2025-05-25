@@ -9,7 +9,7 @@ const serviceManagementSchema = new Schema<IServiceManagement>({
   },
   subCategory: {
     type: Schema.Types.ObjectId,
-    ref: "subCategory",
+    ref: "SubCategory",
     required: true,
   },
   name: {

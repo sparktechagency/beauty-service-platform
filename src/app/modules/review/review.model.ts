@@ -37,6 +37,11 @@ const reviewSchema = new Schema<IReview, ReviewModel>(
         trxId: {
             type: String,
             required: false
+        },
+        service: {
+            type: Schema.Types.ObjectId,
+            ref: "ServiceManagement",
+            required: true,
         }
 
     },

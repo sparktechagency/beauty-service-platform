@@ -21,12 +21,10 @@ const reportSchema = new Schema<IReport, ReportModel>(
             required: false,
             ref: "UserTakeService"
         },
-        reason: [
-            {
-                type: String,
-                required: true
-            }
-        ],
+        reason: {
+            type: String,
+            required: true
+        },
         type: {
             type: String,
             enum: ["report", "cancel"],

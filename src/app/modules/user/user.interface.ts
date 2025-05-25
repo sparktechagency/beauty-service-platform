@@ -1,4 +1,4 @@
-import { Model, Types } from "mongoose";
+import { Document, Model, Types } from "mongoose";
 import { USER_ROLES } from "../../../enums/user";
 
 export type IUser = {
@@ -13,15 +13,12 @@ export type IUser = {
   role: USER_ROLES;
   password: string;
   confirmPassword: string;
-  license?: string;
   latitude?: number;
   longitude?: number;
   verified?: boolean;
   description?: string;
   profile?: string;
   isDeleted?: boolean;
-  workImage?: [string]; //TODO: ensure need to upload at list 5 images
-  backGroundImage?: string; //TODO: make user for validation for artist
   accountInfo?: {
     status: boolean;
     stripeAccountId: string;
@@ -37,6 +34,8 @@ export type IUser = {
   referralCode?: string;
   isActive?: boolean;
   reffralCodeDB?: string;
+  createdAt?: Date;
+  
 };
 
 export type UserModal = {

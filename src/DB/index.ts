@@ -3,6 +3,7 @@ import { User } from '../app/modules/user/user.model';
 import config from '../config';
 import { USER_ROLES } from '../enums/user';
 import { logger } from '../shared/logger';
+import { profile } from 'winston';
 
 const superUser = {
     firstName: 'Super', // put client first name
@@ -11,6 +12,7 @@ const superUser = {
     email: config.admin.email,
     password: config.admin.password,
     verified: true,
+
 };
 
 const seedSuperAdmin = async () => {

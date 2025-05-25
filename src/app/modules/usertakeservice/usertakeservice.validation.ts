@@ -43,8 +43,23 @@ const cancelOrderZodSchema = z.object(
 }
 )
 
+const activeUserValidationZodSchema = z.object({
+  body: z.object({
+    latitude: z.number({
+      required_error: "latitude is required",
+    }),
+    longitude: z.number({
+      required_error: "longitude is required",
+    }),
+    status:z.boolean({
+      required_error: "status is required",
+    })
+  }),
+});
+
 export const UserTakeServiceValidations = {
   createServiceZodSchema,
   updateServiceZodSchema,
   cancelOrderZodSchema,
+  activeUserValidationZodSchema,
 };

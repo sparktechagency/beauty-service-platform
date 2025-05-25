@@ -8,4 +8,11 @@ const reviewZodSchema = z.object({
     })  
 })
 
-export const ReviewValidation = {reviewZodSchema}
+const getAllReviewsZodSchema = z.object({
+    query: z.object({
+        service: z.string({ required_error: 'Service is required' }),
+        artist: z.string({ required_error: 'Artist is required' }),
+    })
+})
+
+export const ReviewValidation = {reviewZodSchema,getAllReviewsZodSchema}

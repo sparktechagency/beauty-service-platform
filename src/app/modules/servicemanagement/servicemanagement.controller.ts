@@ -4,6 +4,7 @@ import sendResponse from "../../../shared/sendResponse";
 import { ServiceManagementServices } from "./servicemanagement.service";
 import ApiError from "../../../errors/ApiErrors";
 import { StatusCodes } from "http-status-codes";
+import { getSingleFilePath } from "../../../shared/getFilePath";
 
 const createServiceManagement = catchAsync(
   async (req: Request, res: Response) => {
@@ -66,6 +67,8 @@ const getSingleServiceManagement = catchAsync(
 const updateServiceManagement = catchAsync(
   async (req: Request, res: Response) => {
     const { id } = req.params;
+  
+
     const { ...serviceManagementData } = req.body;
     const result =
       await ServiceManagementServices.updateServiceManagementIntoDB(

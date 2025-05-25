@@ -14,7 +14,7 @@ const router = express.Router();
 router.get("/profile", auth(), UserController.getUserProfile);
 router.post(
   "/",
-  fileUploadHandler() as any,
+  validateRequest(UserValidation.createUserZodSchema),
   async (req, res, next) => {
     try {
       const { ...payload } = req.body;
@@ -88,6 +88,22 @@ router
     auth(),
     validateRequest(UserValidation.createDeletePasswordZodSchema),
     UserController.deleteAccount
+  );
+
+router.route('/user/:id')
+  .get(
+    auth(
+      USER_ROLES.ADMIN,
+      USER_ROLES.SUPER_ADMIN,
+    ),
+    UserController.getUserById
+  )
+  .patch(
+    auth(
+      USER_ROLES.ADMIN,
+      USER_ROLES.SUPER_ADMIN,
+    ),
+    UserController.updateUserById
   );
 
 export const UserRoutes = router;

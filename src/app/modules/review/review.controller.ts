@@ -16,4 +16,15 @@ const createReview = catchAsync(async(req:Request, res:Response)=>{
     })
 })
 
-export  const ReviewController = {createReview}
+const getAllReviews = catchAsync(async(req:Request, res:Response)=>{
+    const result = await ReviewService.getAllReviews(req.query.service as string,req.query.artist as string,req.query);
+    sendResponse(res, {
+        statusCode : StatusCodes.OK,
+        success: true,
+        message: "Review Fetched Successfully",
+        data: result.reviews,
+        pagination: result.paginationInfo
+    })
+})
+
+export  const ReviewController = {createReview, getAllReviews}; 

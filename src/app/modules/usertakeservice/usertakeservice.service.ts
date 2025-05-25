@@ -9,7 +9,7 @@ import { USER_ROLES } from "../../../enums/user";
 import { calculateDistanceInKm } from "../../../util/calculateDistanceInKm ";
 import { JwtPayload } from "jsonwebtoken";
 import { number } from "zod";
-import { locationHelper } from "../../../helpers/locationHelper";
+import { locationHelper, locationRemover } from "../../../helpers/locationHelper";
 import stripe from "../../../config/stripe";
 import { ServiceManagement } from "../servicemanagement/servicemanagement.model";
 import { Subscription } from "../subscription/subscription.model";
@@ -22,6 +22,7 @@ import { WalletService } from "../wallet/wallet.service";
 import { Reward } from "../reward/reward.model";
 import { logger } from "../../../shared/logger";
 import { sendNotificationToFCM } from "../../../helpers/firebaseNotificationHelper";
+import cryptoToken from "../../../util/cryptoToken";
 
 const createUserTakeServiceIntoDB = async (
   payload: IUserTakeService,
@@ -38,7 +39,7 @@ const createUserTakeServiceIntoDB = async (
     userId: new Types.ObjectId(userId.id),
   };
 
-  const result = await UserTakeService.create(data);
+  const result = await UserTakeService.create(data)
   const allProviders = await User.find({
     role: USER_ROLES.ARTIST,
     isActive: true,
@@ -68,20 +69,75 @@ const createUserTakeServiceIntoDB = async (
       userId: result.userId,
       data: payload,
     });
-    await sendNotificationToFCM({
-      token: "Hello i'm token",
-      title: "New service request near you",
-      body: "A new service request has been created near you",
-      data: payload,
-    });
+
   }
-  const nearbyOrders = await nearByOrderByLatitudeAndLongitude(
-    result.latitude,
-    result.longitude
-  );
+
+  const currentOrder = await UserTakeService.findById(result._id).populate([
+      {
+        path: "serviceId",
+        select: ["name", "category", "subCategory"],
+        populate: [
+          {
+            path: "category",
+            select: ["name"],
+          },
+        ],
+      },
+      {
+        path: "userId",
+        select: [
+          "name",
+          "email",
+          "phone",
+          "profile",
+          "isActive",
+          "status",
+          "subscription",
+          "location",
+        ],
+        populate: [
+          {
+            path: "subscription",
+            select: ["package", "status"],
+            populate: [
+              {
+                path: "package",
+                select: ["name", "price", "price_offer"],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        path: "artiestId",
+        select: [
+          "name",
+          "email",
+          "phone",
+          "profile",
+          "isActive",
+          "status",
+          "subscription",
+          "location",
+        ],
+        populate: [
+          {
+            path: "subscription",
+            select: ["package", "status"],
+            populate: [
+              {
+                path: "package",
+                select: ["name", "price", "price_offer"],
+              },
+            ],
+          },
+        ],
+      },
+    ])
+
 
   for (const provider of nearbyProviders) {
-    locationHelper({ receiver: provider._id, data: nearbyOrders });
+    locationHelper({ receiver: provider._id, data: currentOrder! });
   }
 
   return result;
@@ -91,6 +147,9 @@ const confirmOrderToDB = async (orderId: ObjectId, userId: JwtPayload) => {
   const order = await UserTakeService.findById(orderId);
   if (!order) {
     throw new ApiError(StatusCodes.NOT_FOUND, "Order not found");
+  }
+  if(order.payment_intent){
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Order already confirmed");
   }
   const subscription = await Subscription.findOne({
     user: userId.id,
@@ -137,7 +196,7 @@ const confirmOrderToDB = async (orderId: ObjectId, userId: JwtPayload) => {
     success_url: `https://www.your.com/user/payment-success`,
     cancel_url: `https://www.your.com/user/payment-cancel`,
     metadata: {
-      data: JSON.stringify({ orderId }),
+      data: JSON.stringify({ orderId ,app_fee: order.app_fee, total_amount: order.total_amount }),
     },
   });
 
@@ -148,10 +207,84 @@ export const nearByOrderByLatitudeAndLongitude = async (
   latitude: number,
   longitude: number
 ) => {
+  const currentTime = new Date()
+  const fifteenMinutesBefore = new Date(currentTime.getTime() - 15 * 60 * 1000);
+  const fifteenMinutesLater = new Date(currentTime.getTime() + 15 * 60 * 1000);
+
+
+  
   const result = await UserTakeService.find({
     status: "pending",
     isBooked: false,
-  });
+    // createdAt: {
+    //   $gte: fifteenMinutesBefore,
+    //   $lte: fifteenMinutesLater,
+    // }
+  }).populate([
+      {
+        path: "serviceId",
+        select: ["name", "category", "subCategory"],
+        populate: [
+          {
+            path: "category",
+            select: ["name"],
+          },
+        ],
+      },
+      {
+        path: "userId",
+        select: [
+          "name",
+          "email",
+          "phone",
+          "profile",
+          "isActive",
+          "status",
+          "subscription",
+          "location",
+        ],
+        populate: [
+          {
+            path: "subscription",
+            select: ["package", "status"],
+            populate: [
+              {
+                path: "package",
+                select: ["name", "price", "price_offer"],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        path: "artiestId",
+        select: [
+          "name",
+          "email",
+          "phone",
+          "profile",
+          "isActive",
+          "status",
+          "subscription",
+          "location",
+        ],
+        populate: [
+          {
+            path: "subscription",
+            select: ["package", "status"],
+            populate: [
+              {
+                path: "package",
+                select: ["name", "price", "price_offer"],
+              },
+            ],
+          },
+        ],
+      },
+    ]).sort({createdAt:-1}).lean()
+
+    
+    
   const filterData = result.filter((services) => {
     if (services.latitude && services.longitude) {
       const distance = calculateDistanceInKm(
@@ -160,10 +293,13 @@ export const nearByOrderByLatitudeAndLongitude = async (
         services.latitude,
         Number(services.longitude)
       );
+      
+      
       return distance <= 50;
     }
     return false;
   });
+
 
   return filterData;
 };
@@ -171,52 +307,106 @@ export const nearByOrderByLatitudeAndLongitude = async (
 const getAllServiceAsArtistFromDB = async (
   user: JwtPayload,
   latitude: number,
-  longitude: number
+  longitude: number,
+  status:boolean
 ) => {
-  const filterData = await nearByOrderByLatitudeAndLongitude(
+
+  if(status){
+      const filterData = await nearByOrderByLatitudeAndLongitude(
     latitude,
     longitude
   );
-  locationHelper({ receiver: user.id, data: filterData });
+  filterData.forEach(item=>{
+    locationHelper({ receiver: user.id, data: item });
+  })
+  }
+  else{
+    locationHelper({ receiver: user.id, data: {} as any });
+  }
+
   // Check if user data needs to be updated
   const existingUser = await User.findById(user.id);
 
-  if (
-    existingUser?.latitude !== latitude ||
-    existingUser?.longitude !== longitude ||
-    !existingUser?.isActive
-  ) {
+
     const userData = await User.findByIdAndUpdate(
       user.id,
-      { $set: { latitude, longitude, isActive: true } },
+      { $set: { latitude, longitude, isActive: status } },
       { new: true }
     );
-    console.log("User location updated:", userData);
-  }
-
-  return filterData;
+    return userData;
 };
 
 const getSingleUserService = async (
   id: string
 ): Promise<IUserTakeService | null> => {
-  const result = await UserTakeService.findById(id).populate("serviceId");
-  // TODO: order details provider details
-  // const userLatitude = result?.latitude;
-  // const userLongitude = result?.longitude;
-  // const providers = await User.find({ role: USER_ROLES.ARTIST });
-  // const nearbyProviders = providers.filter((provider) => {
-  //   if (provider.latitude && provider.longitude) {
-  //     const distance = calculateDistanceInKm(
-  //       userLatitude as number,
-  //       userLongitude as number,
-  //       provider.latitude,
-  //       Number(provider.longitude)
-  //     );
-  //     return distance <= 50;
-  //   }
-  //   return false;
-  // });
+  const result = await UserTakeService.findById(id).populate([
+    {
+      path: "serviceId",
+      select: ["name", "category", "subCategory"],
+      populate: [
+        {
+          path: "category",
+          select: ["name"],
+
+        },
+        {
+          path: "subCategory",
+          select: ["name"],
+        }
+      ],
+    },
+    {
+      path: "userId",
+      select: [
+        "name",
+        "email",
+        "phone",
+        "profile",
+        "isActive",
+        "status",
+        "subscription",
+        "location",
+      ],
+      populate: [
+        {
+          path: "subscription",
+          select: ["package", "status"],
+          populate: [
+            {
+              path: "package",
+              select: ["name", "price", "price_offer"],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      path: "artiestId",
+      select: [
+        "name",
+        "email",
+        "phone",
+        "profile",
+        "isActive",
+        "status",
+        "subscription",
+        "location",
+      ],
+      populate: [
+        {
+          path: "subscription",
+          select: ["package", "status"],
+          populate: [
+            {
+              path: "package",
+              select: ["name", "price", "price_offer"],
+            },
+          ],
+        },
+      ],
+    },
+  ])
+
   if (!result) {
     throw new ApiError(StatusCodes.NOT_FOUND, "Service not found");
   }
@@ -279,20 +469,17 @@ const updateUserTakeServiceIntoDB = async (
     }
   });
 
-  const nearbyOrders = await nearByOrderByLatitudeAndLongitude(
-    result.latitude,
-    result.longitude
-  );
+
 
   for (const provider of nearbyProviders) {
-    locationHelper({ receiver: provider._id, data: nearbyOrders });
+    locationRemover({ receiver: provider._id, data: id });
   }
 
   return result;
 };
 
 // its after stripe payment
-const bookOrder = async (payload: ObjectId, payment_intent: string) => {
+const bookOrder = async (payload: ObjectId, payment_intent: string,app_fee:number,total_amount:number) => {
   try {
     const result = await UserTakeService.findOne({ _id: payload });
 
@@ -305,7 +492,7 @@ const bookOrder = async (payload: ObjectId, payment_intent: string) => {
 
     const updateOrder = await UserTakeService.findOneAndUpdate(
       { _id: payload },
-      { status: "inProgress", payment_intent: payment_intent },
+      { app_fee,total_amount,status: "inProgress", payment_intent: payment_intent },
       { new: true }
     );
 
@@ -421,9 +608,12 @@ const payoutOrderInDB = async (orderId: string) => {
   if (!order) {
     throw new ApiError(StatusCodes.NOT_FOUND, "Order not found");
   }
-  if (order.status != "processing") {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "Order is not payable");
+
+  if(["completed", "cancelled"].includes(order.status)) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Order is not completable");
   }
+
+
   const subscription = await Subscription.findOne({
     user: order.artiestId,
     status: "active",
@@ -443,9 +633,10 @@ const payoutOrderInDB = async (orderId: string) => {
     { user: order.artiestId },
     { $inc: { balance: amount } }
   );
+  const txtId = 'TXN'+cryptoToken(6)
   await UserTakeService.updateOne(
     { _id: orderId },
-    { status: "completed", artist_app_fee: (order.price * cost) / 100 || 0 }
+    { status: "completed", artist_app_fee: (order.price * cost) / 100 || 0,trxId: txtId }
   );
 
   //Bonus section after the completion of the order
@@ -557,11 +748,13 @@ const getAllBookingsFromDB = async (
     .filter()
     .paginate();
   const paginationInfo = await result.getPaginationInfo();
+  
+  
   const data = await result.modelQuery
     .populate([
       {
         path: "serviceId",
-        select: ["name", "category", "subCategory"],
+        select: ["name", "category", "subCategory",'image'],
         populate: [
           {
             path: "category",
@@ -622,6 +815,8 @@ const getAllBookingsFromDB = async (
     ])
     .lean()
     .exec();
+
+ 
 
   return {
     paginationInfo,

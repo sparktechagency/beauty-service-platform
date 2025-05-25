@@ -16,6 +16,9 @@ import { DisclaimerRoutes } from "../modules/disclaimer/disclaimer.route";
 import { BonusAndChallengeRoute } from "../modules/bonusAndChallenge/bonusAndChallenge.route";
 import { FaqRoutes } from "../modules/faq/faq.route";
 import { ReportRoutes } from "../modules/report/report.routes";
+import { AnalyticsRoutes } from "../modules/analytics/analytics.route";
+import { PredefiendReviewRoutes } from "../modules/predefind_reviews/predefind_review.route";
+import { DocumentRoutes } from "../modules/document/document.route";
 const router = express.Router();
 
 const apiRoutes = [
@@ -35,7 +38,10 @@ const apiRoutes = [
   { path: "/disclaimer", route: DisclaimerRoutes },
   { path: "/bonusAndChallenge", route: BonusAndChallengeRoute },
   {path:"/faq",route:FaqRoutes},
-  {path:"/report",route:ReportRoutes}
+  {path:"/report",route:ReportRoutes},
+  {path:'/analytics',route:AnalyticsRoutes},
+  {path:"/pre-review",route:PredefiendReviewRoutes},
+  {path:"/document", route:DocumentRoutes}
 ];
 
 apiRoutes.forEach((route) => router.use(route.path, route.route));
