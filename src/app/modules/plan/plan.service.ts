@@ -10,7 +10,7 @@ const createPlanToDB = async (payload: IPlan): Promise<IPlan | null> => {
     name: payload.name,
     description: "Monthly subscription",
   });
-  const formatPrice = ((payload.price)) * 100
+  const formatPrice = parseFloat((((payload.price)) * 100).toFixed(2));
   const price = await stripe.prices.create({
     unit_amount:formatPrice ,
     currency: "usd",
@@ -57,7 +57,7 @@ const updatePlanToDB = async (
         const price2 = await stripe.prices.update(payload.price_id!, {
             active:false
         });
-        const formatPrice = ((payload.price)) * 100
+        const formatPrice = parseFloat((((payload.price)) * 100).toFixed(2))
         const newPrice = await stripe.prices.create({
             unit_amount: formatPrice,
             currency: "usd",

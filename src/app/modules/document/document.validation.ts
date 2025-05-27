@@ -6,8 +6,21 @@ const createDocumentZodSchema = z.object({
     user: z.string({
       required_error: "user is required",
     }),
-    type: z.nativeEnum(DOCUMENT_TYPE),
-    image: z.any()
+    license: z.array(z.string({
+      required_error: "license is required",
+    })).optional(),
+    work: z.array(z.string({
+      required_error: "work is required",
+    })).optional(),
+    portfolio: z.string({
+      required_error: "portfolio is required",
+    }).optional(),
+    background: z.string({
+      required_error: "background is required",
+    }).optional(),
+    dashboard: z.string({
+      required_error: "dashboard is required",
+    }).optional()
   }),
 });
 

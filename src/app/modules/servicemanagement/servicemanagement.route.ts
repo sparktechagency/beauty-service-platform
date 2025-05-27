@@ -24,6 +24,10 @@ router.post(
           .json({ message: "Service image is required." });
       }
 
+      if(req.body?.statePrices){
+        req.body.statePrices = JSON.parse(req.body.statePrices);
+      }
+
       req.body = {
         ...data,
         image,
@@ -50,6 +54,8 @@ router.get(
   ServiceManagementController.getAllServiceManagement
 );
 
+router.get('/states',ServiceManagementController.getStatsData)
+
 // * get single service management
 router.route("/:id")
   .get(
@@ -75,6 +81,9 @@ router.route("/:id")
       const addOns = req.body.addOns;
       if(addOns){
         req.body.addOns = JSON.parse(addOns)
+      }
+      if(req.body?.statePrices){
+        req.body.statePrices = JSON.parse(req.body.statePrices);
       }
       req.body = {
         ...data,

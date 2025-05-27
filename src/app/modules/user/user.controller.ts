@@ -9,7 +9,7 @@ const createUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const { ...userData } = req.body;
     const result = await UserService.createUserToDB(userData);
-    console.log("result", result);
+  
     sendResponse(res, {
       success: true,
       statusCode: StatusCodes.OK,
@@ -116,6 +116,19 @@ const updateUserById = catchAsync(
   }
 );
 
+const addCategories = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const id = req.params.id;
+    const result = await UserService.addCategoriesToUserInDB(id, req.body.categories);
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: "Categories added successfully",
+      data: result,
+    });
+  }
+);
+
 export const UserController = {
   createUser,
   getUserProfile,
@@ -125,4 +138,5 @@ export const UserController = {
   deleteAccount,
   getUserById,
   updateUserById,
+  addCategories,
 };

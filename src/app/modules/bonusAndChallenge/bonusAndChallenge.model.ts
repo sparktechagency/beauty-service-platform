@@ -1,5 +1,6 @@
 import { model, Schema } from "mongoose";
 import { IBonusAndChallenge } from "./bonusAndChallenge.interface";
+import { BONUS_USER_TYPE } from "../../../enums/bonus";
 
 const IBonusAndChallenge = new Schema<IBonusAndChallenge>(
   {
@@ -34,7 +35,7 @@ const IBonusAndChallenge = new Schema<IBonusAndChallenge>(
     },
     recipint: {
       type: String,
-      enum: ["USER", "ARTIST"],
+      enum: Object.values(BONUS_USER_TYPE),
       required: true,
     },
   },

@@ -8,7 +8,12 @@ const createPredefindReviewZodSchema = z.object({
     reviews: z.array(z.string({ required_error: "Reviews is required" })),
   }),
 });
-
+const createGeneralReviewZodSchema = z.object({
+  body: z.object({
+    review: z.array(z.string({ required_error: "Reviews is required" })),
+  }),
+});
 export const PredefiendReviewValidation = {
   createPredefindReviewZodSchema,
+  createGeneralReviewZodSchema,
 };

@@ -7,6 +7,7 @@ import globalErrorHandler from './app/middlewares/globalErrorHandler';
 import session from "express-session";
 import passport from "./config/passport"; 
 import { handleWebHook } from "./app/modules/webhook/handleWebhook";
+import { handleCheckrWebhook } from "./app/modules/webhook/handleCheckrWebhook";
 const app = express();
 
 
@@ -16,9 +17,12 @@ app.use(Morgan.errorHandler);
 
 // webhook
 app.post("/api/webhook",express.raw({ type: "application/json" }),handleWebHook);
+app.post("/api/webhook/checkr",express.raw({ type: "application/json" }),handleCheckrWebhook);
 
 //body parser
-app.use(cors());
+app.use(cors({
+    origin:["https://rahat3000.binarybards.online","http://10.0.80.47:5173"]
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

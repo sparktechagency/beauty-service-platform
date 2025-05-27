@@ -10,7 +10,6 @@ const notificationSchema = new Schema<INotification, NotificationModel>(
     receiver: {
       type:Schema.Types.ObjectId, 
       ref: "User",
-      required: true,
     },
     message: {
       type: String,
@@ -32,8 +31,13 @@ const notificationSchema = new Schema<INotification, NotificationModel>(
     serviceId: {
       type: Schema.Types.ObjectId,
       ref: "Service",
-      required: true,
     },
+    readers: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ]
   },
   {
     timestamps: true,

@@ -10,7 +10,7 @@ const route = Router();
 route.post("/",auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),validateRequest(ClientAgreementValidation.createClientAgreementZodSchema), clientAgreementController.createClientAgreement)
 
 //* get all client agreement
-route.get("/",auth(USER_ROLES.ADMIN, USER_ROLES.ARTIST, USER_ROLES.SUPER_ADMIN, USER_ROLES.USER), clientAgreementController.getAllClientAgreement)
+route.get("/", clientAgreementController.getAllClientAgreement)
 
 
 export const clientAgreementRoute = route;

@@ -1,5 +1,5 @@
 import express from "express";
-import { USER_ROLES } from "../../../enums/user";
+import { ADMIN_BADGE, USER_ROLES } from "../../../enums/user";
 import { UserController } from "./user.controller";
 import { UserValidation } from "./user.validation";
 import auth from "../../middlewares/auth";
@@ -9,6 +9,7 @@ import {
   getMultipleFilesPath,
   getSingleFilePath,
 } from "../../../shared/getFilePath";
+import adminAuth from "../../middlewares/adminAuth";
 const router = express.Router();
 
 router.get("/profile", auth(), UserController.getUserProfile);
@@ -67,7 +68,7 @@ router
           profile: profile,
           ...payload,
         };
-        console.log("req.body", req.body);
+   
         next();
       } catch (error) {
         res.status(500).json({ message: "Failed to upload Image" });
@@ -76,12 +77,7 @@ router
     UserController.updateProfile
   )
   .get(
-    auth(
-      USER_ROLES.ADMIN,
-      USER_ROLES.SUPER_ADMIN,
-      USER_ROLES.USER,
-      USER_ROLES.ARTIST
-    ),
+    adminAuth([ADMIN_BADGE.AH_ENGAGEMENT,ADMIN_BADGE.AH_CARE]),
     UserController.getUsers
   )
   .delete(
@@ -92,18 +88,18 @@ router
 
 router.route('/user/:id')
   .get(
-    auth(
-      USER_ROLES.ADMIN,
-      USER_ROLES.SUPER_ADMIN,
-    ),
+    adminAuth([ADMIN_BADGE.AH_ENGAGEMENT,ADMIN_BADGE.AH_CARE]),
     UserController.getUserById
   )
   .patch(
-    auth(
-      USER_ROLES.ADMIN,
-      USER_ROLES.SUPER_ADMIN,
-    ),
+    adminAuth([ADMIN_BADGE.AH_ENGAGEMENT,ADMIN_BADGE.AH_CARE]),
     UserController.updateUserById
   );
+
+router.patch(
+  "/add-category/:id",
+  validateRequest(UserValidation.addCategoriesZodSchema),
+  UserController.addCategories
+)
 
 export const UserRoutes = router;

@@ -1,7 +1,7 @@
 import { StatusCodes } from "http-status-codes";
 import ApiError from "../../../errors/ApiErrors";
 import { IPredefiendReview } from "./predefind_review.interface";
-import { PredefiendReview } from "./predefind_review.model";
+import { GeneralReview, PredefiendReview } from "./predefind_review.model";
 
 const createPredefiendReview = async (
   data: IPredefiendReview
@@ -18,6 +18,18 @@ const createPredefiendReview = async (
   return await PredefiendReview.create(data);
 };
 
+const createGeneralReview = async (
+  data: string[]
+) => {
+  const existReviews = await GeneralReview.findOne({});
+  if(existReviews){
+    return await  GeneralReview.findByIdAndUpdate(existReviews._id,data,{
+      new:true
+    })
+  }
+  return await GeneralReview.create(data);
+}
+
 const updatePredefiendReview = async (
   id: string,
   data: Partial<IPredefiendReview>
@@ -32,11 +44,25 @@ const deletePredefiendReview = async (
 ): Promise<IPredefiendReview | null> => {
   return await PredefiendReview.findByIdAndDelete(id);
 };
-const getAllPredefiendReview = async (catagoryId:string)                             => {}
+const getAllPredefiendReview = async (catagoryId:string)=> {
+  const result = await PredefiendReview.find({category:catagoryId}).populate("category").lean()
+  if(!result){
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Predefiend Review not found");
+  }
+  const general = await GeneralReview.findOne({})
+  return result.map((item:any)=>{
+    return {
+      ...item,
+      general:general?.review
+    }
+  })
+}
 
 
 export const PredefiendReviewService = {
   createPredefiendReview,
   deletePredefiendReview,
   getAllPredefiendReview,
+  updatePredefiendReview,
+  createGeneralReview
 };

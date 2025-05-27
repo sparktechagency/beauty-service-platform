@@ -5,6 +5,9 @@ const createSubscriptionZodSchema = z.object({
         priceId: z.string({
             required_error: "Price ID is required",
         }),
+        userId: z.string({
+            required_error: "User ID is required",
+        })
     }),
 });
 

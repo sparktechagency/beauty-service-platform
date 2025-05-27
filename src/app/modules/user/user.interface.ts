@@ -1,5 +1,5 @@
 import { Document, Model, Types } from "mongoose";
-import { USER_ROLES } from "../../../enums/user";
+import { ADMIN_BADGE, USER_ROLES } from "../../../enums/user";
 
 export type IUser = {
   name: string;
@@ -35,7 +35,9 @@ export type IUser = {
   isActive?: boolean;
   reffralCodeDB?: string;
   createdAt?: Date;
-  
+  badge?: ADMIN_BADGE;
+  categories?: Types.ObjectId[];
+  state: string;
 };
 
 export type UserModal = {

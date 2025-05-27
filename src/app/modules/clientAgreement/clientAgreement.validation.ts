@@ -6,7 +6,7 @@ const createClientAgreementZodSchema = z.object({
       required_error: "agreement is required",
     }),
     type:z.enum(['agreement','responsibility']),
-    for:z.enum(['user','provider']),
+    for:z.enum(['user','artist']),
   }),
 });
 

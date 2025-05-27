@@ -31,7 +31,8 @@ const getAllSubCategory = catchAsync(async (req: Request, res: Response) => {
 
 const getAllServiceFromDB = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const result = await SubCategoryServices.getAServiceFromDB(id, req.query);
+  const user = req.user;
+  const result = await SubCategoryServices.getAServiceFromDB(id, req.query,user!);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,

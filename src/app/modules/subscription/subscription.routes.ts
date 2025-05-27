@@ -1,19 +1,19 @@
 import express from "express";
 import auth from "../../middlewares/auth";
-import { USER_ROLES } from "../../../enums/user";
+import { ADMIN_BADGE, USER_ROLES } from "../../../enums/user";
 import { SubscriptionController } from "./subscription.controller";
 import validateRequest from "../../middlewares/validateRequest";
 import { SubscriptionValidation } from "./subscription.validation";
+import adminAuth from "../../middlewares/adminAuth";
 const router = express.Router();
 
 router.post("/",
-    auth(USER_ROLES.ARTIST, USER_ROLES.USER),
     validateRequest(SubscriptionValidation.createSubscriptionZodSchema), 
     SubscriptionController.subscribePlan
 )
 
 router.get("/", 
-    auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN), 
+    adminAuth([ADMIN_BADGE.AH_ENGAGEMENT]), 
     SubscriptionController.subscribers
 );
 
@@ -22,14 +22,13 @@ router.get("/details",
     SubscriptionController.subscriptionDetails
 );
 router.get("/overview",
-    auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+    adminAuth([ADMIN_BADGE.AH_ENGAGEMENT]),
     SubscriptionController.overView)
 
 router.route("/:id")
     .patch(
-        auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
+        adminAuth([ADMIN_BADGE.AH_ENGAGEMENT]),
         validateRequest(SubscriptionValidation.createChangeSubscriptionZodSchema),
-        auth(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
         SubscriptionController.changeSubscriptionStatus
     );
 

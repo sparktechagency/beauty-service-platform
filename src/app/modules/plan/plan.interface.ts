@@ -12,6 +12,7 @@ export type IPlan = {
     productId?:string,
     service_charge?:number,
     status:"active"|"delete",
+    title:string,
 }
 
 export type PlanModel = Model<IPlan,Record<string,any>>

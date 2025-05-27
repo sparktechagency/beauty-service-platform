@@ -6,14 +6,9 @@ import { StatusCodes } from "http-status-codes";
 
 const reportSchema = new Schema<IReport, ReportModel>(
     {
-        customer: {
+        user: {
             type: Schema.Types.ObjectId,
-            required: false,
-            ref: "User"
-        },
-        artist: {
-            type: Schema.Types.ObjectId,
-            required: false,
+            required: true,
             ref: "User"
         },
         reservation: {
@@ -38,6 +33,10 @@ const reportSchema = new Schema<IReport, ReportModel>(
         },
         note: {
             type: String,
+            required: false
+        },
+        refund: {
+            type: Number,
             required: false
         }
     },

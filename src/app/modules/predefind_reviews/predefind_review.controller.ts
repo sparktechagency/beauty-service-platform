@@ -35,8 +35,20 @@ const getAllPredefiendReview = catchAsync(async (req:Request, res:Response) => {
   });
 });
 
+const createGeneralReview = catchAsync(async (req:Request, res:Response) => {
+  const data = req.body;
+  const result = await PredefiendReviewService.createGeneralReview(data);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "General Review created successfully",
+    data: result,
+  });
+});
+
 export const PredefiendReviewController = {
   createPredefiendReview,
   deletePredefiendReview,
   getAllPredefiendReview,
+  createGeneralReview,
 };

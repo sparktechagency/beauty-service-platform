@@ -1,13 +1,13 @@
 import { Model, Types } from "mongoose";
 
 export type IReport = {
-    customer?: Types.ObjectId;
-    artist?: Types.ObjectId;
+    user: Types.ObjectId;
     reservation?: Types.ObjectId;
     reason: string;
     type:"report"|'cancel';
     status?: "pending"|'resolved';
     note?:string;
+    refund?: number;
 };
 
 export type ISupport = {

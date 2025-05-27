@@ -22,7 +22,7 @@ const summury = async ()=>{
   ]);
 
   const totalFee = totalEarnings[0]?.appFee + totalEarnings[0]?.artistEarnings;
-  console.log(totalEarnings[0]?.appFee , totalEarnings[0]?.artistEarnings);
+
   
   const dailyFee = await UserTakeService.aggregate([
     {

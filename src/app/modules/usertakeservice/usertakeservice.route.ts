@@ -1,9 +1,10 @@
 import express from "express";
 import { UserTakeServiceController } from "./usertakeservice.controller";
 import auth from "../../middlewares/auth";
-import { USER_ROLES } from "../../../enums/user";
+import { ADMIN_BADGE, USER_ROLES } from "../../../enums/user";
 import validateRequest from "../../middlewares/validateRequest";
 import { UserTakeServiceValidations } from "./usertakeservice.validation";
+import adminAuth from "../../middlewares/adminAuth";
 
 const router = express.Router();
 
@@ -20,9 +21,10 @@ router.get(
   UserTakeServiceController.getAllBookings
 );
 
+
 router.get(
   "/overview",
-  auth(USER_ROLES.ADMIN,USER_ROLES.SUPER_ADMIN),
+  adminAuth([ADMIN_BADGE.AH_CARE]),
   UserTakeServiceController.getOverview
 );
 

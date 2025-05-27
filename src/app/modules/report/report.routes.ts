@@ -1,9 +1,10 @@
 import express from 'express';
 import auth from '../../middlewares/auth';
-import { USER_ROLES } from '../../../enums/user';
+import { ADMIN_BADGE, USER_ROLES } from '../../../enums/user';
 import { ReportController } from './report.controller';
 import validateRequest from '../../middlewares/validateRequest';
 import { ReportValidation } from './report.validation';
+import adminAuth from '../../middlewares/adminAuth';
 const router = express.Router();
 
 
@@ -18,9 +19,15 @@ router.route('/report')
     ReportController.getAllReports
 )
 
+router.route('/report-orders')
+.get(
+    adminAuth([ADMIN_BADGE.AH_CARE]),
+    ReportController.reportEdOrders
+)
+
 router.route('/report/:id')
 .patch(
-    auth(USER_ROLES.ADMIN,USER_ROLES.SUPER_ADMIN),
+    adminAuth([ADMIN_BADGE.AH_CARE]),
     validateRequest(ReportValidation.changeReportStatusZodSchema),
     ReportController.changeReportStatus
 ).get(

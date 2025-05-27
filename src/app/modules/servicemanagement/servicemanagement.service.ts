@@ -4,6 +4,8 @@ import { IServiceManagement } from "./servicemanagement.interface";
 import { ServiceManagement } from "./servicemanagement.model";
 import QueryBuilder from "../../builder/queryBuilder";
 import unlinkFile from "../../../shared/unlinkFile";
+import { paginateHelper } from "../../../helpers/paginateHelper";
+import usStates from "../../../demoData/states";
 
 
 const createServiceManagementIntoDB = async (payload: IServiceManagement) => {
@@ -24,13 +26,12 @@ const getAllServiceManagementFromDB = async (
   const queryBuilder = new QueryBuilder(
     serviceQuery,
     query
-  );
+  ).sort()
   // const searchAbleFields = ["name", "basePrice", "category", "SubCategory"];
   const selectedFields = { category: "name", subCategory: "name" };
   const resultQuery = queryBuilder
     // .search(searchAbleFields)
     .filter()
-    .sort()
     .paginate()
     .populate(["category", "subCategory"], selectedFields);
   const data = await resultQuery.modelQuery;
@@ -38,6 +39,7 @@ const getAllServiceManagementFromDB = async (
   if (!data) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "ServiceManagement not found");
   }
+
   return {
     meta: pagination,
     data,
@@ -78,10 +80,15 @@ const deleteServiceManagementFromDB = async (id: string) => {
   }
   return result;
 };
+
+const statsDataFromArray = async ()=>{
+return usStates
+}
 export const ServiceManagementServices = {
   createServiceManagementIntoDB,
   getAllServiceManagementFromDB,
   getSingleServiceManagementFromDB,
   updateServiceManagementIntoDB,
   deleteServiceManagementFromDB,
+  statsDataFromArray
 };

@@ -33,6 +33,13 @@ const createUserTakeServiceIntoDB = async (
   }
 
   const userData = await User.findById(userId.id);
+  const service = await ServiceManagement.findById(payload.serviceId);
+  if (!service) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "Service not found");
+  }
+  if(service.status =="paused"){
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Service is paused");
+  }
 
   const data = {
     ...payload,
@@ -43,6 +50,9 @@ const createUserTakeServiceIntoDB = async (
   const allProviders = await User.find({
     role: USER_ROLES.ARTIST,
     isActive: true,
+    categories:{
+      $in: service.category
+    }
   });
   //  📍 Filter by 5km radius
   const nearbyProviders = allProviders.filter((provider) => {
@@ -63,11 +73,10 @@ const createUserTakeServiceIntoDB = async (
       receiver: provider._id,
       title: "New service request near you",
       message: "A new service request has been created near you",
-      type: "service-request",
       filePath: "request",
       serviceId: result._id,
       userId: result.userId,
-      data: payload,
+      isRead: false,
     });
 
   }
@@ -216,10 +225,10 @@ export const nearByOrderByLatitudeAndLongitude = async (
   const result = await UserTakeService.find({
     status: "pending",
     isBooked: false,
-    // createdAt: {
-    //   $gte: fifteenMinutesBefore,
-    //   $lte: fifteenMinutesLater,
-    // }
+    createdAt: {
+      $gte: fifteenMinutesBefore,
+      $lte: fifteenMinutesLater,
+    }
   }).populate([
       {
         path: "serviceId",
@@ -342,7 +351,7 @@ const getSingleUserService = async (
   const result = await UserTakeService.findById(id).populate([
     {
       path: "serviceId",
-      select: ["name", "category", "subCategory"],
+      select: ["name", "category", "subCategory","image",'addOns'],
       populate: [
         {
           path: "category",
@@ -426,6 +435,8 @@ const updateUserTakeServiceIntoDB = async (
     throw new ApiError(StatusCodes.FORBIDDEN, "you account is inactive");
   }
 
+
+  
   const result = await UserTakeService.findOneAndUpdate(
     { _id: id },
     { artiestId: user.id, artist_book_date: new Date(), isBooked: true },
@@ -441,13 +452,12 @@ const updateUserTakeServiceIntoDB = async (
   }
 
   await sendNotifications({
-    receiver: isExist?.userId,
+    receiver: isExist?.userId as any,
     title: `${findUser?.name} Accept your order`,
     message: "Accepted your service request",
-    type: "service-request",
     filePath: "request",
     serviceId: result._id,
-    data: result,
+    isRead: false,
   });
 
   const allProviders = await User.find({
@@ -463,7 +473,7 @@ const updateUserTakeServiceIntoDB = async (
         provider.latitude,
         Number(provider.longitude)
       );
-      console.log(distance);
+ 
 
       return distance <= 50;
     }
@@ -838,7 +848,7 @@ const paymentOverview = async () => {
   const orders = await UserTakeService.find({}).lean();
 
   orders.forEach((order: any) => {
-    console.log(order);
+
 
     if (order.status != "cancelled") {
       totalErning += order.price;

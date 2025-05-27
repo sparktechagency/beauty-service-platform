@@ -20,10 +20,10 @@ const getReferral = async (user:JwtPayload,query:Record<string,any>)=>{
         const  paginationInfo = await result.getPaginationInfo()
         const data = await result.modelQuery.populate([{
             path:'referral_user',
-            select:'name email'
+            select:'name email profile'
         },{
             path:'token_user',
-            select:'name email'
+            select:'name email profile'
         }
         ]).lean()
         return {

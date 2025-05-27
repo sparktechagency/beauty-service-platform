@@ -6,11 +6,19 @@ import { getMultipleFilesPath } from "../../../shared/getFilePath";
 
 const createDocument = catchAsync(async (req: Request, res: Response) => {
   const { ...documentData } = req.body;
-  const images = getMultipleFilesPath(req.files,"image")
+  const license = getMultipleFilesPath(req.files,"license")
+  const portfolio = getMultipleFilesPath(req.files,"portfolio")
+  const work = getMultipleFilesPath(req.files,"work")
+  const background = getMultipleFilesPath(req.files,"background")
+  const dashboard = getMultipleFilesPath(req.files,"dashboard")
   const result = await DocumentServices.createDocumentIntoDB(
     {
         ...documentData,
-        documents: images
+        license,
+        portfolio,
+        work,
+        background,
+        dashboard
     }
   );
   sendResponse(res, {
@@ -22,7 +30,7 @@ const createDocument = catchAsync(async (req: Request, res: Response) => {
 });
 const getAllUserDocuments = catchAsync(async (req: Request, res: Response) => {
 const user = req.user;
-console.log(user);
+
 
   const result = await DocumentServices.retrievedDocumentFromDB(user!);
   sendResponse(res, {
@@ -36,12 +44,20 @@ console.log(user);
 const updateDocument = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const { ...documentData } = req.body;
-  const images = getMultipleFilesPath(req.files,"image")
+  const license = getMultipleFilesPath(req.files,"license")
+  const portfolio = getMultipleFilesPath(req.files,"portfolio")
+  const work = getMultipleFilesPath(req.files,"work")
+  const background = getMultipleFilesPath(req.files,"background")
+  const dashboard = getMultipleFilesPath(req.files,"dashboard")
   const result = await DocumentServices.updateDocumentIntoDB(
     id,
     {
         ...documentData,
-        documents: images
+        license,
+        portfolio,
+        work,
+        background,
+        dashboard
     }
   );
   sendResponse(res, {

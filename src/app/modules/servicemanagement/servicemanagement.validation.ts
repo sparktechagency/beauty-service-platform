@@ -22,7 +22,8 @@ const createServiceManagementZodSchema = z.object({
           required_error: "Price is required",
         }),
       })
-    )
+    ),
+    statePrices:z.string()
   }),
 });
 
@@ -40,7 +41,8 @@ const updateServiceManagementZodSchema = z.object({
           price: z.number().optional(), 
         })
       )
-  }).optional()
+  }).optional(),
+  statePrices:z.string().optional()
 })
 
 export const ServiceManagementValidations = {

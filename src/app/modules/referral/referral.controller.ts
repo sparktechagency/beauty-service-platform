@@ -5,7 +5,7 @@ import sendResponse from "../../../shared/sendResponse";
 
 
 
-const getReferrals = catchAsync(async (req: Request, res: Response) => {
+const getReferralsForUser = catchAsync(async (req: Request, res: Response) => {
     const user = req.user;
     const query = req.query;
     const result = await ReferralService.getReferralAndBonusesFromDB(user!);
@@ -14,6 +14,19 @@ const getReferrals = catchAsync(async (req: Request, res: Response) => {
         success: true,
         message: "Referral fetched successfully",
         data: result,
+    });
+});
+
+const getAllReferrals = catchAsync(async (req: Request, res: Response) => {
+    const user = req.user;
+    const query = req.query;
+    const result = await ReferralService.getReferral(user!, query);
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Referrals fetched successfully",
+        data: result.data,
+        pagination: result.paginationInfo,
     });
 });
 
@@ -30,6 +43,7 @@ const getReferralById = catchAsync(async (req: Request, res: Response) => {
 
 
 export const ReferralController = {
-    getReferrals,
+    getReferralsForUser,
     getReferralById,
+    getAllReferrals,
 };

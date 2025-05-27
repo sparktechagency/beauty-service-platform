@@ -2,10 +2,8 @@ import { z } from "zod"
 
 const createReportZodSchema = z.object({
     body: z.object({
-        customer: z.string({ required_error: 'Customer Object Id is required' }).optional(),
         reservation: z.string({ required_error: 'Service Object Id is required' }).optional(),
         reason: z.string({ required_error: 'Reason is required' }),
-        artist: z.string({ required_error: 'Artist Object Id is required' }).optional(),
     })  
 })
 

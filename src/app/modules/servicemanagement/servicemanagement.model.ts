@@ -39,6 +39,30 @@ const serviceManagementSchema = new Schema<IServiceManagement>({
     type: String,
     required: true,
   },
+  status:{
+    type:String,
+    enum:["active","paused"],
+    default:"active"
+  },
+  location: {
+    type: String,
+    required: true,
+  },
+  statePrices: {
+    type: [
+      {
+        state: {
+          type: String,
+          required: true,
+        },
+        price: {
+          type: Number,
+          required: true,
+        },
+      },
+    ],
+    required: false,
+  }
 });
 
 export const ServiceManagement = model<IServiceManagement>(

@@ -6,6 +6,12 @@ import unlinkFile from "../../../shared/unlinkFile";
 const createDocumentIntoDB = async (
   payload: IDocument
 ): Promise<IDocument | null> => {
+const exist = await Document.findOne({ user: payload.user });
+if (exist) {
+    return Document.findOneAndUpdate({ user: payload.user }, payload, {
+        new: true,
+    });
+}
   const result = await Document.create(payload);
   return result;
 };
@@ -13,8 +19,8 @@ const createDocumentIntoDB = async (
 
 const retrievedDocumentFromDB = async (
   user: JwtPayload
-): Promise<IDocument[] | null> => {
-  const result = await Document.find({ user: user.id });
+): Promise<IDocument | null> => {
+  const result = await Document.findOne({ user: user.id });
   return result;
 };
 
@@ -26,9 +32,7 @@ const updateDocumentIntoDB = async (
   if (!isExist) {
     throw new Error("Document not found");
   }
-  if (payload.documents) {
-    isExist.documents?.filter(doc=>unlinkFile(doc))
-  }
+  
   const result = await Document.findByIdAndUpdate(id, payload, {
     new: true,
   });
@@ -50,25 +54,7 @@ const getDocumentsofUsersFromDB = async (
   id: string,
   query:Record<string, any>
 ): Promise<IDocument[] | null> => {
-  const result = await Document.aggregate([
-    {
-        $group:{
-            _id: "$user",
-            count:{$sum:1},
-            documents:{
-                $push:"$$ROOT"
-            }
-        }
-    },
-    {
-        $lookup:{
-            from:"users",
-            localField:"_id",
-            foreignField:"_id",
-            as:"user"
-        }
-    }
-  ])
+  const result = await Document.find().populate("user")
 
   return result;
 };

@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import { StatusCodes } from 'http-status-codes';
 import { model, Schema } from 'mongoose';
 import config from '../../../config';
-import { USER_ROLES } from '../../../enums/user';
+import { ADMIN_BADGE, USER_ROLES } from '../../../enums/user';
 import { IUser, UserModal } from './user.interface';
 import ApiError from '../../../errors/ApiErrors';
 import stripe from '../../../config/stripe';
@@ -109,6 +109,20 @@ const userSchema = new Schema<IUser, UserModal>(
     },
     reffralCodeDB: {
       type: String,
+    },
+    badge: {
+      type: String,
+      enum: Object.values(ADMIN_BADGE),
+    },
+    categories: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Category",
+      },
+    ],
+    state: {
+      type: String,
+      required: true,
     }
   },
   { timestamps: true }

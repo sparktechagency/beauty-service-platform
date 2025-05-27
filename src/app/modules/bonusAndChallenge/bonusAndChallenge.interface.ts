@@ -1,3 +1,4 @@
+import { BONUS_USER_TYPE } from "../../../enums/bonus";
 import { USER_ROLES } from "../../../enums/user";
 
 export type IBonusAndChallenge = {
@@ -7,6 +8,6 @@ export type IBonusAndChallenge = {
   endDate: Date;
   number: number;
   role: USER_ROLES;
-  recipint: "USER" | "ARTIST";
+  recipint: BONUS_USER_TYPE;
   amount: number;
 };

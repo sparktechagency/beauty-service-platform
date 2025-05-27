@@ -3,6 +3,11 @@ import ApiError from "../../../errors/ApiErrors";
 import { ISubCategory } from "./sub-category.interface";
 import { SubCategory } from "./sub-category.model";
 import { Types } from "mongoose";
+import { JwtPayload } from "jsonwebtoken";
+import { User } from "../user/user.model";
+import { USER_ROLES } from "../../../enums/user";
+import { pipeline } from "winston-daily-rotate-file";
+import unlinkFile from "../../../shared/unlinkFile";
 
 const createSubCategoryIntoDB = async (payload: ISubCategory) => {
   const result = await SubCategory.create(payload);
@@ -16,7 +21,7 @@ const createSubCategoryIntoDB = async (payload: ISubCategory) => {
 };
 
 const getAllSubCategoryFromDB = async (category?: string) => {
-  const result = await SubCategory.find(category?{category}:{}).populate({
+  const result = await SubCategory.find(category ? { category } : {}).populate({
     path: "category",
     select: "name image",
   });
@@ -26,10 +31,17 @@ const getAllSubCategoryFromDB = async (category?: string) => {
   return result;
 };
 
-const getAServiceFromDB = async (category: string, query:Record<string, any>) => {
+const getAServiceFromDB = async (
+  category: string,
+  query: Record<string, any>,
+  user: JwtPayload
+) => {
   if (!Types.ObjectId.isValid(category)) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid category ID");
   }
+
+  const UserData = await User.findById(user.id);
+  console.log(UserData);
 
   const limit = parseInt(query.limit as string) || 10;
   const page = parseInt(query.page as string) || 1;
@@ -60,6 +72,42 @@ const getAServiceFromDB = async (category: string, query:Record<string, any>) =>
       localField: "_id",
       foreignField: "subCategory",
       as: "services",
+      pipeline: UserData?.badge
+        ? []
+        : [
+            {
+              $match: {
+                statePrices: {
+                  $elemMatch: {
+                    state: UserData?.state,
+                  },
+                },
+              },
+            },
+            {
+              $set: {
+                statePrices: {
+                  $filter: {
+                    input: "$statePrices",
+                    as: "statePrice",
+                    cond: { $eq: ["$$statePrice.state", UserData?.state] },
+                  },
+                },
+              },
+            },
+            {
+              $set: {
+                basePrice: {
+                  $let: {
+                    vars: {
+                      firstStatePrice: { $first: "$statePrices" },
+                    },
+                    in: "$$firstStatePrice.price",
+                  },
+                },
+              },
+            },
+          ],
     },
   };
 
@@ -104,6 +152,13 @@ const getSingleSubCategoryFromDB = async (id: string) => {
   return result;
 };
 const updateSubCategoryIntoDB = async (id: string, payload: ISubCategory) => {
+  const exist = await SubCategory.findById(id);
+  if (!exist) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Sub-category doesn't exist");
+  }
+  if (payload.image) {
+    unlinkFile(exist.image);
+  }
   const result = await SubCategory.findOneAndUpdate({ _id: id }, payload, {
     new: true,
   });

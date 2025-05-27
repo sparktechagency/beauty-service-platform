@@ -24,7 +24,9 @@ export default{
         user: process.env.EMAIL_USER,
         port: process.env.EMAIL_PORT,
         host: process.env.EMAIL_HOST,
-        pass: process.env.EMAIL_PASS
+        pass: process.env.EMAIL_PASS,
+        user_email: process.env.USER_SUPPORT_EMAIL,
+        artist_email: process.env.ARTIST_SUPPORT_EMAIL,
     },
     social: {
         google_client_id: process.env.GOOGLE_CLIENT_ID,
@@ -40,5 +42,11 @@ export default{
         accountSid: process.env.TWILIO_ACCOUNT_SID,
         authToken: process.env.TWILIO_AUTH_TOKEN,
         twilioNumber: process.env.TWILIO_NUMBER
+    },
+    checkr: {
+        checkrApiKey: process.env.CHECKR_API_KEY,
+        checkrApiSecret: process.env.CHECKR_API_SECRET,
+        checkrApiUrl: process.env.CHECKR_API_URL,
+        checkrWebhookSecret: process.env.CHECKR_WEBHOOK_SECRET
     }
 }

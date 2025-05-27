@@ -1,4 +1,4 @@
-type IFolderName = 'image' | 'media' | 'doc' | "workImage" | "backGroundImage" | "additional" | "profile";
+type IFolderName = 'image' | 'media' | 'doc' | "workImage" | "backGroundImage" | "additional" | "profile" | "dashboard" | "license" | "work" | "portfolio" | "background" | "dashboard" | "additional" | "profile" | "dashboard" | "additional" | "profile" | "dashboard" | "additional" | "profile" | "dashboard" | "additional" | "profile" | "dashboard" | "additional" | "profile" | "dashboard" | "additional" | "profile" | "dashboard" | "additional" | "profile" | "dashboard" | "additional" | "profile" | "dashboard" | "additional" | "profile" | "dashboard" | "additional" | "profile" | "dashboard" | "additional" | "profile" | "dashboard" | "additional" | "profile" | "dashboard" | "additional" | "profile" | "dashboard" | "additional" | "profile" | "dashboard" | "additional" | "profile" | "dashboard" | "additional" | "profile" | "dashboard" | "additional" | "profile" | "dashboard" | "additional" | "profile" | "dashboard" | "additional" | "profile" | "dashboard" | "additional"
 
 //single file
 export const getSingleFilePath = (files: any, folderName: IFolderName) => {

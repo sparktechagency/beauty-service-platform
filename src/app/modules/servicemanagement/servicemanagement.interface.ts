@@ -11,5 +11,11 @@ export type IServiceManagement = {
   name: string;
   basePrice: number;
   addOns: IAddOn[];
-  image: string;
+  image: string,
+  status:"active"|"paused",
+  location:string,
+  statePrices: {
+    state: string;
+    price: number;
+  }[]
 };

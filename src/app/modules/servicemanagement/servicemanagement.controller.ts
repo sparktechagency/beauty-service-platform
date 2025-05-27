@@ -98,10 +98,23 @@ const deleteServiceManagement = catchAsync(
   }
 );
 
+const getStatsData = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await ServiceManagementServices.statsDataFromArray();
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "ServiceManagement stats data retrieved successfully",
+      data: result,
+    });
+  }
+);
+
 export const ServiceManagementController = {
   createServiceManagement,
   getAllServiceManagement,
   getSingleServiceManagement,
   updateServiceManagement,
   deleteServiceManagement,
+  getStatsData,
 };

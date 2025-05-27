@@ -32,4 +32,10 @@ const createDeletePasswordZodSchema = z.object({
     })
 });
 
-export const UserValidation = { createAdminZodSchema,createDeletePasswordZodSchema,createUserZodSchema };  
+const addCategoriesZodSchema = z.object({
+    body: z.object({
+        categories: z.array(z.string({ required_error: 'Category is required' }))
+    })
+});
+
+export const UserValidation = { createAdminZodSchema,createDeletePasswordZodSchema,createUserZodSchema,addCategoriesZodSchema };  

@@ -4,6 +4,7 @@ import { StatusCodes } from "http-status-codes";
 import multer, { FileFilterCallback } from "multer";
 import path from "path";
 import ApiError from "../../errors/ApiErrors";
+import { DOCUMENT_TYPE } from "../../enums/document";
 
 const fileUploadHandler = () => {
   //create upload folder
@@ -22,6 +23,7 @@ const fileUploadHandler = () => {
   //create filename
   const storage = multer.diskStorage({
     destination: (req, file, cb) => {
+      
       let uploadDir;
       switch (file.fieldname) {
         case "feature":
@@ -33,11 +35,11 @@ const fileUploadHandler = () => {
         case "additional":
           uploadDir = path.join(baseUploadDir, "additional");
           break;
-        case "backGroundImage":
-          uploadDir = path.join(baseUploadDir, "backGroundImage");
+        case "background":
+          uploadDir = path.join(baseUploadDir, DOCUMENT_TYPE.BACKGROUND);
           break;
-        case "workImage":
-          uploadDir = path.join(baseUploadDir, "workImage");
+        case "work":
+          uploadDir = path.join(baseUploadDir, "work");
           break;
         case "profile":
           uploadDir = path.join(baseUploadDir, "profile");
@@ -48,6 +50,15 @@ const fileUploadHandler = () => {
           break;
         case "doc":
           uploadDir = path.join(baseUploadDir, "doc");
+          break;
+        case "license":
+          uploadDir = path.join(baseUploadDir, "license");
+        break;
+        case "dashboard":
+          uploadDir = path.join(baseUploadDir, "dashboard");
+          break;
+        case "portfolio":
+          uploadDir = path.join(baseUploadDir, "portfolio");
           break;
         default:
           throw new ApiError(StatusCodes.BAD_REQUEST, "File is not supported");
@@ -73,11 +84,14 @@ const fileUploadHandler = () => {
   const filterFilter = (req: Request, file: any, cb: FileFilterCallback) => {
     if (
       file.fieldname === "image" ||
-      file.fieldname === "workImage" ||
-      file.fieldname === "backGroundImage" ||
+      file.fieldname === "work" ||
+      file.fieldname === "background" ||
       file.fieldname === "feature" ||
       file.fieldname === "profile" ||
-      file.fieldname === "additional"
+      file.fieldname === "additional"||
+      file.fieldname === "license" ||
+      file.fieldname === "dashboard" ||
+      file.fieldname === "portfolio"
     ) {
       if (file.mimetype.startsWith("image/")) {
         cb(null, true);
@@ -122,8 +136,11 @@ const fileUploadHandler = () => {
     { name: "doc", maxCount: 3 },
     { name: "feature", maxCount: 1 },
     { name: "additional", maxCount: 5 },
-    { name: "workImage", maxCount: 5 },
-    { name: "backGroundImage", maxCount: 1 },
+    { name: "work", maxCount: 5 },
+    { name: "background", maxCount: 1 },
+    { name: "license", maxCount: 1 },
+    { name: "dashboard", maxCount: 1 },
+    { name: "portfolio", maxCount: 1 },
   ]);
   return upload;
 };

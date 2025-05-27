@@ -1,11 +1,14 @@
-import config from '../config';
-import { ICreateAccount, IResetPassword } from '../types/emailTemplate';
+import { IUser } from "../app/modules/user/user.interface";
+import { IUserTakeService } from "../app/modules/usertakeservice/usertakeservice.interface";
+import config from "../config";
+import { USER_ROLES } from "../enums/user";
+import { ICreateAccount, IResetPassword } from "../types/emailTemplate";
 
 const createAccount = (values: ICreateAccount) => {
-    const data = {
-        to: values.email,
-        subject: 'Verify your account',
-        html: `
+  const data = {
+    to: values.email,
+    subject: "Verify your account",
+    html: `
             <body style="font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 50px; padding: 20px; color: #555;">
                 <div style="width: 100%; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #fff; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
     
@@ -31,18 +34,17 @@ const createAccount = (values: ICreateAccount) => {
 
                 </div>
             </body>
-        `
-    }
+        `,
+  };
 
-    return data;
-}
-
+  return data;
+};
 
 const resetPassword = (values: IResetPassword) => {
-    const data = {
-        to: values.email,
-        subject: 'Reset your password',
-        html: `
+  const data = {
+    to: values.email,
+    subject: "Reset your password",
+    html: `
             <body style="font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 50px; padding: 20px; color: #555;">
                 <div style="width: 100%; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #fff; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
                     <img src="https://res.cloudinary.com/dabd4udau/image/upload/v1746444343/ubirra0v3j4wyeaojcxv.png" alt="Logo" style="display: block; margin: 0 auto 20px; width:150px" />
@@ -54,23 +56,29 @@ const resetPassword = (values: IResetPassword) => {
                 </div>
             </body>
         `,
-    };
-    return data;
+  };
+  return data;
 };
 
 interface ReferralEmailParams {
-    name: string;
-    email: string;
-    referral: string;
-    amount: number;
-    referralUserNamee: string;
-  }
-  
-  export const referralAcceptedEmail = ({ name, email, referral,amount,referralUserNamee }: ReferralEmailParams) => {
-    return {
-      to: email,
-      subject: "🎉 Your Referral Was Accepted!",
-      html: `
+  name: string;
+  email: string;
+  referral: string;
+  amount: number;
+  referralUserNamee: string;
+}
+
+export const referralAcceptedEmail = ({
+  name,
+  email,
+  referral,
+  amount,
+  referralUserNamee,
+}: ReferralEmailParams) => {
+  return {
+    to: email,
+    subject: "🎉 Your Referral Was Accepted!",
+    html: `
       <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px; color: #333;">
         <div style="max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
   
@@ -91,14 +99,19 @@ interface ReferralEmailParams {
         </div>
       </body>
       `,
-    };
   };
+};
 
-  const sendSupportMessage = (values:{name:string,email:string,message:string}) => {
-    return {
-      to: config.admin.email!,
-      subject: `Support Message from ${values.name}`,
-      html: `
+const sendSupportMessage = (values: {
+  name: string;
+  email: string;
+  message: string;
+  role: string;
+}) => {
+  return {
+    to: (values.role==USER_ROLES.USER?config.email.user_email!:config.email.artist_email!)!,
+    subject: `Support Message from ${values.name}`,
+    html: `
   <body style="margin: 0; padding: 0; background-color: #f6f8fa; font-family: 'Segoe UI', Tahoma, sans-serif;">
     <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f6f8fa; padding: 40px 0;">
       <tr>
@@ -132,14 +145,18 @@ interface ReferralEmailParams {
     </table>
   </body>
       `,
-    };
   };
+};
 
-  const sendSupportMessageToUser = (values:{name:string,email:string,message:string})=>{
-    return {
-        to: values.email,
-        subject: `Support Message From AH`,
-        html: ` <body style="margin: 0; padding: 0; background-color: #f0f2f5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+const sendSupportMessageToUser = (values: {
+  name: string;
+  email: string;
+  message: string;
+}) => {
+  return {
+    to: values.email,
+    subject: `Support Message From AH`,
+    html: ` <body style="margin: 0; padding: 0; background-color: #f0f2f5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
     <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f0f2f5; padding: 40px 0;">
       <tr>
         <td align="center">
@@ -171,14 +188,73 @@ interface ReferralEmailParams {
         </td>
       </tr>
     </table>
-  </body>`
-    }
-  }
+  </body>`,
+  };
+};
+
+const sendReportMessageEmail = (values: {
+  user:IUser,
+  email:string,
+  order:IUserTakeService,
+  message:string
+}) => {
+  console.log(values.email);
+  
+  const temp = values.order as any
+  return {
+    to: values.email,
+    subject: `Report Message From AH`,
+    html: `<body style="margin:0; padding:0; background-color:#f9fafb; font-family: Arial, sans-serif; color:#333;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f9fafb; padding:30px 0;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff; border:1px solid #eaeaea; border-radius:8px; padding:20px 30px; box-shadow:0 2px 5px rgba(0,0,0,0.1);">
+          <tr>
+            <td style="text-align:left;">
+              <h1 style="color:#0070f3; font-size:24px; margin-bottom:15px; font-weight:normal;">New Order Report Received</h1>
+              <p style="font-size:16px; line-height:1.5; margin:0 0 16px 0;">Hello Support Team,</p>
+              <p style="font-size:16px; line-height:1.5; margin:0 0 20px 0;">${values?.user?.name} has submitted a report regarding an order that needs to be resolved or refunded. Please find the details below:</p>
+              <table role="presentation" width="100%" cellpadding="10" cellspacing="0" style="background-color:#f3f4f6; border-radius:6px; margin-bottom:20px;">
+                <tr>
+                  <td style="font-weight:bold; width:130px; font-size:14px;">User Name:</td>
+                  <td style="font-size:14px;">${values?.user?.name}</td>
+                </tr>
+                <tr>
+                  <td style="font-weight:bold; width:130px; font-size:14px;">User Email:</td>
+                  <td style="font-size:14px;">${values?.user?.email}</td>
+                </tr>
+                <tr>
+                  <td style="font-weight:bold; width:130px; font-size:14px;">Order ID:</td>
+                  <td style="font-size:14px;">${temp._id}</td>
+                </tr>
+                <tr>
+                  <td style="font-weight:bold; width:130px; font-size:14px;">Order Date:</td>
+                  <td style="font-size:14px;">${new Date(values.order.createdAt!).toDateString()}</td>
+                </tr>
+                <tr>
+                  <td style="font-weight:bold; width:130px; font-size:14px;">Report Reason:</td>
+                  <td style="font-size:14px;">${values.message}</td>
+                </tr>
+              </table>
+              <p style="font-size:16px; line-height:1.5; margin:0 0 20px 0;">Please review this report and take the necessary action.</p>
+              <p>
+                <a href="https://rahat3000.binarybards.online/bookings/${temp._id}" style="display:inline-block; background-color:#0070f3; color:#ffffff; text-decoration:none; padding:10px 18px; border-radius:5px; font-weight:bold; font-size:16px;">View Order Details</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>`,
+  };
+};
 
 export const emailTemplate = {
-    createAccount,
-    resetPassword,
-    referralAcceptedEmail,
-    sendSupportMessage,
-    sendSupportMessageToUser
+  createAccount,
+  resetPassword,
+  referralAcceptedEmail,
+  sendSupportMessage,
+  sendSupportMessageToUser,
+  sendReportMessageEmail,
 };

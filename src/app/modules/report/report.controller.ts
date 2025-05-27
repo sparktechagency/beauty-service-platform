@@ -9,12 +9,8 @@ const createReport = catchAsync(async (req: Request, res: Response, next: NextFu
     const payload = {
         ...req.body
     };
-    if(user.role == USER_ROLES.USER){
-        payload.customer = user.id
-    }else{
-        payload.artist = user.id
-    }
-    const result = await ReportService.createReportToDB(payload);
+   payload.user = user.id;
+    const result = await ReportService.createReportToDB(payload,user);
 
     sendResponse(res, {
         statusCode: 200,
@@ -39,8 +35,8 @@ const getAllReports = catchAsync(async (req: Request, res: Response, next: NextF
 
 const changeReportStatus = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params;
-    const { status,note } = req.body;
-    const result = await ReportService.changeReportStatusToDB(id, status,note);
+    const body = req.body;
+    const result = await ReportService.changeReportStatusToDB(id, body);
     sendResponse(res, {
         statusCode: 200,
         success: true,
@@ -111,6 +107,19 @@ const sentReplyToSupportMessage = catchAsync(async (req: Request, res: Response,
     });
 })
 
+const reportEdOrders = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const user:any = req.user;
+    const query = req.query;
+    const result = await ReportService.reportedOrdersFromDb(query);
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: "Reported Orders fetched Successfully",
+        data: result.reports,
+        pagination: result.pagination,
+    });
+})
+
 export const ReportController = {
     createReport,
     getAllReports,
@@ -119,5 +128,6 @@ export const ReportController = {
     createSupportMessage,
     getSupportMessages,
     getSupportMessageById,
-    sentReplyToSupportMessage
+    sentReplyToSupportMessage,
+    reportEdOrders
 }

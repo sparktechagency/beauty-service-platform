@@ -45,6 +45,10 @@ const planSchema = new Schema<IPlan, PlanModel>({
         type:String,
         enum:["active","delete"],
         default:"active"
+    },
+    title: {
+        type: String,
+        required: true,
     }
 }, {
     timestamps: true,

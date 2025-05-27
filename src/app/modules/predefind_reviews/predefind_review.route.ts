@@ -13,6 +13,11 @@ router.route("/")
     validateRequest(PredefiendReviewValidation.createPredefindReviewZodSchema),
     PredefiendReviewController.createPredefiendReview
 );
+router.route("/general").post(
+    auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+    validateRequest(PredefiendReviewValidation.createGeneralReviewZodSchema),
+    PredefiendReviewController.createGeneralReview
+);
 router.route("/:id").delete(
     auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
     PredefiendReviewController.deletePredefiendReview

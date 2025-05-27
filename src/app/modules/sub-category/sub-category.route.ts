@@ -11,7 +11,7 @@ const router = express.Router();
 // * Create sub-category
 router.post(
   "/create",
-  auth(USER_ROLES.SUPER_ADMIN),
+  auth(USER_ROLES.SUPER_ADMIN,USER_ROLES.ADMIN),
   fileUploadHandler() as any,
   //   validateRequest(SubCategoryValidations.createSubCategoryZodSchema),
   async (req, res, next) => {
@@ -77,18 +77,13 @@ router.get(
 // * Update sub-category
 router.patch(
   "/:id",
-  auth(USER_ROLES.SUPER_ADMIN),
+  auth(USER_ROLES.SUPER_ADMIN,USER_ROLES.ADMIN),
   fileUploadHandler() as any,
   validateRequest(SubCategoryValidations.updateSubCategoryZodSchema),
   async (req, res, next) => {
     try {
       const payload = req.body;
       const image = getSingleFilePath(req.files, "image");
-      if (!image) {
-        return res
-          .status(400)
-          .json({ message: "Sub-Category image is required." });
-      }
       req.body = {
         ...payload,
         image,

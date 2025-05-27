@@ -9,20 +9,31 @@ const documentSchema = new Schema<IDocument,DocumentModel>(
       ref: "User",
       required: true,
     },
-    type: {
-      type: String,
-      enum: Object.values(DOCUMENT_TYPE),
-      required: true,
-    },
-    documents: {
+    license: {
       type: [String],
-      required: true,
+      required: false,
+    },
+    work: {
+      type: [String],
+      required: false,
+    },
+    portfolio: {
+        type: [String],
+        required: false,
+    },
+    background: {
+        type: [String],
+        required: false,
+    },
+    dashboard: {
+        type: [String],
+        required: false,
     },
     status: {
-      type: String,
-      enum: ["verified", "rejected"],
-      default: "verified",
-    },
+        type: String,
+        enum: ["verified", "unverified"],
+        default: "verified",
+    }
   },
   { timestamps: true }
 );

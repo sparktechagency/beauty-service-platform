@@ -3,9 +3,18 @@ import catchAsync from "../../../shared/catchAsync";
 import { SubscriptionService } from "./subscription.service";
 import sendResponse from "../../../shared/sendResponse";
 import { StatusCodes } from "http-status-codes";
+import { User } from "../user/user.model";
 
 const subscribePlan = catchAsync( async(req: Request, res: Response)=>{
-    const result = await SubscriptionService.subscriptionToDB(req.user!, req.body.priceId);
+    const user = await User.findById(req.body?.userId);
+    if(!user){
+        throw new Error("User not found");
+    }
+    const result = await SubscriptionService.subscriptionToDB({
+        id:user._id,
+        email:user.email,
+        role:user.role
+    }, req.body.priceId);
     sendResponse(res, {
         statusCode: StatusCodes.OK,
         success: true,
