@@ -1,7 +1,7 @@
 import { model, Schema } from "mongoose";
 import { IReport, ISupport, ReportModel, SupportModel } from "./report.interface";
 import ApiError from "../../../errors/ApiErrors";
-import { Reservation } from "../reservation/reservation.model";
+
 import { StatusCodes } from "http-status-codes";
 
 const reportSchema = new Schema<IReport, ReportModel>(

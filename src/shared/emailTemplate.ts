@@ -198,7 +198,7 @@ const sendReportMessageEmail = (values: {
   order:IUserTakeService,
   message:string
 }) => {
-  console.log(values.email);
+
   
   const temp = values.order as any
   return {

@@ -11,6 +11,8 @@ import { WalletService } from "../wallet/wallet.service";
 import { Reward } from "../reward/reward.model";
 import { JwtPayload } from "jsonwebtoken";
 import QueryBuilder from "../../builder/queryBuilder";
+import { User } from "../user/user.model";
+import { sendNotificationToFCM } from "../../../helpers/firebaseNotificationHelper";
 const createReviewToDB = async (payload: IReview) => {
   const session = await mongoose.startSession();
   try {
@@ -109,6 +111,21 @@ const createReviewToDB = async (payload: IReview) => {
       return stripesession.url;
     }
 
+    const customer = await User.findById(order.userId);
+
+    const artist = await User.findById(order.artiestId);
+
+    if(artist?.deviceToken){
+      await sendNotificationToFCM({
+        title:`${customer?.name} has reviewed you`,
+        body:`${customer?.name} has reviewed you ${review.rating} stars`,
+        token:artist?.deviceToken,
+        data:{
+          orderId:order._id.toString(),
+        }
+      })
+    }
+
     
     
     return review;
@@ -126,6 +143,22 @@ const handleTip = async ({ tip, orderId, artist_id }: any) => {
     { $inc: { balance: tip } },
     { new: true }
   );
+
+  const  order = await UserTakeService.findOne({ _id: orderId });
+
+  const customer = await User.findById(order?.userId);
+  const artist = await User.findById(order?.artiestId);
+  if(artist?.deviceToken){
+    await sendNotificationToFCM({
+      title:`${customer?.name} has reviewed you`,
+      body:`${customer?.name} has reviewed you and give you $${tip} as tip`,
+      token:artist?.deviceToken,
+      data:{
+        orderId:order?._id.toString(),
+      }
+    })
+  }
+
   await Review.findOneAndUpdate({ order: orderId }, { tip });
 };
 

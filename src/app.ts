@@ -5,7 +5,6 @@ import { Morgan } from "./shared/morgan";
 import router from '../src/app/routes';
 import globalErrorHandler from './app/middlewares/globalErrorHandler';
 import session from "express-session";
-import passport from "./config/passport"; 
 import { handleWebHook } from "./app/modules/webhook/handleWebhook";
 import { handleCheckrWebhook } from "./app/modules/webhook/handleCheckrWebhook";
 const app = express();
@@ -17,7 +16,7 @@ app.use(Morgan.errorHandler);
 
 // webhook
 app.post("/api/webhook",express.raw({ type: "application/json" }),handleWebHook);
-app.post("/api/webhook/checkr",express.raw({ type: "application/json" }),handleCheckrWebhook);
+app.post("/api/webhook/checkr",express.json(),handleCheckrWebhook);
 
 //body parser
 app.use(cors({
@@ -38,9 +37,6 @@ app.use(session({
     cookie: { secure: false } // Secure should be true in production with HTTPS
 }));
 
-// Initialize Passport
-app.use(passport.initialize());
-app.use(passport.session());
 
 //router
 app.use('/api/v1', router);

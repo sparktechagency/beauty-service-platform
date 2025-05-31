@@ -16,6 +16,10 @@ import QueryBuilder from "../../builder/queryBuilder";
 import { compare } from "bcrypt";
 import cryptoToken from "../../../util/cryptoToken";
 import { UserTakeService } from "../usertakeservice/usertakeservice.model";
+import { CheckrService } from "../checkr/checkr.service";
+import { Referral } from "../referral/referral.model";
+import { Reward } from "../reward/reward.model";
+import { Subscription } from "../subscription/subscription.model";
 const createUserToDB = async (payload: Partial<IUser>): Promise<IUser> => {
   //set role
   const rafferalCode = cryptoToken(5);
@@ -25,14 +29,16 @@ const createUserToDB = async (payload: Partial<IUser>): Promise<IUser> => {
   
   if (!createUser) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to create user");
-  }
-  if (createUser.role == USER_ROLES.ARTIST) {
+  
+  
     const wallet = await WalletService.createWallet(createUser._id);
   }
 
   if (payload.referralCode) {
     await ReferralService.acceptReferral(createUser._id, payload.referralCode);
   }
+
+
 
   const otp = generateOTP();
   const values = {
@@ -310,6 +316,21 @@ const addCategoriesToUserInDB = async (userId:string,categories:string[]) => {
   })
   return updateDoc;
 }
+
+const userReportDetails = async (user:JwtPayload)=>{
+  const report = await User.findOne({_id:user.id})
+  const reportData = await CheckrService.getReport(report?.candidateId!)
+  const referral = await Referral.countDocuments({referral_user:user.id})
+  const reward = await Reward.find({user:user.id})
+  const subscribePlan = await Subscription.findOne({user:user.id,status:'active'})??{}
+
+  return {
+    reportData,
+    referral,
+    reward,
+    subscribePlan
+  }
+}
 export const UserService = {
   createUserToDB,
   getUserProfileFromDB,
@@ -320,5 +341,6 @@ export const UserService = {
   deleteAccount,
   getUserDataUsingIdFromDB,
   updateUserDataById,
-  addCategoriesToUserInDB
+  addCategoriesToUserInDB,
+  userReportDetails
 };

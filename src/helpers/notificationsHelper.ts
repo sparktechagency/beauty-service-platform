@@ -20,7 +20,7 @@ export const sendNotifications = async (
 export const sendNotificationsAdmin = async (
   data: INotification
 ): Promise<INotification> => {
-  const result = await Notification.create(data);
+  
 
   //@ts-ignore
   const socketIo = global.io;
@@ -52,7 +52,10 @@ export const sendNotificationsAdmin = async (
       },
     ],
   }).lean().exec()
-
+const result = await Notification.create({
+  ...data,
+  receiver: users.map((user) => user._id),
+});
 
 
   if (socketIo) {

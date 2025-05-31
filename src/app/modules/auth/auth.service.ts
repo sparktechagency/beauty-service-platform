@@ -17,6 +17,8 @@ import generateOTP from "../../../util/generateOTP";
 import { ResetToken } from "../resetToken/resetToken.model";
 import { User } from "../user/user.model";
 import { IUser } from "../user/user.interface";
+import { CheckrService } from "../checkr/checkr.service";
+import { USER_ROLES } from "../../../enums/user";
 
 //login
 const loginUserFromDB = async (payload: ILoginData) => {
@@ -32,6 +34,12 @@ const loginUserFromDB = async (payload: ILoginData) => {
     !(await User.isMatchPassword(password, isExistUser.password))
   ) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "Password is incorrect!");
+  }
+
+  if(payload.deviceToken){
+    await User.findByIdAndUpdate(isExistUser._id, {
+      deviceToken: payload.deviceToken,
+    });
   }
 
   //create token
@@ -109,12 +117,34 @@ const verifyEmailToDB = async (payload: IVerifyEmail) => {
   let data;
 
   if (!isExistUser.verified) {
-    await User.findOneAndUpdate(
-      { _id: isExistUser._id },
-      { verified: true, authentication: { oneTimeCode: null, expireAt: null } }
-    );
+
+
     message = "Email verify successfully";
     data= isExistUser._id
+    if(isExistUser.role==USER_ROLES.ARTIST){
+      
+    const [firstname,lastname] = isExistUser.name.split(' ')
+
+    const candidate = await CheckrService.createCandidate({
+      first_name: firstname,
+      last_name: lastname||firstname,
+      email: isExistUser.email,
+      phone: isExistUser.contact,
+      dob: isExistUser.dateOfBirth.toISOString(),
+      ssn: isExistUser.ssn!,
+      no_middle_name: true,
+      zipcode: '94107'
+    })
+        await User.findOneAndUpdate(
+      { _id: isExistUser._id },
+      { verified: true, authentication: { oneTimeCode: null, expireAt: null },candidateId:candidate.id },
+    )
+    }else{
+      await User.findOneAndUpdate(
+      { _id: isExistUser._id },
+      { verified: true, authentication: { oneTimeCode: null, expireAt: null } },
+    )
+    }
   } else {
     await User.findOneAndUpdate(
       { _id: isExistUser._id },
@@ -124,7 +154,8 @@ const verifyEmailToDB = async (payload: IVerifyEmail) => {
           oneTimeCode: null,
           expireAt: null,
         },
-      }
+        
+      },
     );
 
     //create token ;

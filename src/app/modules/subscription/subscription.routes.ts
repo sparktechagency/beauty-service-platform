@@ -18,7 +18,7 @@ router.get("/",
 );
 
 router.get("/details", 
-    auth(USER_ROLES.USER), 
+    auth(), 
     SubscriptionController.subscriptionDetails
 );
 router.get("/overview",

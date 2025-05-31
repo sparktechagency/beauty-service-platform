@@ -40,7 +40,7 @@ const createServiceManagement = catchAsync(
 const getAllServiceManagement = catchAsync(
   async (req: Request, res: Response) => {
     const result =
-      await ServiceManagementServices.getAllServiceManagementFromDB(req.query);
+      await ServiceManagementServices.categoryWiseAndSubCategoryWiseServiceManagementFromDB(req.query);
     sendResponse(res, {
       statusCode: 200,
       success: true,
@@ -110,6 +110,19 @@ const getStatsData = catchAsync(
   }
 );
 
+const categoryWiseAndSubCategoryWiseService = catchAsync(
+  async (req: Request, res: Response) => {
+    const query = req.query;
+    const result =await ServiceManagementServices.categoryWiseAndSubCategoryWiseServiceManagementFromDB(query);
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "ServiceManagement stats data retrieved successfully",
+      data: result,
+    });
+  }
+);
+
 export const ServiceManagementController = {
   createServiceManagement,
   getAllServiceManagement,
@@ -117,4 +130,5 @@ export const ServiceManagementController = {
   updateServiceManagement,
   deleteServiceManagement,
   getStatsData,
+  categoryWiseAndSubCategoryWiseService,
 };

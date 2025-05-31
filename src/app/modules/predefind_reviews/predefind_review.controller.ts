@@ -46,9 +46,33 @@ const createGeneralReview = catchAsync(async (req:Request, res:Response) => {
   });
 });
 
+const generalReview = catchAsync(async (req:Request, res:Response) => {
+  const result = await PredefiendReviewService.getGeneralReviews();
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "General Review fetched successfully",
+    data: result,
+  });
+});
+
+const adminReview = catchAsync(async (req:Request, res:Response) => {
+  const query = req.query;
+  const result = await PredefiendReviewService.getReviewsForAdmin(query);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "General Review fetched successfully",
+    data: result.reviews,
+    pagination: result.paginationInfo,
+  });
+});
+
 export const PredefiendReviewController = {
   createPredefiendReview,
   deletePredefiendReview,
   getAllPredefiendReview,
   createGeneralReview,
+  generalReview,
+  adminReview,
 };

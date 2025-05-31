@@ -1,7 +1,8 @@
 import express from "express";
 import auth from "../../middlewares/auth";
-import { USER_ROLES } from "../../../enums/user";
+import { ADMIN_BADGE, USER_ROLES } from "../../../enums/user";
 import { NotificationController } from "./notification.controller";
+import adminAuth from "../../middlewares/adminAuth";
 const router = express.Router();
 
 // router.get('/',
@@ -14,17 +15,17 @@ const router = express.Router();
 // );
 router.patch(
   "/:id",
-  auth(USER_ROLES.USER, USER_ROLES.ARTIST),
+  adminAuth([ADMIN_BADGE.AH_CARE,ADMIN_BADGE.AH_MAIL_HANDLER]),
   NotificationController.updateNotificationById
 );
 router.patch(
   "/",
-  auth(USER_ROLES.USER, USER_ROLES.ARTIST),
+  adminAuth([ADMIN_BADGE.AH_CARE,ADMIN_BADGE.AH_MAIL_HANDLER]),
   NotificationController.markAllNotification
 );
 router.get(
   "/",
-  auth(USER_ROLES.USER, USER_ROLES.ARTIST),
+  adminAuth([ADMIN_BADGE.AH_CARE,ADMIN_BADGE.AH_MAIL_HANDLER]),
   NotificationController.getAllNotification
 );
 

@@ -75,15 +75,27 @@ const changeReportStatusToDB = async (
 ): Promise<IReport> => {
   if (payload.refund) {
     const report = await Report.findOne({ _id: id }).populate("reservation");
-    const order = report?.reservation as any as IUserTakeService;
+    const order = report?.reservation as any ;
+
+    if(!order) throw new ApiError(StatusCodes.BAD_REQUEST, "Reservation Not Found ");
+    
+    if(order.refund) throw new ApiError(StatusCodes.BAD_REQUEST, "Refund Already Requested ");
 
     await stripe.refunds.create({
       charge: order.payment_intent,
       amount: payload.refund * 100,
       reason: "requested_by_customer",
     });
+
+    await UserTakeService.findOneAndUpdate(
+      { _id: order._id },
+      { status: "cancelled",refund: true,refund_amount: payload.refund }
+    );
   }
-  const report: any = await Report.findByIdAndUpdate(id, payload, {
+  const report: any = await Report.findByIdAndUpdate(id, {
+    ...payload,
+    status: "resolved",
+  }, {
     new: true,
   }).populate(["user", "reservation"]);
   if (!report)
@@ -200,6 +212,13 @@ const createSupportMessageToDB = async (
     role: user.role,
   });
   await emailHelper.sendEmail(supportEmailTamplate);
+  await sendNotificationsAdmin({
+    title: `Support Message from ${user.name}`,
+    message: `Support Message from ${user.name}`,
+    isRead: false,
+    serviceId: support._id,
+    filePath: "support",
+  });
   return support;
 };
 

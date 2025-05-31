@@ -2,6 +2,11 @@ import { StatusCodes } from "http-status-codes";
 import ApiError from "../../../errors/ApiErrors";
 import { BonusAndChallenge } from "./bonusAndChallenge.model";
 import QueryBuilder from "../../builder/queryBuilder";
+import { JwtPayload } from "jsonwebtoken";
+import { USER_ROLES } from "../../../enums/user";
+import { User } from "../user/user.model";
+import { Subscription } from "../subscription/subscription.model";
+import { BONUS_USER_TYPE } from "../../../enums/bonus";
 
 const createBonusAndChallenge = async (payload: any) => {
   const result = await BonusAndChallenge.create(payload);
@@ -28,6 +33,44 @@ const getAllBonusAndChallenge = async (query: Record<string, any>) => {
     data: bonusAndChallenges,
     meta,
   };
+};
+
+const getBonusChalangeForUser = async (user: JwtPayload) => {
+  const currentDate = new Date();
+  const result = await BonusAndChallenge.find({
+    startDate: { $lte: currentDate },
+    endDate: { $gte: currentDate },
+    role:user.role,
+  })
+  .sort({ createdAt: -1 })
+
+  const userData = await User.findById(user.id);
+
+  const subscribePlan = await Subscription.findOne({
+    user: userData?._id,
+    status: "active",
+  });
+
+  const filterData = result.filter(item=>{
+
+    return (
+      (
+        item.recipint == BONUS_USER_TYPE.ALL ||
+        (
+          (item.recipint==BONUS_USER_TYPE.SUBSCRIBER && subscribePlan) ||
+          (item.recipint==BONUS_USER_TYPE.UNSUBSCRIBER && !subscribePlan)
+        )
+      )
+    )
+  })
+
+  if (!result) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      "Bonus and Challenge doesn't exist"
+    );
+  }
+  return filterData;
 };
 
 const getSingleBonusAndChallenge = async (id: string) => {
@@ -69,4 +112,5 @@ export const BonusAndChallengeServices = {
   getSingleBonusAndChallenge,
   updateBonusAndChallenge,
   deleteBonusAndChallenge,
+  getBonusChalangeForUser,
 };

@@ -128,7 +128,18 @@ const addCategories = catchAsync(
     });
   }
 );
-
+const getReport = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user;
+    const result = await UserService.userReportDetails(user);
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: "Report retrieved successfully",
+      data: result,
+    });
+  }
+);
 export const UserController = {
   createUser,
   getUserProfile,
@@ -139,4 +150,5 @@ export const UserController = {
   getUserById,
   updateUserById,
   addCategories,
+  getReport,
 };

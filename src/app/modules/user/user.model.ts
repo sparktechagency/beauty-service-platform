@@ -122,8 +122,26 @@ const userSchema = new Schema<IUser, UserModal>(
     ],
     state: {
       type: String,
-      required: true,
-    }
+    },
+    deviceToken: {
+      type: String,
+    },
+    ssn: {
+      type: String,
+    },
+    candidateId: {
+      type: String,
+    },
+    reportId: {
+      type: String,
+    },
+    city: {
+      type: String,
+    },
+    zipCode: {
+      type: String,
+    },
+     
   },
   { timestamps: true }
 );
@@ -180,6 +198,13 @@ userSchema.pre("save", async function (next) {
   const isExist = await User.findOne({ email: this.email });
   if (isExist) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "Email already exist!");
+  }
+
+  if(this.ssn){
+    const ssnExist = await User.findOne({ ssn: this.ssn });
+    if (ssnExist) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, "SSN already exist!");
+    }
   }
 
   //password hash

@@ -18,12 +18,18 @@ const adminAuth = (badge:string[]=[]) => async (req: Request, res: Response, nex
   
         if (tokenWithBearer && tokenWithBearer.startsWith('Bearer')) {
             const token = tokenWithBearer.split(' ')[1];
-  
+
+            
+            
             //verify token
             const verifyUser = jwtHelper.verifyToken(
                 token,
                 config.jwt.jwt_secret as Secret
             );
+
+            req.user = verifyUser;
+           
+            
             if (!verifyUser) {
                 throw new ApiError(StatusCodes.UNAUTHORIZED, 'You are not authorized');
             }

@@ -37,7 +37,13 @@ export type IUser = {
   createdAt?: Date;
   badge?: ADMIN_BADGE;
   categories?: Types.ObjectId[];
-  state: string;
+  state?: string;
+  deviceToken?: string;
+  ssn?: string;
+  candidateId?: string;
+  reportId?: string;
+  city?: string;
+  zipCode?: string;
 };
 
 export type UserModal = {

@@ -2,6 +2,7 @@ import { StatusCodes } from "http-status-codes";
 import ApiError from "../../../errors/ApiErrors";
 import { IPredefiendReview } from "./predefind_review.interface";
 import { GeneralReview, PredefiendReview } from "./predefind_review.model";
+import QueryBuilder from "../../builder/queryBuilder";
 
 const createPredefiendReview = async (
   data: IPredefiendReview
@@ -45,24 +46,49 @@ const deletePredefiendReview = async (
   return await PredefiendReview.findByIdAndDelete(id);
 };
 const getAllPredefiendReview = async (catagoryId:string)=> {
-  const result = await PredefiendReview.find({category:catagoryId}).populate("category").lean()
+  const result = await PredefiendReview.findOne({category:catagoryId}).populate('category').lean()
   if(!result){
     throw new ApiError(StatusCodes.BAD_REQUEST, "Predefiend Review not found");
   }
   const general = await GeneralReview.findOne({})
-  return result.map((item:any)=>{
-    return {
-      ...item,
-      general:general?.review
-    }
-  })
+  return {
+    ...result,
+    general
+  }
 }
 
+const getGeneralReviews = async ()=> {
+  const result = await GeneralReview.findOne({})
+  if(!result){
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Predefiend Review not found");
+  }
+  return result
+}
+
+const getReviewsForAdmin = async (query:Record<string,any>) => {
+  const result = new QueryBuilder(PredefiendReview.find({}), query).sort().paginate()
+
+  const reviews = await result.modelQuery.populate([
+    {
+      path: "category",
+      select: "name",
+    },
+  ])
+
+  const paginationInfo = await result.getPaginationInfo()
+
+  return {
+    reviews,
+    paginationInfo
+  }
+}
 
 export const PredefiendReviewService = {
   createPredefiendReview,
   deletePredefiendReview,
   getAllPredefiendReview,
   updatePredefiendReview,
-  createGeneralReview
+  createGeneralReview,
+  getGeneralReviews,
+  getReviewsForAdmin
 };

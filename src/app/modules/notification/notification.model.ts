@@ -7,10 +7,12 @@ const notificationSchema = new Schema<INotification, NotificationModel>(
       type: String,
       required: true,
     },
-    receiver: {
-      type:Schema.Types.ObjectId, 
-      ref: "User",
-    },
+    receiver: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
     message: {
       type: String,
       required: true,
@@ -22,7 +24,7 @@ const notificationSchema = new Schema<INotification, NotificationModel>(
     },
     filePath: {
       type: String,
-      enum: ["request", "booking", "payment"],
+      enum: ["request", "booking", "payment", "report", "support"],
     },
     isRead: {
       type: Boolean,

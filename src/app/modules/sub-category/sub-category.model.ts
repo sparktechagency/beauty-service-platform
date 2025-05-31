@@ -16,6 +16,11 @@ const subCategorySchema = new Schema<ISubCategory>({
         type: String,
         required: true,
     },
+    status: {
+        type: String,
+        enum: ['active', 'deleted'],
+        default: 'active',
+    }
 },{
     timestamps: true,
 });

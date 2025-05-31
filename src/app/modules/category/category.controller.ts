@@ -71,11 +71,22 @@ const getSingleCategory = catchAsync(async(req:Request, res:Response)=>{
   })
 })
 
+const getCategoriesSubgetCategories = catchAsync(async(req:Request, res:Response)=>{
+  const result = await CategoryService.getAllCategriesSeubgetgoriesServices();
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Category retrieved successfully',
+    data: result,
+  })
+})
+
 
 export const CategoryController = {
   createCategory,
   getCategories,
   updateCategory,
   deleteCategory,
-  getSingleCategory
+  getSingleCategory,
+  getCategoriesSubgetCategories,
 }

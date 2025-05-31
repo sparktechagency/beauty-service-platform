@@ -1,8 +1,9 @@
 import catchAsync from "../../../shared/catchAsync";
+import { getSingleFilePath } from "../../../shared/getFilePath";
 import { CheckrService } from "./checkr.service";
 
 const createCandidate = catchAsync(async (req, res) => {
-  console.log(req.body);
+
   
   const result = await CheckrService.createCandidate(req.body);
   res.status(200).json({
@@ -15,7 +16,7 @@ const createCandidate = catchAsync(async (req, res) => {
 
 const createReport = catchAsync(async (req, res) => {
   const { candidateId } = req.params;
-  const result = await CheckrService.createReport(candidateId, req.body);
+  const result = await CheckrService.createReport(candidateId);
   res.status(200).json({
     success: true,
     message: "Report created successfully",
@@ -25,7 +26,7 @@ const createReport = catchAsync(async (req, res) => {
 
 const getReport = catchAsync(async (req, res) => {
   const { candidateId, reportId } = req.params;
-  const result = await CheckrService.getReport(candidateId, reportId);
+  const result = await CheckrService.getReport(candidateId);
   res.status(200).json({
     success: true,
     message: "Report retrieved successfully",
@@ -42,9 +43,24 @@ const getCandidate = catchAsync(async (req, res) => {
   });
 });
 
+const postCandidateDocument = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const image = getSingleFilePath(req.files,"image")
+  const result = await CheckrService.uploadDocumentOfCandidate(
+    id,
+    image!
+  );
+  res.status(200).json({
+    success: true,
+    message: "Candidate document created successfully",
+    data: result,
+  });
+});
+
 export const CheckrController = {
   createCandidate,
   createReport,
   getReport,
-  getCandidate
+  getCandidate,
+  postCandidateDocument,
 };

@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { date, z } from "zod";
 
 const createServiceZodSchema = z.object({
   body: z.object({
@@ -7,12 +7,6 @@ const createServiceZodSchema = z.object({
     }),
     price: z.number({
       required_error: "price is required",
-    }),
-    latitude: z.number({
-      required_error: "latitude is required",
-    }),
-    longitude: z.number({
-      required_error: "longitude is required",
     }),
     addOns: z.array(z.object({
       name: z.string({
@@ -23,6 +17,12 @@ const createServiceZodSchema = z.object({
       }).optional(),
     })).optional(),
     additionalInfo: z.string().optional(),
+    date: z.string({
+      required_error: "date is required",
+    }),
+    time: z.string({
+      required_error: "time is required",
+    }),
   }),
 });
 const updateServiceZodSchema = z.object({

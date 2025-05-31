@@ -1,33 +1,38 @@
 import { Router } from "express";
 import { BonusAndChallengeController } from "./bonusAndChallenge.controller";
 import auth from "../../middlewares/auth";
-import { USER_ROLES } from "../../../enums/user";
+import { ADMIN_BADGE, USER_ROLES } from "../../../enums/user";
+import adminAuth from "../../middlewares/adminAuth";
 
 const router = Router();
 router.post(
   "/",
-  auth(USER_ROLES.SUPER_ADMIN),
+  adminAuth([ADMIN_BADGE.AH_MAIL_HANDLER]),
   BonusAndChallengeController.createBonusAndChallenge
 );
 router.get(
   "/",
-  auth(USER_ROLES.SUPER_ADMIN),
+  adminAuth([ADMIN_BADGE.AH_MAIL_HANDLER]),
   BonusAndChallengeController.getAllBonusAndChallenge
 );
+
+router.get("/user", auth(), BonusAndChallengeController.getBonusChalangeForUser);
 router.get(
   "/:id",
-  auth(USER_ROLES.SUPER_ADMIN),
+  auth(),
   BonusAndChallengeController.getSingleBonusAndChallenge
 );
 router.patch(
   "/:id",
-  auth(USER_ROLES.SUPER_ADMIN),
+  adminAuth([ADMIN_BADGE.AH_MAIL_HANDLER]),
   BonusAndChallengeController.updateBonusAndChallenge
 );
 router.delete(
   "/:id",
-  auth(USER_ROLES.SUPER_ADMIN),
+  adminAuth([ADMIN_BADGE.AH_MAIL_HANDLER]),
   BonusAndChallengeController.deleteBonusAndChallenge
 );
+
+
 
 export const BonusAndChallengeRoute = router;

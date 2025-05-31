@@ -102,4 +102,10 @@ router.patch(
   UserController.addCategories
 )
 
+router.get(
+  "/report",
+  auth(USER_ROLES.ARTIST),
+  UserController.getReport
+)
+
 export const UserRoutes = router;

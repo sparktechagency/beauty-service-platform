@@ -11,6 +11,11 @@ const serviceSchema = new Schema<ICategory>(
       type: [String],
       required: true
     },
+    status: {
+      type: String,
+      enum: ['active', 'deleted'],
+      default: 'active',
+    }
   },
   { timestamps: true },
 )

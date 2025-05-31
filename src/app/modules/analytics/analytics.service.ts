@@ -90,7 +90,7 @@ const summury = async ()=>{
       daily: dailyBookings,
     },
     earnings: {
-      total: totalFee,
+      total: totalFee.toFixed(2),
       daily: dailyFeeAmount,
     },
     subscription: {
@@ -212,8 +212,8 @@ const yearlyEarningsSummary = async (query:Record<string,any>) => {
     const referralData = yearlyReferralBonus.find((referral) => referral._id === i );
     data.push({
       month,
-      earnings: earningTotal,
-      subscription: subscriptionData?.total || 0,
+      earnings: earningTotal?.toFixed(2) || 0,
+      subscription: subscriptionData?.total?.toFixed(2) || 0,
       profit:earningTotal- (referralData?.total + referralData?.total)||0
     })
   }

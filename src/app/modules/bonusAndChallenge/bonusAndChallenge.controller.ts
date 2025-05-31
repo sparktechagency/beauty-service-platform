@@ -74,10 +74,25 @@ const deleteBonusAndChallenge = catchAsync(
     });
   }
 );
+
+const getBonusChalangeForUser = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await BonusAndChallengeServices.getBonusChalangeForUser(
+      req.user
+    );
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "Bonus and Challenge retrieved successfully",
+      data: result,
+    });
+  }
+);
 export const BonusAndChallengeController = {
   createBonusAndChallenge,
   getAllBonusAndChallenge,
   getSingleBonusAndChallenge,
   updateBonusAndChallenge,
   deleteBonusAndChallenge,
+  getBonusChalangeForUser,
 };

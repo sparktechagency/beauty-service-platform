@@ -9,7 +9,8 @@ import { JwtHeader } from "jsonwebtoken";
 const updateNotificationById = catchAsync(
   async (req: Request, res: Response) => {
     const { id } = req.params;
-    const result = await NotificationService.updateNotificationToDB(id);
+    const user = req.user;
+    const result = await NotificationService.updateNotificationToDB(id,user!);
     sendResponse(res, {
       statusCode: StatusCodes.OK,
       success: true,
@@ -20,7 +21,10 @@ const updateNotificationById = catchAsync(
 );
 
 const getAllNotification = catchAsync(async (req: Request, res: Response) => {
+ 
+  
   const user = req.user;
+
   const result = await NotificationService.allNotificationFromDB(
     user!,
     req.query

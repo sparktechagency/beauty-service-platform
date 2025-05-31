@@ -55,7 +55,7 @@ router.get(
 );
 
 router.get('/states',ServiceManagementController.getStatsData)
-
+router.get("/sort-data", ServiceManagementController.categoryWiseAndSubCategoryWiseService);
 // * get single service management
 router.route("/:id")
   .get(
@@ -99,5 +99,7 @@ router.route("/:id")
   auth(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
   ServiceManagementController.deleteServiceManagement
 );
+
+
 
 export const ServiceManagementRoutes = router;

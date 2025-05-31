@@ -9,7 +9,7 @@ const createReportZodSchema = z.object({
 
 const changeReportStatusZodSchema = z.object({
     body: z.object({
-        status: z.enum(["pending", "resolved"], { required_error: 'Status is required' }),
+        refund: z.number({ required_error: 'Refund is required' }).optional(),
         note: z.string({ required_error: 'Note is required' }).optional(),
     })
 })

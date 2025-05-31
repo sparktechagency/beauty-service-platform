@@ -2,12 +2,12 @@ import { Model, Types } from "mongoose";
 
 export type INotification = {
   userId?: Types.ObjectId;
-  receiver?: Types.ObjectId;
+  receiver?: Types.ObjectId[];
   title: string;
   message: string;
   isRead: boolean;
   createdAt?: Date;
-  filePath?: "request" | "booking" | "payment";
+  filePath?: "request" | "booking" | "payment"|"report"|"support"
   serviceId?: Types.ObjectId;
   readers?: Types.ObjectId[];
 };

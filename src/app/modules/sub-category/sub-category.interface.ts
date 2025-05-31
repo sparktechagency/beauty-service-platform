@@ -4,4 +4,5 @@ export type ISubCategory = {
   category: Types.ObjectId;
   name: string;
   image: string;
+  status:"active"|"deleted"
 };

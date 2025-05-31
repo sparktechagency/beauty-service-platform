@@ -35,6 +35,11 @@ router.post(
   CategoryController.createCategory
 );
 
+router.get(
+  "/all-category",
+  CategoryController.getCategoriesSubgetCategories
+)
+
 router
   .route("/:id")
   .patch(

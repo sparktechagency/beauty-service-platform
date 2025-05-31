@@ -9,7 +9,10 @@ import { USER_ROLES } from "../../../enums/user";
 import { calculateDistanceInKm } from "../../../util/calculateDistanceInKm ";
 import { JwtPayload } from "jsonwebtoken";
 import { number } from "zod";
-import { locationHelper, locationRemover } from "../../../helpers/locationHelper";
+import {
+  locationHelper,
+  locationRemover,
+} from "../../../helpers/locationHelper";
 import stripe from "../../../config/stripe";
 import { ServiceManagement } from "../servicemanagement/servicemanagement.model";
 import { Subscription } from "../subscription/subscription.model";
@@ -23,6 +26,8 @@ import { Reward } from "../reward/reward.model";
 import { logger } from "../../../shared/logger";
 import { sendNotificationToFCM } from "../../../helpers/firebaseNotificationHelper";
 import cryptoToken from "../../../util/cryptoToken";
+import axios from "axios";
+import config from "../../../config";
 
 const createUserTakeServiceIntoDB = async (
   payload: IUserTakeService,
@@ -37,7 +42,7 @@ const createUserTakeServiceIntoDB = async (
   if (!service) {
     throw new ApiError(StatusCodes.NOT_FOUND, "Service not found");
   }
-  if(service.status =="paused"){
+  if (service.status == "paused") {
     throw new ApiError(StatusCodes.BAD_REQUEST, "Service is paused");
   }
 
@@ -46,42 +51,249 @@ const createUserTakeServiceIntoDB = async (
     userId: new Types.ObjectId(userId.id),
   };
 
-  const result = await UserTakeService.create(data)
-  const allProviders = await User.find({
-    role: USER_ROLES.ARTIST,
-    isActive: true,
-    categories:{
-      $in: service.category
-    }
-  });
+  const encodedAddress = encodeURIComponent(payload.address);
+
+  const response = await axios.get(
+    `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedAddress}&key=${config.gooogle.mapKey}`
+  );
+  const location = response.data.results[0].geometry.location;
+
+  if (!location) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid address");
+  }
+
+  data.latitude = location.lat;
+  data.longitude = location.lng;
+
+  const serviceDate = new Date(
+    `${payload.date}T${payload.time}:00Z`
+  ).toISOString();
+
+  data.service_date = serviceDate as any;
+
+  const result = await UserTakeService.create(data);
+  const allProviders = await User.aggregate([
+    {
+      $match: {
+        role: USER_ROLES.ARTIST,
+        isActive: true,
+        categories: { $in: [service._id] },
+      },
+    },
+    {
+      $lookup: {
+        from: "subscriptions",
+        localField: "subscription",
+        foreignField: "_id",
+        as: "subscription",
+      },
+    },
+    {
+      $unwind: "$subscription",
+    },
+    {
+      $lookup: {
+        from: "plans",
+        localField: "subscription.package",
+        foreignField: "_id",
+        as: "subscription.package",
+      },
+    },
+    {
+      $unwind: "$subscription.package",
+    },
+    {
+      $sort: { "subscription.package.price": -1 },
+    },
+  ]);
+
   //  📍 Filter by 5km radius
   const nearbyProviders = allProviders.filter((provider) => {
-    if (provider.latitude && provider.longitude) {
+    if (data.latitude && data.longitude) {
       const distance = calculateDistanceInKm(
         result.latitude,
         result.longitude,
-        provider.latitude,
-        Number(provider.longitude)
+        data.latitude,
+        Number(data.longitude)
       );
+      console.log(distance);
 
       return distance <= 50;
     }
   });
 
   for (const provider of nearbyProviders) {
+    await sendNotificationToFCM({
+      body: `Someone request for ${service.name}`,
+      title: "New Service Request",
+      token: provider.deviceToken,
+      data: {
+        serviceId: result._id,
+        userId: result.userId,
+        isRead: false,
+      },
+    });
     await sendNotifications({
-      receiver: provider._id,
-      title: "New service request near you",
+      receiver: [provider._id],
+      title: `Someone request for ${service.name}`,
       message: "A new service request has been created near you",
       filePath: "request",
       serviceId: result._id,
       userId: result.userId,
       isRead: false,
     });
-
   }
 
   const currentOrder = await UserTakeService.findById(result._id).populate([
+    {
+      path: "serviceId",
+      select: ["name", "category", "subCategory"],
+      populate: [
+        {
+          path: "category",
+          select: ["name"],
+        },
+      ],
+    },
+    {
+      path: "userId",
+      select: [
+        "name",
+        "email",
+        "phone",
+        "profile",
+        "isActive",
+        "status",
+        "subscription",
+        "location",
+      ],
+      populate: [
+        {
+          path: "subscription",
+          select: ["package", "status"],
+          populate: [
+            {
+              path: "package",
+              select: ["name", "price", "price_offer"],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      path: "artiestId",
+      select: [
+        "name",
+        "email",
+        "phone",
+        "profile",
+        "isActive",
+        "status",
+        "subscription",
+        "location",
+      ],
+      populate: [
+        {
+          path: "subscription",
+          select: ["package", "status"],
+          populate: [
+            {
+              path: "package",
+              select: ["name", "price", "price_offer"],
+            },
+          ],
+        },
+      ],
+    },
+  ]);
+
+  for (const provider of nearbyProviders) {
+    locationHelper({ receiver: provider._id, data: currentOrder! });
+  }
+
+  return result;
+};
+
+const confirmOrderToDB = async (orderId: ObjectId, userId: JwtPayload) => {
+  const order = await UserTakeService.findById(orderId);
+  if (!order) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "Order not found");
+  }
+  if (order.payment_intent) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Order already confirmed");
+  }
+  const subscription = await Subscription.findOne({
+    user: userId.id,
+    status: "active",
+  });
+
+  let fee = 0;
+  if (!subscription || subscription.price === 0) {
+    fee = 10;
+  }
+
+  if (subscription) {
+    const plan = await Plan.findOne({
+      _id: subscription?.package,
+    });
+
+    if (plan?.name.toLowerCase().includes("glow")) {
+      fee = 5;
+    } else if (plan?.name.toLowerCase().includes("luxe")) {
+      fee = 0;
+    }
+  }
+  order!.app_fee = order.price * (fee / 100);
+  order.total_amount = order.price + order.app_fee;
+
+  const service = await ServiceManagement.findById(order.serviceId);
+
+  const session = await stripe.checkout.sessions.create({
+    line_items: [
+      {
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: service?.name || "demo",
+          },
+          unit_amount: order.total_amount * 100,
+        },
+        quantity: 1,
+      },
+    ],
+    customer_email: userId?.email,
+    payment_method_types: ["card"],
+    mode: "payment",
+    success_url: `https://www.your.com/user/payment-success`,
+    cancel_url: `https://www.your.com/user/payment-cancel`,
+    metadata: {
+      data: JSON.stringify({
+        orderId,
+        app_fee: order.app_fee,
+        total_amount: order.total_amount,
+      }),
+    },
+  });
+
+  return session.url;
+};
+
+export const nearByOrderByLatitudeAndLongitude = async (
+  latitude: number,
+  longitude: number
+) => {
+  const currentTime = new Date();
+  const fifteenMinutesBefore = new Date(currentTime.getTime() - 15 * 60 * 1000);
+
+  const result = await UserTakeService.find({
+    status: "pending",
+    isBooked: false,
+    createdAt: {
+      $gte: fifteenMinutesBefore,
+      $lte: currentTime,
+    },
+  })
+    .populate([
       {
         path: "serviceId",
         select: ["name", "category", "subCategory"],
@@ -143,157 +355,10 @@ const createUserTakeServiceIntoDB = async (
         ],
       },
     ])
+    .sort({ createdAt: -1 })
+    .limit(1)
+    .lean();
 
-
-  for (const provider of nearbyProviders) {
-    locationHelper({ receiver: provider._id, data: currentOrder! });
-  }
-
-  return result;
-};
-
-const confirmOrderToDB = async (orderId: ObjectId, userId: JwtPayload) => {
-  const order = await UserTakeService.findById(orderId);
-  if (!order) {
-    throw new ApiError(StatusCodes.NOT_FOUND, "Order not found");
-  }
-  if(order.payment_intent){
-    throw new ApiError(StatusCodes.BAD_REQUEST, "Order already confirmed");
-  }
-  const subscription = await Subscription.findOne({
-    user: userId.id,
-    status: "active",
-  });
-
-  let fee = 0;
-  if (!subscription || subscription.price === 0) {
-    fee = 10;
-  }
-
-  if (subscription) {
-    const plan = await Plan.findOne({
-      _id: subscription?.package,
-    });
-
-    if (plan?.name.toLowerCase().includes("glow")) {
-      fee = 5;
-    } else if (plan?.name.toLowerCase().includes("luxe")) {
-      fee = 0;
-    }
-  }
-  order!.app_fee = order.price * (fee / 100);
-  order.total_amount = order.price + order.app_fee;
-
-  const service = await ServiceManagement.findById(order.serviceId);
-
-  const session = await stripe.checkout.sessions.create({
-    line_items: [
-      {
-        price_data: {
-          currency: "usd",
-          product_data: {
-            name: service?.name || "demo",
-          },
-          unit_amount: order.total_amount * 100,
-        },
-        quantity: 1,
-      },
-    ],
-    customer_email: userId?.email,
-    payment_method_types: ["card"],
-    mode: "payment",
-    success_url: `https://www.your.com/user/payment-success`,
-    cancel_url: `https://www.your.com/user/payment-cancel`,
-    metadata: {
-      data: JSON.stringify({ orderId ,app_fee: order.app_fee, total_amount: order.total_amount }),
-    },
-  });
-
-  return session.url;
-};
-
-export const nearByOrderByLatitudeAndLongitude = async (
-  latitude: number,
-  longitude: number
-) => {
-  const currentTime = new Date()
-  const fifteenMinutesBefore = new Date(currentTime.getTime() - 15 * 60 * 1000);
-  const fifteenMinutesLater = new Date(currentTime.getTime() + 15 * 60 * 1000);
-
-
-  
-  const result = await UserTakeService.find({
-    status: "pending",
-    isBooked: false,
-    createdAt: {
-      $gte: fifteenMinutesBefore,
-      $lte: fifteenMinutesLater,
-    }
-  }).populate([
-      {
-        path: "serviceId",
-        select: ["name", "category", "subCategory"],
-        populate: [
-          {
-            path: "category",
-            select: ["name"],
-          },
-        ],
-      },
-      {
-        path: "userId",
-        select: [
-          "name",
-          "email",
-          "phone",
-          "profile",
-          "isActive",
-          "status",
-          "subscription",
-          "location",
-        ],
-        populate: [
-          {
-            path: "subscription",
-            select: ["package", "status"],
-            populate: [
-              {
-                path: "package",
-                select: ["name", "price", "price_offer"],
-              },
-            ],
-          },
-        ],
-      },
-      {
-        path: "artiestId",
-        select: [
-          "name",
-          "email",
-          "phone",
-          "profile",
-          "isActive",
-          "status",
-          "subscription",
-          "location",
-        ],
-        populate: [
-          {
-            path: "subscription",
-            select: ["package", "status"],
-            populate: [
-              {
-                path: "package",
-                select: ["name", "price", "price_offer"],
-              },
-            ],
-          },
-        ],
-      },
-    ]).sort({createdAt:-1}).lean()
-
-    
-    
   const filterData = result.filter((services) => {
     if (services.latitude && services.longitude) {
       const distance = calculateDistanceInKm(
@@ -302,13 +367,13 @@ export const nearByOrderByLatitudeAndLongitude = async (
         services.latitude,
         Number(services.longitude)
       );
-      
-      
+
       return distance <= 50;
     }
     return false;
   });
 
+  console.log(filterData);
 
   return filterData;
 };
@@ -317,32 +382,30 @@ const getAllServiceAsArtistFromDB = async (
   user: JwtPayload,
   latitude: number,
   longitude: number,
-  status:boolean
+  status: boolean
 ) => {
+  if (status) {
+    const filterData = await nearByOrderByLatitudeAndLongitude(
+      latitude,
+      longitude
+    );
 
-  if(status){
-      const filterData = await nearByOrderByLatitudeAndLongitude(
-    latitude,
-    longitude
-  );
-  filterData.forEach(item=>{
-    locationHelper({ receiver: user.id, data: item });
-  })
-  }
-  else{
+    filterData.forEach((item) => {
+      locationHelper({ receiver: user.id, data: item });
+    });
+  } else {
     locationHelper({ receiver: user.id, data: {} as any });
   }
 
   // Check if user data needs to be updated
   const existingUser = await User.findById(user.id);
 
-
-    const userData = await User.findByIdAndUpdate(
-      user.id,
-      { $set: { latitude, longitude, isActive: status } },
-      { new: true }
-    );
-    return userData;
+  const userData = await User.findByIdAndUpdate(
+    user.id,
+    { $set: { latitude, longitude, isActive: status } },
+    { new: true }
+  );
+  return userData;
 };
 
 const getSingleUserService = async (
@@ -351,17 +414,16 @@ const getSingleUserService = async (
   const result = await UserTakeService.findById(id).populate([
     {
       path: "serviceId",
-      select: ["name", "category", "subCategory","image",'addOns'],
+      select: ["name", "category", "subCategory", "image", "addOns"],
       populate: [
         {
           path: "category",
           select: ["name"],
-
         },
         {
           path: "subCategory",
           select: ["name"],
-        }
+        },
       ],
     },
     {
@@ -414,7 +476,7 @@ const getSingleUserService = async (
         },
       ],
     },
-  ])
+  ]);
 
   if (!result) {
     throw new ApiError(StatusCodes.NOT_FOUND, "Service not found");
@@ -435,13 +497,11 @@ const updateUserTakeServiceIntoDB = async (
     throw new ApiError(StatusCodes.FORBIDDEN, "you account is inactive");
   }
 
-
-  
-  const result = await UserTakeService.findOneAndUpdate(
+  const result: any = await UserTakeService.findOneAndUpdate(
     { _id: id },
     { artiestId: user.id, artist_book_date: new Date(), isBooked: true },
     { new: true }
-  );
+  ).populate("serviceId");
 
   if (!result) {
     throw new ApiError(StatusCodes.NOT_FOUND, "UserTakeService not found!");
@@ -449,6 +509,21 @@ const updateUserTakeServiceIntoDB = async (
   const findUser = await User.findById(user.id);
   if (!findUser) {
     throw new ApiError(StatusCodes.NOT_FOUND, "User not found!");
+  }
+
+  const customer = await User.findById(isExist?.userId);
+  if (!customer) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "Customer not found!");
+  }
+  if (customer?.deviceToken) {
+    await sendNotificationToFCM({
+      body: `Your request for ${result?.serviceId?.name} has been accepted by ${findUser?.name}`,
+      title: `${findUser?.name} Accept your order`,
+      token: customer?.deviceToken,
+      data: {
+        serviceId: result._id,
+      },
+    });
   }
 
   await sendNotifications({
@@ -473,13 +548,10 @@ const updateUserTakeServiceIntoDB = async (
         provider.latitude,
         Number(provider.longitude)
       );
- 
 
       return distance <= 50;
     }
   });
-
-
 
   for (const provider of nearbyProviders) {
     locationRemover({ receiver: provider._id, data: id });
@@ -489,7 +561,12 @@ const updateUserTakeServiceIntoDB = async (
 };
 
 // its after stripe payment
-const bookOrder = async (payload: ObjectId, payment_intent: string,app_fee:number,total_amount:number) => {
+const bookOrder = async (
+  payload: ObjectId,
+  payment_intent: string,
+  app_fee: number,
+  total_amount: number
+) => {
   try {
     const result = await UserTakeService.findOne({ _id: payload });
 
@@ -502,7 +579,12 @@ const bookOrder = async (payload: ObjectId, payment_intent: string,app_fee:numbe
 
     const updateOrder = await UserTakeService.findOneAndUpdate(
       { _id: payload },
-      { app_fee,total_amount,status: "inProgress", payment_intent: payment_intent },
+      {
+        app_fee,
+        total_amount,
+        status: "inProgress",
+        payment_intent: payment_intent,
+      },
       { new: true }
     );
 
@@ -619,10 +701,9 @@ const payoutOrderInDB = async (orderId: string) => {
     throw new ApiError(StatusCodes.NOT_FOUND, "Order not found");
   }
 
-  if(["completed", "cancelled"].includes(order.status)) {
+  if (["completed", "cancelled"].includes(order.status)) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "Order is not completable");
   }
-
 
   const subscription = await Subscription.findOne({
     user: order.artiestId,
@@ -643,10 +724,14 @@ const payoutOrderInDB = async (orderId: string) => {
     { user: order.artiestId },
     { $inc: { balance: amount } }
   );
-  const txtId = 'TXN'+cryptoToken(6)
+  const txtId = "TXN" + cryptoToken(6);
   await UserTakeService.updateOne(
     { _id: orderId },
-    { status: "completed", artist_app_fee: (order.price * cost) / 100 || 0,trxId: txtId }
+    {
+      status: "completed",
+      artist_app_fee: (order.price * cost) / 100 || 0,
+      trxId: txtId,
+    }
   );
 
   //Bonus section after the completion of the order
@@ -728,6 +813,21 @@ const payoutOrderInDB = async (orderId: string) => {
     });
   }
 
+  const customer = await User.findById(order.userId);
+  const artist = await User.findById(order.artiestId);
+
+  if (artist?.deviceToken) {
+    await sendNotificationToFCM({
+      title: `${customer?.name} has completed the booking`,
+      body: `${customer?.name} has completed the booking`,
+      data: {
+        type: "booking_completed",
+        bookingId: order._id,
+      },
+      token: artist?.deviceToken,
+    });
+  }
+
   return {
     message: "Order completed and payout successfully",
   };
@@ -758,13 +858,12 @@ const getAllBookingsFromDB = async (
     .filter()
     .paginate();
   const paginationInfo = await result.getPaginationInfo();
-  
-  
+
   const data = await result.modelQuery
     .populate([
       {
         path: "serviceId",
-        select: ["name", "category", "subCategory",'image'],
+        select: ["name", "category", "subCategory", "image"],
         populate: [
           {
             path: "category",
@@ -826,8 +925,6 @@ const getAllBookingsFromDB = async (
     .lean()
     .exec();
 
- 
-
   return {
     paginationInfo,
     data,
@@ -848,8 +945,6 @@ const paymentOverview = async () => {
   const orders = await UserTakeService.find({}).lean();
 
   orders.forEach((order: any) => {
-
-
     if (order.status != "cancelled") {
       totalErning += order.price;
       if (order.createdAt.toISOString().slice(0, 10) == today) {
@@ -885,6 +980,51 @@ const paymentOverview = async () => {
   };
 };
 
+const reminderToUsers = async () => {
+  const today = new Date();
+  const tommorow = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate() + 1
+  );
+
+  const orders = await UserTakeService.find({
+    $or: [{ status: "pending" }, { status: "inProgress" }],
+    service_date: {
+      $gte: today,
+      $lte: tommorow,
+    },
+  });
+
+  for (const order of orders) {
+    const customer = await User.findById(order.userId);
+    const artist = await User.findById(order.artiestId);
+    if (customer?.deviceToken) {
+      await sendNotificationToFCM({
+        title: `Reminder for your booking`,
+        body: `${customer?.name} has booked a service from you`,
+        data: {
+          type: "booking_reminder",
+          bookingId: order._id,
+        },
+        token: customer?.deviceToken,
+      });
+    }
+
+    if (artist?.deviceToken) {
+      await sendNotificationToFCM({
+        title: `Reminder for your booking`,
+        body: `${customer?.name} has booked a service from you`,
+        data: {
+          type: "booking_reminder",
+          bookingId: order._id,
+        },
+        token: artist?.deviceToken!,
+      });
+    }
+  }
+};
+
 export const UserTakeServiceServices = {
   createUserTakeServiceIntoDB,
   getSingleUserService,
@@ -897,4 +1037,5 @@ export const UserTakeServiceServices = {
   getAllBookingsFromDB,
   paymentOverview,
   confirmOrderToDB,
+  reminderToUsers,
 };

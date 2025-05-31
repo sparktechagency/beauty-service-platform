@@ -84,6 +84,16 @@ const userTakeServiceSchema = new Schema<IUserTakeService>(
     },
     artist_app_fee:{
       type:Number
+    },
+    refund:{
+      type:Boolean,
+      default:false
+    },
+    refund_amount:{
+      type:Number
+    },
+    service_date:{
+      type:Date
     }
   },
   {

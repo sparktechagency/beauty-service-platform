@@ -26,4 +26,9 @@ export type IUserTakeService = {
   trxId?:string,
   address:string,
   createdAt?: Date;
+  refund?: boolean;
+  refund_amount?:number,
+  date?: Date;
+  time?: string;
+  service_date?: Date;
 };

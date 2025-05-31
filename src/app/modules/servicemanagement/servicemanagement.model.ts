@@ -41,12 +41,8 @@ const serviceManagementSchema = new Schema<IServiceManagement>({
   },
   status:{
     type:String,
-    enum:["active","paused"],
+    enum:["active","paused","deleted"],
     default:"active"
-  },
-  location: {
-    type: String,
-    required: true,
   },
   statePrices: {
     type: [

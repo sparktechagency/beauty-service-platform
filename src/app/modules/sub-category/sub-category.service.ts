@@ -10,6 +10,12 @@ import { pipeline } from "winston-daily-rotate-file";
 import unlinkFile from "../../../shared/unlinkFile";
 
 const createSubCategoryIntoDB = async (payload: ISubCategory) => {
+  const exist = await SubCategory.findOne({ name: payload.name,status:{$ne:"deleted"} });
+ 
+  
+  if (exist) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Sub-category already exist");
+  }
   const result = await SubCategory.create(payload);
   if (!result) {
     throw new ApiError(
@@ -21,7 +27,13 @@ const createSubCategoryIntoDB = async (payload: ISubCategory) => {
 };
 
 const getAllSubCategoryFromDB = async (category?: string) => {
-  const result = await SubCategory.find(category ? { category } : {}).populate({
+  const result = await SubCategory.find(category ? { category,status:{
+    $ne: "deleted"
+  } } : {
+    status:{
+      $ne: "deleted"
+    }
+  }).populate({
     path: "category",
     select: "name image",
   });
@@ -41,7 +53,7 @@ const getAServiceFromDB = async (
   }
 
   const UserData = await User.findById(user.id);
-  console.log(UserData);
+  
 
   const limit = parseInt(query.limit as string) || 10;
   const page = parseInt(query.page as string) || 1;
@@ -50,6 +62,9 @@ const getAServiceFromDB = async (
   const matchStage = {
     $match: {
       category: new Types.ObjectId(category),
+      status:{
+        $ne: "deleted"
+      }
     },
   };
 
@@ -72,42 +87,25 @@ const getAServiceFromDB = async (
       localField: "_id",
       foreignField: "subCategory",
       as: "services",
-      pipeline: UserData?.badge
-        ? []
-        : [
-            {
-              $match: {
-                statePrices: {
-                  $elemMatch: {
-                    state: UserData?.state,
-                  },
-                },
+      pipeline: [
+        {
+          $match: {
+            $or:[
+              {
+                status:{
+                  $ne: "deleted"
+                }
               },
-            },
-            {
-              $set: {
-                statePrices: {
-                  $filter: {
-                    input: "$statePrices",
-                    as: "statePrice",
-                    cond: { $eq: ["$$statePrice.state", UserData?.state] },
-                  },
-                },
-              },
-            },
-            {
-              $set: {
-                basePrice: {
-                  $let: {
-                    vars: {
-                      firstStatePrice: { $first: "$statePrices" },
-                    },
-                    in: "$$firstStatePrice.price",
-                  },
-                },
-              },
-            },
-          ],
+              {
+                status:{
+                  $ne: "paused"
+                }
+              }
+            ],
+
+          },
+        }
+      ]
     },
   };
 
@@ -126,7 +124,23 @@ const getAServiceFromDB = async (
     facetStage,
   ]);
 
-  const data = result[0]?.data || [];
+  let data = result[0]?.data || [];
+  data = data?.map((item:any)=>{
+    return {
+      ...item,
+      services:item.services?.filter((service:any)=>{
+        return (
+          !service.statePrices ||
+          service.statePrices.some((state:any)=>state.state === UserData?.state)
+        )
+      })?.map((service:any)=>{
+        return {
+          ...service,
+          basePrice:service.statePrices?.find((state:any)=>state.state === UserData?.state)?.price||service.basePrice
+        }
+      })
+    }
+  })
   const total = result[0]?.totalCount[0]?.count || 0;
   const totalPage = Math.ceil(total / limit);
 
@@ -169,7 +183,9 @@ const updateSubCategoryIntoDB = async (id: string, payload: ISubCategory) => {
 };
 
 const deleteSubCategoryFromDB = async (id: string) => {
-  const result = await SubCategory.findByIdAndDelete(id);
+  const result = await SubCategory.findByIdAndUpdate(id, {
+    status: "deleted",
+  });
   if (!result) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "Sub-category doesn't exist");
   }

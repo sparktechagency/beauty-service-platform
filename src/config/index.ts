@@ -48,5 +48,8 @@ export default{
         checkrApiSecret: process.env.CHECKR_API_SECRET,
         checkrApiUrl: process.env.CHECKR_API_URL,
         checkrWebhookSecret: process.env.CHECKR_WEBHOOK_SECRET
+    },
+    gooogle:{
+        mapKey: process.env.GOOGLE_MAP_API_KEY,
     }
 }

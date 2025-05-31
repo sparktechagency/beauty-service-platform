@@ -24,6 +24,8 @@ async function main() {
         // create super admin
         seedSuperAdmin();
        cleanUp()
+    //    reminder()
+
 
 
         mongoose.connect(config.database_url as string);

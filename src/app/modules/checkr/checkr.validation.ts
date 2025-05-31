@@ -7,9 +7,7 @@ const createCandidateZodSchema = z.object({
   email: z.string().email("Invalid email address"),
   phone: z.string().min(7, "Invalid phone number"), // You can add a regex for stricter validation
   zipcode: z.string().min(5, "Invalid ZIP code"),
-  dob: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Date of birth must be in YYYY-MM-DD format"),
+
   ssn: z.string().optional(), // Optional in sandbox
 })
 })
@@ -27,7 +25,14 @@ const createReportZodSchema = z.object({
   }),
 });
 
+const uploadDocuments = z.object({
+  body: z.object({
+    image:z.any()
+  }),
+});
+
 export const CheckrValidation = {
   createCandidateZodSchema,
   createReportZodSchema,
+  uploadDocuments,
 };
