@@ -25,7 +25,7 @@ router.patch(
 );
 router.get(
   "/",
-  adminAuth([ADMIN_BADGE.AH_CARE,ADMIN_BADGE.AH_MAIL_HANDLER]),
+  auth(USER_ROLES.USER,USER_ROLES.ARTIST,USER_ROLES.ADMIN,USER_ROLES.SUPER_ADMIN),
   NotificationController.getAllNotification
 );
 

@@ -44,6 +44,7 @@ export type IUser = {
   reportId?: string;
   city?: string;
   zipCode?: string;
+  permissions?: string[];
 };
 
 export type UserModal = {

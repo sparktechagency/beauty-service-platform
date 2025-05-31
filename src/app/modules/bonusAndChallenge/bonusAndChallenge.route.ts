@@ -33,6 +33,12 @@ router.delete(
   BonusAndChallengeController.deleteBonusAndChallenge
 );
 
+router.put(
+  "/:id",
+  auth(),
+  BonusAndChallengeController.seeBonusToDB
+)
+
 
 
 export const BonusAndChallengeRoute = router;

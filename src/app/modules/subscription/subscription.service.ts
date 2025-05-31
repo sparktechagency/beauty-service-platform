@@ -14,7 +14,7 @@ const subscriptionToDB = async (user: JwtPayload, priceId: string) => {
   
   const packageData = await Plan.findOne({ price_id: priceId });
 
- 
+  // const bonus = 
 
   if (!packageData) {
     throw new ApiError(404, "Package not found");

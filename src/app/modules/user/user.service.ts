@@ -34,9 +34,6 @@ const createUserToDB = async (payload: Partial<IUser>): Promise<IUser> => {
     const wallet = await WalletService.createWallet(createUser._id);
   }
 
-  if (payload.referralCode) {
-    await ReferralService.acceptReferral(createUser._id, payload.referralCode);
-  }
 
 
 

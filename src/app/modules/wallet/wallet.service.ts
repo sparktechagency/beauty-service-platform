@@ -190,7 +190,8 @@ const weeklyEarningFromDb = async (user:JwtPayload)=>{
             $gte: startOfWeek,
             $lte: endOfWeek
         },
-        status:"completed"
+        status:"completed",
+        artistId:user.id
     };
     const earnings = await UserTakeService.find(query).lean().exec();
     

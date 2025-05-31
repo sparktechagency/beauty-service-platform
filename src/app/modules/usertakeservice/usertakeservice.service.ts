@@ -28,6 +28,9 @@ import { sendNotificationToFCM } from "../../../helpers/firebaseNotificationHelp
 import cryptoToken from "../../../util/cryptoToken";
 import axios from "axios";
 import config from "../../../config";
+import { BonusAndChallengeServices } from "../bonusAndChallenge/bonusAndChallenge.service";
+import { BONUS_TYPE } from "../bonusAndChallenge/bonusAndChallenge.interface";
+import { BonusAndChallenge } from "../bonusAndChallenge/bonusAndChallenge.model";
 
 const createUserTakeServiceIntoDB = async (
   payload: IUserTakeService,
@@ -811,6 +814,32 @@ const payoutOrderInDB = async (orderId: string) => {
       occationId: order._id,
       title: `completed ${monthlyBookings} bookings`,
     });
+  }
+
+  const currentBonus = await BonusAndChallengeServices.currentBonusForUser(order.artiestId!,BONUS_TYPE.BOOKING);
+  if(currentBonus){
+    await WalletService.updateWallet(order.artiestId!, currentBonus.amount);
+    await Reward.create({
+      user: order.artiestId!,
+      occation: "UserTakeService",
+      amount: currentBonus.amount,
+      occationId: order._id,
+      title: `completed ${monthlyBookings}`
+    })
+    await BonusAndChallenge.findOneAndUpdate({_id:order.artiestId},{$push:{tekenUsers:order.artiestId}})
+  }
+  
+  const userCurrentBonus = await BonusAndChallengeServices.currentBonusForUser(order.userId,BONUS_TYPE.BOOKING);
+  if(userCurrentBonus){
+    await WalletService.updateWallet(order.userId!, userCurrentBonus.amount);
+    await Reward.create({
+      user: order.userId!,
+      occation: "UserTakeService",
+      amount: userCurrentBonus.amount,
+      occationId: order._id,
+      title: `completed ${monthlyBookings}`
+    })
+    await BonusAndChallenge.findOneAndUpdate({_id:order.userId},{$push:{tekenUsers:order.userId}})
   }
 
   const customer = await User.findById(order.userId);

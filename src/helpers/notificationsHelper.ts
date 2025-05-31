@@ -1,3 +1,4 @@
+import { IBonusAndChallenge } from "../app/modules/bonusAndChallenge/bonusAndChallenge.interface";
 import { INotification } from "../app/modules/notification/notification.interface";
 import { Notification } from "../app/modules/notification/notification.model";
 import { User } from "../app/modules/user/user.model";
@@ -66,3 +67,19 @@ const result = await Notification.create({
 
   return result;
 };
+
+
+const sendBonusNotification = async (
+data:IBonusAndChallenge
+)=> {
+
+  const users = await User.aggregate([
+    {
+      $match:{
+        
+      }
+    }
+  ])
+
+
+}

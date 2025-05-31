@@ -19,7 +19,7 @@ const expireSubscriptions = async ()=>{
         });
     });
 
-    await User.updateMany({
+    await User.deleteMany({
         verified: false,
     })
 }
@@ -38,15 +38,15 @@ export const cleanUp =()=>{
 }
 
 
-// export const reminder =()=>{
-//    cron.schedule("*/0.1 * * * *", async()=>{
-//         await UserTakeServiceServices.reminderToUsers()
-//         console.log("Expired subscriptions");
-//    },{
-//     scheduled: true,
-//     timezone: "Asia/Dhaka",
-//    }
+export const reminder =()=>{
+   cron.schedule("*/0.1 * * * *", async()=>{
+        await UserTakeServiceServices.reminderToUsers()
+        console.log("Expired subscriptions");
+   },{
+    scheduled: true,
+    timezone: "Asia/Dhaka",
+   }
 
-// );
-// }
+);
+}
 

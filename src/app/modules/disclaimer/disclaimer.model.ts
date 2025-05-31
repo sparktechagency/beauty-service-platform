@@ -9,7 +9,7 @@ const disclaimerSchema = new Schema<IDisclaimer, DisclaimerModel>(
     },
     type: {
       type: String,
-      enum: ["contact", "privacy", "terms", "about"],
+      enum: ["contact", "privacy", "terms", "about", "payout"],
       required: true,
     },
   },

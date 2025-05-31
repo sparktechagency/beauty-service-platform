@@ -40,7 +40,7 @@ const createServiceManagement = catchAsync(
 const getAllServiceManagement = catchAsync(
   async (req: Request, res: Response) => {
     const result =
-      await ServiceManagementServices.categoryWiseAndSubCategoryWiseServiceManagementFromDB(req.query);
+      await ServiceManagementServices.getAllServiceManagementFromDB(req.query);
     sendResponse(res, {
       statusCode: 200,
       success: true,

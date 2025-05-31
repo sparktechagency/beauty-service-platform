@@ -35,12 +35,10 @@ const adminAuth = (badge:string[]=[]) => async (req: Request, res: Response, nex
             }
             badge?.push(ADMIN_BADGE.AH_EXECUTTIVE);
 
-            const userData = await User.findById(verifyUser.id);
-  
-            //guard user
-            if (badge?.length && !badge.includes(userData?.badge!)) {
-                throw new ApiError(StatusCodes.FORBIDDEN,"You don't have permission to access this api");
+            if(![USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN].includes(verifyUser.role)){
+                throw new ApiError(StatusCodes.UNAUTHORIZED, 'You are not authorized');
             }
+  
             next();
         }
     } catch (error) {

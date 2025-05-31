@@ -19,6 +19,7 @@ import { User } from "../user/user.model";
 import { IUser } from "../user/user.interface";
 import { CheckrService } from "../checkr/checkr.service";
 import { USER_ROLES } from "../../../enums/user";
+import { ReferralService } from "../referral/referral.service";
 
 //login
 const loginUserFromDB = async (payload: ILoginData) => {
@@ -117,6 +118,11 @@ const verifyEmailToDB = async (payload: IVerifyEmail) => {
   let data;
 
   if (!isExistUser.verified) {
+  if (isExistUser.referralCode) {
+    console.log("referral code is", isExistUser.referralCode);
+    
+    await ReferralService.acceptReferral(isExistUser._id, isExistUser.referralCode);
+  }
 
 
     message = "Email verify successfully";

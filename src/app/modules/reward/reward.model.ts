@@ -14,7 +14,7 @@ const rewardSchema = new Schema<IReward,RewardModel>(
     },
     occation: {
       type: String,
-      enum: ["Review", "UserTakeService", "Referral"],
+      enum: ["Review", "UserTakeService", "Referral", "Subscription"],
       required: true,
     },
     occationId: {

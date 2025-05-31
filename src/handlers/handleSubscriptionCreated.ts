@@ -5,6 +5,12 @@ import stripe from '../config/stripe';
 import { Subscription } from '../app/modules/subscription/subscription.model';
 import { User } from '../app/modules/user/user.model';
 import { Plan } from '../app/modules/plan/plan.model';
+import { BonusAndChallenge } from '../app/modules/bonusAndChallenge/bonusAndChallenge.model';
+import { BonusAndChallengeServices } from '../app/modules/bonusAndChallenge/bonusAndChallenge.service';
+import { BONUS_TYPE } from '../app/modules/bonusAndChallenge/bonusAndChallenge.interface';
+import { Wallet } from '../app/modules/wallet/wallet.model';
+import { WalletService } from '../app/modules/wallet/wallet.service';
+import { Reward } from '../app/modules/reward/reward.model';
 
 export const handleSubscriptionCreated = async (data: Stripe.Subscription) => {
 
@@ -35,16 +41,6 @@ export const handleSubscriptionCreated = async (data: Stripe.Subscription) => {
             const pricingPlan = await Plan.findOne({ price_id: priceId });
     
             if (pricingPlan) {
-
-                // Find the current active subscription
-                const currentActiveSubscription = await Subscription.findOne({
-                    user: existingUser._id,
-                    status: 'active',
-                });
-    
-                if (currentActiveSubscription) {
-                    throw new ApiError(StatusCodes.CONFLICT,'User already has an active subscription.');
-                }
                
                 
                 // Create a new subscription record
@@ -70,6 +66,33 @@ export const handleSubscriptionCreated = async (data: Stripe.Subscription) => {
                         },
                         { new: true },
                     ); 
+
+
+                    const currentBonus = await BonusAndChallengeServices.currentBonusForUser(existingUser._id,BONUS_TYPE.SUBSCRIPTION);
+
+                    if(currentBonus){
+                        await WalletService.updateWallet(existingUser._id,currentBonus.amount||0);
+                        await Reward.create({
+                            user:existingUser._id,
+                            amount:currentBonus.amount||0,
+                            occation:"Subscription",
+                            occationId:newSubscription._id,
+                            title:currentBonus.name,
+                        })
+                        await BonusAndChallenge.findOneAndUpdate(
+                            {
+                                _id:currentBonus._id
+                            },
+                            {
+                                $push:{
+                                    tekenUsers:existingUser._id
+                                }
+                            }
+                        )
+                    }
+
+
+                    
                 } catch (error) {
                     console.log(error);
                     

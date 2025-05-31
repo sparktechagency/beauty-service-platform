@@ -5,7 +5,7 @@ const createDisclaimerZodSchema = z.object({
     content: z.string({
       required_error: "Content is required",
     }),
-    type: z.enum(["contact", "privacy", "terms", "about"], {
+    type: z.enum(["contact", "privacy", "terms", "about", "payout"], {
       required_error: "Type is required",
     }),
   }),

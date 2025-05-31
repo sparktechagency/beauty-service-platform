@@ -13,6 +13,9 @@ import { Wallet } from "../wallet/wallet.model";
 import { WalletService } from "../wallet/wallet.service";
 import QueryBuilder from "../../builder/queryBuilder";
 import { Reward } from "../reward/reward.model";
+import { BonusAndChallengeServices } from "../bonusAndChallenge/bonusAndChallenge.service";
+import { BONUS_TYPE } from "../bonusAndChallenge/bonusAndChallenge.interface";
+import { BonusAndChallenge } from "../bonusAndChallenge/bonusAndChallenge.model";
 
 const getReferral = async (user:JwtPayload,query:Record<string,any>)=>{
     
@@ -46,9 +49,45 @@ const acceptReferral = async (user:Types.ObjectId,id:string)=>{
     if(!tokenUser) throw new Error("Token user not found")
   
     await referral2.save()
+
+    
+
     const acceptEmailTemplate = emailTemplate.referralAcceptedEmail({name:OriginUserData.name,email:OriginUserData.email,referral:referral2.referralCode,amount:referral2.amount,referralUserNamee:tokenUser.name})
     await emailHelper.sendEmail(acceptEmailTemplate)
     await WalletService.updateWallet(referral2.referral_user,referral2.amount)
+
+    const currenBonus = await BonusAndChallengeServices.currentBonusForUser(referral2.referral_user,BONUS_TYPE.REFERRAL)
+
+    if(currenBonus){
+        const timePerodedRefferals = await Referral.countDocuments({
+            referral_user:referral2.referral_user,
+            createdAt:{
+             $gte:currenBonus.startDate,
+             $lte:currenBonus.endDate
+            }
+        })
+        
+
+        if(timePerodedRefferals == currenBonus.number){
+            await WalletService.updateWallet(referral2.referral_user,currenBonus.amount)
+            await Reward.create({
+                user:referral2.referral_user,
+                title:`${currenBonus.name}`,
+                amount:currenBonus.amount,
+                occation:"Referral",
+                occationId:referral2.referral_user
+            })
+          
+            await BonusAndChallenge.findOneAndUpdate({
+                _id:currenBonus._id
+            },{
+                $push:{
+                    tekenUsers:referral2.referral_user
+                }
+            })
+        }
+    }
+
     return referral
 }
 

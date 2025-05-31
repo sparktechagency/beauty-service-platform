@@ -141,6 +141,12 @@ const userSchema = new Schema<IUser, UserModal>(
     zipCode: {
       type: String,
     },
+    permissions: {
+      type: [String],
+    },
+    referralCode: {
+      type: String,
+    }
      
   },
   { timestamps: true }

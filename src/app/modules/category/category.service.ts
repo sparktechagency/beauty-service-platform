@@ -85,16 +85,43 @@ const getAllCategriesSeubgetgoriesServices = async ()=>{
     },
     {
       $lookup: {
-        from: "servicemanagements",
+        from: "subcategories",
         localField: "_id",
         foreignField: "category",
-        as: "services",
+        as: "subcategories",
         pipeline: [
           {
             $match: {
               status: { $ne: "deleted" },
             },
           },
+
+          {
+            // lookup servicemanagements
+            $lookup: {
+              from: "servicemanagements",
+              localField: "_id",
+              foreignField: "subCategory",
+              as: "services",
+              pipeline: [
+                {
+                  $match: {
+                    status: { $ne: "deleted" },
+                  },
+                },
+                {
+                  $project:{
+                    image:1,
+                    name:1,
+                    price:1,
+                    
+                  }
+                }
+              ]
+            }
+              
+          }
+          
         ]
       },
     }

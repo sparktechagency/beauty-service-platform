@@ -7,6 +7,9 @@ import { USER_ROLES } from "../../../enums/user";
 import { User } from "../user/user.model";
 import { Subscription } from "../subscription/subscription.model";
 import { BONUS_USER_TYPE } from "../../../enums/bonus";
+import { sendNotifications } from "../../../helpers/notificationsHelper";
+import { ObjectId, Types } from "mongoose";
+import { BONUS_TYPE } from "./bonusAndChallenge.interface";
 
 const createBonusAndChallenge = async (payload: any) => {
   const result = await BonusAndChallenge.create(payload);
@@ -16,6 +19,28 @@ const createBonusAndChallenge = async (payload: any) => {
       "Failed to create Bonus and Challenge"
     );
   }
+  const users = await User.aggregate([
+    {
+      $match: {
+        role: result.role,
+        verified: true,
+        subsriprion: {
+          $exists:["UNSUBSCRIBER","ALL"].includes(result.recipint)?false:true,
+        },
+      },
+    },
+  ]);
+
+  for (let user of users) {
+    await sendNotifications({
+      title: "New Bonus and Challenge",
+      isRead: false,
+      message: `New Bonus and Challenge for ${result.name}`,
+      receiver: user._id,
+      filePath: "payment",
+    });
+  }
+
   return result;
 };
 
@@ -40,29 +65,24 @@ const getBonusChalangeForUser = async (user: JwtPayload) => {
   const result = await BonusAndChallenge.find({
     startDate: { $lte: currentDate },
     endDate: { $gte: currentDate },
-    role:user.role,
-  })
-  .sort({ createdAt: -1 })
+    role: user.role,
+    seenBy: { $ne: user.id },
+  }).sort({ createdAt: -1 });
 
   const userData = await User.findById(user.id);
 
   const subscribePlan = await Subscription.findOne({
     user: userData?._id,
     status: "active",
-  });
+  }).sort({ createdAt: -1 });
 
-  const filterData = result.filter(item=>{
-
+  const filterData = result.filter((item) => {
     return (
-      (
-        item.recipint == BONUS_USER_TYPE.ALL ||
-        (
-          (item.recipint==BONUS_USER_TYPE.SUBSCRIBER && subscribePlan) ||
-          (item.recipint==BONUS_USER_TYPE.UNSUBSCRIBER && !subscribePlan)
-        )
-      )
-    )
-  })
+      item.recipint == BONUS_USER_TYPE.ALL ||
+      (item.recipint == BONUS_USER_TYPE.SUBSCRIBER && subscribePlan) ||
+      (item.recipint == BONUS_USER_TYPE.UNSUBSCRIBER && !subscribePlan)
+    );
+  });
 
   if (!result) {
     throw new ApiError(
@@ -70,7 +90,7 @@ const getBonusChalangeForUser = async (user: JwtPayload) => {
       "Bonus and Challenge doesn't exist"
     );
   }
-  return filterData;
+  return filterData[0];
 };
 
 const getSingleBonusAndChallenge = async (id: string) => {
@@ -106,6 +126,49 @@ const deleteBonusAndChallenge = async (id: string) => {
   return result;
 };
 
+const seeBonusToDB = async (id: string, user: JwtPayload) => {
+  const resutl = await BonusAndChallenge.findOneAndUpdate(
+    { _id: id },
+    {
+      $push: {
+        seenBy: user.id,
+      },
+    }
+  );
+  if (!resutl) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      "Bonus and Challenge doesn't exist"
+    );
+  }
+  return resutl;
+};
+
+const currentBonusForUser = async (id: Types.ObjectId, type: BONUS_TYPE) => {
+  const currentDate = new Date();
+  const user = await User.findById(id);
+  if (!user) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist");
+  }
+  const result = await BonusAndChallenge.findOne({
+    startDate: { $lte: currentDate },
+    endDate: { $gte: currentDate },
+    role: user.role,
+    seenBy: { $ne: user._id },
+    type: type,
+    tekenUsers: { $ne: user._id },
+    
+  }).sort({ createdAt: -1 });
+
+  if(!["SUBSCRIBER","ALL"].includes(result?.recipint!)){
+    if(!user.subscription){
+      return null
+    }
+  }
+
+  return result;
+};
+
 export const BonusAndChallengeServices = {
   createBonusAndChallenge,
   getAllBonusAndChallenge,
@@ -113,4 +176,6 @@ export const BonusAndChallengeServices = {
   updateBonusAndChallenge,
   deleteBonusAndChallenge,
   getBonusChalangeForUser,
+  seeBonusToDB,
+  currentBonusForUser,
 };

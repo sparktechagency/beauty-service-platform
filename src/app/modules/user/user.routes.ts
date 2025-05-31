@@ -104,7 +104,7 @@ router.patch(
 
 router.get(
   "/report",
-  auth(USER_ROLES.ARTIST),
+  auth(),
   UserController.getReport
 )
 

@@ -1,5 +1,5 @@
 import { model, Schema } from "mongoose";
-import { IBonusAndChallenge } from "./bonusAndChallenge.interface";
+import { BONUS_TYPE, IBonusAndChallenge } from "./bonusAndChallenge.interface";
 import { BONUS_USER_TYPE } from "../../../enums/bonus";
 
 const IBonusAndChallenge = new Schema<IBonusAndChallenge>(
@@ -38,6 +38,23 @@ const IBonusAndChallenge = new Schema<IBonusAndChallenge>(
       enum: Object.values(BONUS_USER_TYPE),
       required: true,
     },
+    type: {
+      type: String,
+      enum: Object.values(BONUS_TYPE),
+      required: true,
+    },
+    seenBy: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    tekenUsers: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ]
   },
   { timestamps: true }
 );

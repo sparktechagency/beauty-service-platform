@@ -88,6 +88,21 @@ const getBonusChalangeForUser = catchAsync(
     });
   }
 );
+
+const seeBonusToDB = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await BonusAndChallengeServices.seeBonusToDB(
+      req.params.id,
+      req.user
+    );
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "Bonus and Challenge retrieved successfully",
+      data: result,
+    });
+  }
+);
 export const BonusAndChallengeController = {
   createBonusAndChallenge,
   getAllBonusAndChallenge,
@@ -95,4 +110,5 @@ export const BonusAndChallengeController = {
   updateBonusAndChallenge,
   deleteBonusAndChallenge,
   getBonusChalangeForUser,
+  seeBonusToDB,
 };
