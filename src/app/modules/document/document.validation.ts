@@ -6,12 +6,12 @@ const createDocumentZodSchema = z.object({
     user: z.string({
       required_error: "user is required",
     }),
-    license: z.array(z.string({
+    license: z.string({
       required_error: "license is required",
-    })).optional(),
-    work: z.array(z.string({
+    }).optional(),
+    work: z.string({
       required_error: "work is required",
-    })).optional(),
+    }).optional(),
     portfolio: z.string({
       required_error: "portfolio is required",
     }).optional(),

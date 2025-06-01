@@ -21,6 +21,7 @@ router.get("/details",
     auth(), 
     SubscriptionController.subscriptionDetails
 );
+router.get('/plan-details',auth(),SubscriptionController.PlansData)
 router.get("/overview",
     adminAuth([ADMIN_BADGE.AH_ENGAGEMENT]),
     SubscriptionController.overView)

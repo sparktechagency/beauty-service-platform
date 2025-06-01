@@ -68,11 +68,22 @@ const overView = catchAsync(async(req:Request,res:Response)=>{
     })
 })
 
+const PlansData = catchAsync(async(req:Request,res:Response)=>{
+    const user = req.user;
+    const result = await SubscriptionService.subsriprionDetailsFromDB(user);
+    sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "Subscription Plans Retrieved Successfully",
+        data: result
+    })
+})
 
 export const SubscriptionController = {
     subscribers,
     subscriptionDetails,
     subscribePlan,
     changeSubscriptionStatus,
-    overView
+    overView,
+    PlansData
 }

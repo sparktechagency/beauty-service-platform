@@ -20,6 +20,7 @@ import { CheckrService } from "../checkr/checkr.service";
 import { Referral } from "../referral/referral.model";
 import { Reward } from "../reward/reward.model";
 import { Subscription } from "../subscription/subscription.model";
+import { Document } from "../document/document.model";
 const createUserToDB = async (payload: Partial<IUser>): Promise<IUser> => {
   //set role
   const rafferalCode = cryptoToken(5);
@@ -28,12 +29,12 @@ const createUserToDB = async (payload: Partial<IUser>): Promise<IUser> => {
   const createUser = await User.create(payload);
   
   if (!createUser) {
+    
     throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to create user");
-  
-  
-    const wallet = await WalletService.createWallet(createUser._id);
+    
   }
 
+  const wallet = await WalletService.createWallet(createUser._id);
 
 
 
@@ -320,8 +321,12 @@ const userReportDetails = async (user:JwtPayload)=>{
   const referral = await Referral.countDocuments({referral_user:user.id})
   const reward = await Reward.find({user:user.id})
   const subscribePlan = await Subscription.findOne({user:user.id,status:'active'})??{}
+  const document = await Document.findOne({user:user.id}).lean()
+  const license = document?.license?.length ? document?.license[0]: ""
+  
 
   return {
+    license,
     reportData,
     referral,
     reward,

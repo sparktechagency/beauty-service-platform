@@ -11,6 +11,7 @@ import { BONUS_TYPE } from '../app/modules/bonusAndChallenge/bonusAndChallenge.i
 import { Wallet } from '../app/modules/wallet/wallet.model';
 import { WalletService } from '../app/modules/wallet/wallet.service';
 import { Reward } from '../app/modules/reward/reward.model';
+import { sendNotificationToFCM } from '../helpers/firebaseNotificationHelper';
 
 export const handleSubscriptionCreated = async (data: Stripe.Subscription) => {
 
@@ -89,6 +90,17 @@ export const handleSubscriptionCreated = async (data: Stripe.Subscription) => {
                                 }
                             }
                         )
+
+                        if(existingUser?.deviceToken){
+                            await sendNotificationToFCM({
+                            title:"Subscription",
+                            body:"You have received a bonus for your subscription",
+                            token:existingUser.deviceToken!,
+                            data:{
+                                type:"subscription"
+                            }
+                        })
+                        }
                     }
 
 

@@ -160,7 +160,7 @@ const currentBonusForUser = async (id: Types.ObjectId, type: BONUS_TYPE) => {
     
   }).sort({ createdAt: -1 });
 
-  if(!["SUBSCRIBER","ALL"].includes(result?.recipint!)){
+  if(!["UNSUBSCRIBER","ALL"].includes(result?.recipint!)){
     if(!user.subscription){
       return null
     }

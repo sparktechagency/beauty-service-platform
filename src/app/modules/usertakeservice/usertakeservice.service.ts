@@ -228,24 +228,11 @@ const confirmOrderToDB = async (orderId: ObjectId, userId: JwtPayload) => {
   const subscription = await Subscription.findOne({
     user: userId.id,
     status: "active",
-  });
+  }).populate("package");
 
-  let fee = 0;
-  if (!subscription || subscription.price === 0) {
-    fee = 10;
-  }
+  const plan: any = subscription?.package;
 
-  if (subscription) {
-    const plan = await Plan.findOne({
-      _id: subscription?.package,
-    });
-
-    if (plan?.name.toLowerCase().includes("glow")) {
-      fee = 5;
-    } else if (plan?.name.toLowerCase().includes("luxe")) {
-      fee = 0;
-    }
-  }
+  let fee = plan?.price_offer || 10;
   order!.app_fee = order.price * (fee / 100);
   order.total_amount = order.price + order.app_fee;
 
@@ -816,30 +803,75 @@ const payoutOrderInDB = async (orderId: string) => {
     });
   }
 
-  const currentBonus = await BonusAndChallengeServices.currentBonusForUser(order.artiestId!,BONUS_TYPE.BOOKING);
-  if(currentBonus){
-    await WalletService.updateWallet(order.artiestId!, currentBonus.amount);
-    await Reward.create({
-      user: order.artiestId!,
-      occation: "UserTakeService",
-      amount: currentBonus.amount,
-      occationId: order._id,
-      title: `completed ${monthlyBookings}`
-    })
-    await BonusAndChallenge.findOneAndUpdate({_id:order.artiestId},{$push:{tekenUsers:order.artiestId}})
-  }
-  
-  const userCurrentBonus = await BonusAndChallengeServices.currentBonusForUser(order.userId,BONUS_TYPE.BOOKING);
-  if(userCurrentBonus){
-    await WalletService.updateWallet(order.userId!, userCurrentBonus.amount);
-    await Reward.create({
-      user: order.userId!,
-      occation: "UserTakeService",
-      amount: userCurrentBonus.amount,
-      occationId: order._id,
-      title: `completed ${monthlyBookings}`
-    })
-    await BonusAndChallenge.findOneAndUpdate({_id:order.userId},{$push:{tekenUsers:order.userId}})
+  const currentBonus = await BonusAndChallengeServices.currentBonusForUser(
+    order.artiestId!,
+    BONUS_TYPE.BOOKING
+  );
+  if (currentBonus) {
+    const bookings = await UserTakeService.countDocuments({
+      status: "completed",
+      artiestId: order.artiestId,
+      createdAt: { $gte: startOfMonth, $lte: endOfMonth },
+    });
+
+    if (bookings == currentBonus.amount) {
+      await WalletService.updateWallet(order.artiestId!, currentBonus.amount);
+      await Reward.create({
+        user: order.artiestId!,
+        occation: "UserTakeService",
+        amount: currentBonus.amount,
+        occationId: order._id,
+        title: `completed ${monthlyBookings}`,
+      });
+      await BonusAndChallenge.findOneAndUpdate(
+        { _id: order.artiestId },
+        { $push: { tekenUsers: order.artiestId } }
+      );
+      const artist3 = await User.findById(order.artiestId);
+      if (artist3?.deviceToken) {
+        await sendNotificationToFCM({
+          token: artist3?.deviceToken,
+          title: "Congratulations",
+          body: `You have completed ${bookings} bookings in the month.`,
+          data: {
+            type: "booking",
+            bookingId: order._id,
+          },
+        });
+      }
+    }
+
+    const userCurrentBonus =
+      await BonusAndChallengeServices.currentBonusForUser(
+        order.userId,
+        BONUS_TYPE.BOOKING
+      );
+    if (userCurrentBonus) {
+      await WalletService.updateWallet(order.userId!, userCurrentBonus.amount);
+      await Reward.create({
+        user: order.userId!,
+        occation: "UserTakeService",
+        amount: userCurrentBonus.amount,
+        occationId: order._id,
+        title: `completed ${monthlyBookings}`,
+      });
+      await BonusAndChallenge.findOneAndUpdate(
+        { _id: order.userId },
+        { $push: { tekenUsers: order.userId } }
+      );
+      const user3 = await User.findById(order.userId);
+      if (user3?.deviceToken) {
+        await sendNotificationToFCM({
+          token: user3?.deviceToken,
+          title: "Congratulations",
+          body: `You have completed ${bookings} bookings in the month.`,
+          data: {
+            type: "booking",
+            bookingId: order._id,
+          },
+        });
+      }
+    }
   }
 
   const customer = await User.findById(order.userId);

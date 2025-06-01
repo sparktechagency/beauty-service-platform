@@ -8,6 +8,7 @@ import { Plan } from "../plan/plan.model";
 import QueryBuilder from "../../builder/queryBuilder";
 import { paginateHelper } from "../../../helpers/paginateHelper";
 import { date } from "zod";
+import { IPlan } from "../plan/plan.interface";
 
 const subscriptionToDB = async (user: JwtPayload, priceId: string) => {
 
@@ -202,10 +203,30 @@ const overViewOfSubscription = async (query: Record<string, any>) => {
   return [...finalArray, ...unusedPlanData];
 };
 
+
+const subsriprionDetailsFromDB = async (user:JwtPayload)=>{
+  const subscription = await Subscription.findOne({user:user.id}).populate('package').lean()
+
+
+
+  if(!subscription){
+    return {subscription:{}}
+  }
+    const packageData = subscription.package as any as IPlan
+  const allPackageOffers = await Plan.find({status:{
+    $ne:'deleted'
+  },for:packageData?.for},{name:1,price_offer:1}).sort({price_offer:1}).lean()
+  
+  
+
+  return {priceOffer:packageData.price_offer,allPackageOffers}
+}
+
 export const SubscriptionService = {
   subscriptionDetailsFromDB,
   subscriberFromDB,
   subscriptionToDB,
   changeSubscriptionStatus,
   overViewOfSubscription,
+  subsriprionDetailsFromDB
 };

@@ -16,6 +16,7 @@ import { Reward } from "../reward/reward.model";
 import { BonusAndChallengeServices } from "../bonusAndChallenge/bonusAndChallenge.service";
 import { BONUS_TYPE } from "../bonusAndChallenge/bonusAndChallenge.interface";
 import { BonusAndChallenge } from "../bonusAndChallenge/bonusAndChallenge.model";
+import { sendNotificationToFCM } from "../../../helpers/firebaseNotificationHelper";
 
 const getReferral = async (user:JwtPayload,query:Record<string,any>)=>{
     
@@ -85,6 +86,19 @@ const acceptReferral = async (user:Types.ObjectId,id:string)=>{
                     tekenUsers:referral2.referral_user
                 }
             })
+
+            const userData = await User.findById(referral2.referral_user)
+            if(userData?.deviceToken){
+                await sendNotificationToFCM({
+                    title:"Referral Bonus",
+                    body:`You have received ${currenBonus.amount} from ${tokenUser.name}`,
+                    token:userData.deviceToken,
+                    data:{
+                        type:"referral",
+                        amount:currenBonus.amount
+                    }
+                })
+            }
         }
     }
 
