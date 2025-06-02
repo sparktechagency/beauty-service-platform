@@ -53,28 +53,23 @@ const expireSubscriptions = async ()=>{
 }
 
 
-export const cleanUp =()=>{
-   cron.schedule("0j 0 * * *", async()=>{
-        await expireSubscriptions();
-        console.log("Expired subscriptions");
-   },{
+export const cleanUp = () => {
+  cron.schedule("0 0 * * *", async () => {
+    await expireSubscriptions();
+    console.log("Expired subscriptions");
+  }, {
     scheduled: true,
-    timezone: "Asia/Dhaka",
-   }
+    timezone: "America/New_York",
+  });
+};
 
-);
-}
-
-
-export const reminder =()=>{
-   cron.schedule("*/0.1 * * * *", async()=>{
-        await UserTakeServiceServices.reminderToUsers()
-        console.log("Expired subscriptions");
-   },{
+export const reminder = () => {
+  cron.schedule("0 0 * * *", async () => {
+    await UserTakeServiceServices.reminderToUsers();
+    console.log("Sent reminders to users");
+  }, {
     scheduled: true,
-    timezone: "Asia/Dhaka",
-   }
-
-);
-}
+    timezone: "America/New_York",
+  });
+};
 
