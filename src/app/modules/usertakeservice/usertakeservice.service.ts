@@ -112,14 +112,13 @@ const createUserTakeServiceIntoDB = async (
 
   //  📍 Filter by 5km radius
   const nearbyProviders = allProviders.filter((provider) => {
-    if (data.latitude && data.longitude) {
+    if (provider.latitude && provider.longitude) {
       const distance = calculateDistanceInKm(
         result.latitude,
         result.longitude,
-        data.latitude,
-        Number(data.longitude)
+        provider.latitude,
+        Number(provider.longitude)
       );
-      console.log(distance);
 
       return distance <= 50;
     }
@@ -363,7 +362,6 @@ export const nearByOrderByLatitudeAndLongitude = async (
     return false;
   });
 
-  console.log(filterData);
 
   return filterData;
 };
@@ -1086,6 +1084,154 @@ const reminderToUsers = async () => {
   }
 };
 
+
+/// expand Area 
+
+const expandAreaForOrder = async (order_id:ObjectId,area:number)=>{
+  const result = await UserTakeService.findById(order_id);
+  if(!result) return
+  const service = await ServiceManagement.findById(result?.serviceId);
+  const allProviders = await User.aggregate([
+    {
+      $match: {
+        role: USER_ROLES.ARTIST,
+        isActive: true,
+        categories: { $in: [service?._id] },
+      },
+    },
+    {
+      $lookup: {
+        from: "subscriptions",
+        localField: "subscription",
+        foreignField: "_id",
+        as: "subscription",
+      },
+    },
+    {
+      $unwind: "$subscription",
+    },
+    {
+      $lookup: {
+        from: "plans",
+        localField: "subscription.package",
+        foreignField: "_id",
+        as: "subscription.package",
+      },
+    },
+    {
+      $unwind: "$subscription.package",
+    },
+    {
+      $sort: { "subscription.package.price": -1 },
+    },
+  ]);
+
+  //  📍 Filter by 5km radius
+  const nearbyProviders = allProviders.filter((provider) => {
+    if (provider.latitude && provider.longitude) {
+      const distance = calculateDistanceInKm(
+        result.latitude,
+        result.longitude,
+        provider.latitude,
+        Number(provider.longitude)
+      );
+
+      return distance <= (area||50);
+    }
+  });
+
+  for (const provider of nearbyProviders) {
+    await sendNotificationToFCM({
+      body: `Someone request for ${service?.name}`,
+      title: "New Service Request",
+      token: provider.deviceToken,
+      data: {
+        serviceId: result._id,
+        userId: result.userId,
+        isRead: false,
+      },
+    });
+    await sendNotifications({
+      receiver: [provider._id],
+      title: `Someone request for ${service?.name}`,
+      message: "A new service request has been created near you",
+      filePath: "request",
+      serviceId: result._id,
+      userId: result.userId,
+      isRead: false,
+    });
+  }
+
+  const currentOrder = await UserTakeService.findById(result._id).populate([
+    {
+      path: "serviceId",
+      select: ["name", "category", "subCategory"],
+      populate: [
+        {
+          path: "category",
+          select: ["name"],
+        },
+      ],
+    },
+    {
+      path: "userId",
+      select: [
+        "name",
+        "email",
+        "phone",
+        "profile",
+        "isActive",
+        "status",
+        "subscription",
+        "location",
+      ],
+      populate: [
+        {
+          path: "subscription",
+          select: ["package", "status"],
+          populate: [
+            {
+              path: "package",
+              select: ["name", "price", "price_offer"],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      path: "artiestId",
+      select: [
+        "name",
+        "email",
+        "phone",
+        "profile",
+        "isActive",
+        "status",
+        "subscription",
+        "location",
+      ],
+      populate: [
+        {
+          path: "subscription",
+          select: ["package", "status"],
+          populate: [
+            {
+              path: "package",
+              select: ["name", "price", "price_offer"],
+            },
+          ],
+        },
+      ],
+    },
+  ]);
+
+  for (const provider of nearbyProviders) {
+    locationHelper({ receiver: provider._id, data: currentOrder! });
+  }
+
+
+}
+
 export const UserTakeServiceServices = {
   createUserTakeServiceIntoDB,
   getSingleUserService,
@@ -1099,4 +1245,5 @@ export const UserTakeServiceServices = {
   paymentOverview,
   confirmOrderToDB,
   reminderToUsers,
+  expandAreaForOrder,
 };

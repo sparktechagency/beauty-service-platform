@@ -47,7 +47,7 @@ export const createReport = async (candidateId: string) => {
     "POST",
     JSON.stringify({
       candidate_id: candidateId,
-      package: "checkrdirect_complete_criminal",
+      package: "checkrdirect_basic_plus_criminal",
       work_locations: [
         {
           country: "US",

@@ -37,7 +37,10 @@ const getReferral = async (user:JwtPayload,query:Record<string,any>)=>{
 }
 
 const acceptReferral = async (user:Types.ObjectId,id:string)=>{
-    const OriginUserData = await User.findOne({reffralCodeDB:id})
+  try {
+
+
+      const OriginUserData = await User.findOne({reffralCodeDB:id})
     if(!OriginUserData) throw new Error("User not found")
     const referral = await Referral.findOne({token_user:user})
     if(referral) throw new ApiError(400,"You already accepted this referral")
@@ -103,6 +106,9 @@ const acceptReferral = async (user:Types.ObjectId,id:string)=>{
     }
 
     return referral
+  } catch (error) {
+    
+  }
 }
 
 const getRefferralById = async (id:string)=>{

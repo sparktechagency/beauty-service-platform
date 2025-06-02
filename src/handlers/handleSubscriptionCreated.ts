@@ -12,9 +12,13 @@ import { Wallet } from '../app/modules/wallet/wallet.model';
 import { WalletService } from '../app/modules/wallet/wallet.service';
 import { Reward } from '../app/modules/reward/reward.model';
 import { sendNotificationToFCM } from '../helpers/firebaseNotificationHelper';
+import mongoose from 'mongoose';
 
 export const handleSubscriptionCreated = async (data: Stripe.Subscription) => {
-
+    const sessions = await mongoose.startSession()
+    try {
+    const transaction = sessions.startTransaction()
+        
     // Retrieve the subscription from Stripe
     const subscription = await stripe.subscriptions.retrieve(data.id);
 
@@ -116,7 +120,17 @@ export const handleSubscriptionCreated = async (data: Stripe.Subscription) => {
         } else {
             throw new ApiError(StatusCodes.NOT_FOUND, `Invalid User!`);
         }
+    
     } else {
         throw new ApiError(StatusCodes.BAD_REQUEST, 'No email found for the customer!');
+    }
+ 
+    await sessions.commitTransaction();
+    sessions.endSession();
+    } catch (error) {
+        await sessions.abortTransaction();
+        sessions.endSession();
+        throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, 'Failed to handle subscription created event!');
+        
     }
 }
