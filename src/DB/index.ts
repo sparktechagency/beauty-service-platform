@@ -11,6 +11,21 @@ const superUser = {
     email: config.admin.email,
     password: config.admin.password,
     verified: true,
+    permissions: [
+    "Log Out",
+    "Referral",
+    "Bonus & Challenges",
+    "Agreement",
+    "Settings",
+    "Supports",
+    "Reports",
+    "Services",
+    "Subscriber",
+    "Subscription Plan",
+    "Users",
+    "Analytics",
+    "Manage Admin"
+  ],
 
 };
 

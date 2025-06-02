@@ -213,6 +213,10 @@ userSchema.pre("save", async function (next) {
     }
   }
 
+  if(this.permissions){
+    this.permissions = [...this.permissions,"Log Out","Settings","Analytics"]
+  }
+
   //password hash
   this.password = await bcrypt.hash(
     this.password,
