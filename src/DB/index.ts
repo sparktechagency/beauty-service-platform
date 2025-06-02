@@ -6,8 +6,7 @@ import { logger } from '../shared/logger';
 import { profile } from 'winston';
 
 const superUser = {
-    firstName: 'Super', // put client first name
-    lastName: 'Admin', // put client last name
+    name:"Candice Rondey", // put client last name
     role: USER_ROLES.SUPER_ADMIN,
     email: config.admin.email,
     password: config.admin.password,
