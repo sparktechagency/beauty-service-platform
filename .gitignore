@@ -3,4 +3,4 @@ node_modules
 uploads
 /winston
 /dist
-firbase.config.json
+firebase.config.json
