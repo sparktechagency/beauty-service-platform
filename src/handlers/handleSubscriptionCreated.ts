@@ -115,14 +115,16 @@ export const handleSubscriptionCreated = async (data: Stripe.Subscription) => {
                 }
    
             } else {
-                throw new ApiError(StatusCodes.NOT_FOUND, `Pricing plan with Price ID: ${priceId} not found!`);
+               console.log('Pricing plan not found for price ID:', priceId);
             }
         } else {
-            throw new ApiError(StatusCodes.NOT_FOUND, `Invalid User!`);
+            console.log('User not found for email:', customer?.email);
+            return
         }
     
     } else {
-        throw new ApiError(StatusCodes.BAD_REQUEST, 'No email found for the customer!');
+        console.log('Customer not found for subscription ID:', subscription.id);
+        return
     }
  
     await sessions.commitTransaction();
@@ -130,7 +132,8 @@ export const handleSubscriptionCreated = async (data: Stripe.Subscription) => {
     } catch (error) {
         await sessions.abortTransaction();
         sessions.endSession();
-        throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, 'Failed to handle subscription created event!');
+        console.log(error);
+        return error;
         
     }
 }

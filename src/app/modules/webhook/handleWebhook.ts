@@ -31,18 +31,9 @@ export const handleWebHook =async (req:Request, res:Response) => {
             await handleSubscriptionCreated(event.data.object)
             
             break;
-
-        case 'customer.subscription.updated':
-            console.log("subscription updated");
-            break;
         case 'customer.subscription.deleted':
             await handleSubscriptionDeleted(event.data.object);
             
-            break;
-        case 'payment_intent.succeeded':
-            break;
-        case 'invoice.paid':
-
             break;
             case "account.updated":
           const account = event.data.object as Stripe.Account;

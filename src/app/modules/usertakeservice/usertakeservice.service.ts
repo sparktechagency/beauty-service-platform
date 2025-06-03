@@ -1087,7 +1087,7 @@ const reminderToUsers = async () => {
 
 /// expand Area 
 
-const expandAreaForOrder = async (order_id:ObjectId,area:number)=>{
+const expandAreaForOrder = async (order_id:Types.ObjectId,area:number)=>{
   const result = await UserTakeService.findById(order_id);
   if(!result) return
   const service = await ServiceManagement.findById(result?.serviceId);

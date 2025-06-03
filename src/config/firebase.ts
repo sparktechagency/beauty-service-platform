@@ -1,4 +1,4 @@
-import serviceAccount from "../../ooh-ah-firebase-adminsdk-fbsvc-570c7d8473.json";
+import serviceAccount from "../../firebase.config.json";
 import admin from "firebase-admin";
 
 admin.initializeApp({

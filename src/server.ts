@@ -6,7 +6,7 @@ import colors from 'colors';
 import { socketHelper } from "./helpers/socketHelper";
 import { Server } from "socket.io";
 import seedSuperAdmin from "./DB";
-import { cleanUp } from "./cleanup/cleanUp";
+import { cleanUp, deleteExpiredOrders, reminder } from "./cleanup/cleanUp";
 
 
 //uncaught exception
@@ -24,7 +24,10 @@ async function main() {
         // create super admin
         seedSuperAdmin();
        cleanUp()
-    //    reminder()
+
+       reminder()
+
+       deleteExpiredOrders()
 
 
 
