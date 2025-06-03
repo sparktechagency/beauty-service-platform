@@ -559,10 +559,8 @@ const bookOrder = async (
     const result = await UserTakeService.findOne({ _id: payload });
 
     if (!result) {
-      throw new ApiError(
-        StatusCodes.BAD_REQUEST,
-        "Failed to create UserTakeService"
-      );
+      console.log("result not found");
+      return
     }
 
     const updateOrder = await UserTakeService.findOneAndUpdate(

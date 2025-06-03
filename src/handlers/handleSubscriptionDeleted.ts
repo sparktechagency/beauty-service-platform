@@ -38,9 +38,11 @@ export const handleSubscriptionDeleted = async (data: Stripe.Subscription) => {
                 { new: true },
             );
         } else {
-            throw new ApiError(StatusCodes.NOT_FOUND, `User not found.`);
+            console.log('User not found.');
+            return;
         }
     } else {
-        throw new ApiError(StatusCodes.NOT_FOUND, `Subscription not found.`);
+        console.log('Subscription not found.');
+        return;
     }
 }
