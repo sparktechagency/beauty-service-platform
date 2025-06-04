@@ -120,21 +120,18 @@ const createUserTakeServiceIntoDB = async (
         Number(provider.longitude)
       );
 
-      return distance <= 50;
+      return distance <= 70;
     }
   });
 
   for (const provider of nearbyProviders) {
-    await sendNotificationToFCM({
+ if(provider.deviceToken){
+     await sendNotificationToFCM({
       body: `Someone request for ${service.name}`,
       title: "New Service Request",
       token: provider.deviceToken,
-      data: {
-        serviceId: result._id,
-        userId: result.userId,
-        isRead: false,
-      },
     });
+ }
     await sendNotifications({
       receiver: [provider._id],
       title: `Someone request for ${service.name}`,
@@ -145,6 +142,9 @@ const createUserTakeServiceIntoDB = async (
       isRead: false,
     });
   }
+
+  
+  
 
   const currentOrder = await UserTakeService.findById(result._id).populate([
     {
@@ -345,8 +345,9 @@ export const nearByOrderByLatitudeAndLongitude = async (
       },
     ])
     .sort({ createdAt: -1 })
-    .limit(1)
     .lean();
+    console.log(result);
+    
 
   const filterData = result.filter((services) => {
     if (services.latitude && services.longitude) {
@@ -357,7 +358,7 @@ export const nearByOrderByLatitudeAndLongitude = async (
         Number(services.longitude)
       );
 
-      return distance <= 50;
+      return distance <= 70;
     }
     return false;
   });
@@ -377,6 +378,9 @@ const getAllServiceAsArtistFromDB = async (
       latitude,
       longitude
     );
+
+    console.log(filterData);
+    
 
     filterData.forEach((item) => {
       locationHelper({ receiver: user.id, data: item });
@@ -1139,16 +1143,14 @@ const expandAreaForOrder = async (order_id:Types.ObjectId,area:number)=>{
   });
 
   for (const provider of nearbyProviders) {
-    await sendNotificationToFCM({
+    if(provider.deviceToken){
+         await sendNotificationToFCM({
       body: `Someone request for ${service?.name}`,
       title: "New Service Request",
       token: provider.deviceToken,
-      data: {
-        serviceId: result._id,
-        userId: result.userId,
-        isRead: false,
-      },
+
     });
+    }
     await sendNotifications({
       receiver: [provider._id],
       title: `Someone request for ${service?.name}`,
