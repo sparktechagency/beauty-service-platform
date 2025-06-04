@@ -57,7 +57,7 @@ const expireSubscriptions = async ()=>{
 export const cleanUp = () => {
   cron.schedule("0 0 * * *", async () => {
     await expireSubscriptions();
-    console.log("Expired subscriptions");
+
   }, {
     scheduled: true,
     timezone: "America/New_York",
@@ -67,7 +67,7 @@ export const cleanUp = () => {
 export const reminder = () => {
   cron.schedule("0 0 * * *", async () => {
     await UserTakeServiceServices.reminderToUsers();
-    console.log("Sent reminders to users");
+
   }, {
     scheduled: true,
     timezone: "America/New_York",

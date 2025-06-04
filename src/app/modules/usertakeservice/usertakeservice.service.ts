@@ -424,7 +424,7 @@ export const nearByOrderByLatitudeAndLongitude = async (
         services.latitude,
         Number(services.longitude)
       );
-      console.log("distence",distance);
+
       
 
       return distance <= 70;
@@ -448,7 +448,7 @@ const getAllServiceAsArtistFromDB = async (
       longitude
     );
 
-    console.log(filterData);
+
     
 
     filterData.forEach((item) => {

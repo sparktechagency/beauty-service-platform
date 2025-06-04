@@ -20,7 +20,7 @@ const subscriptionToDB = async (user: JwtPayload, priceId: string) => {
   if (!packageData) {
     throw new ApiError(404, "Package not found");
   }
-  console.log(user);
+
   
   if (packageData.for !== user.role) {
     throw new ApiError(404, "Role not matched");

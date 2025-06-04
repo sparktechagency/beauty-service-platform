@@ -119,7 +119,7 @@ const verifyEmailToDB = async (payload: IVerifyEmail) => {
 
   if (!isExistUser.verified) {
   if (isExistUser.referralCode) {
-    console.log("referral code is", isExistUser.referralCode);
+
     
     await ReferralService.acceptReferral(isExistUser._id, isExistUser.referralCode);
   }

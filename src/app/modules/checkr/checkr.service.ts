@@ -105,7 +105,7 @@ const uploadDocumentOfCandidate = async (
   const formData = new FormData();
 
   formData.append("type", "passport");
-  console.log(formData);
+
 
   const response = await checkRApi(
     `candidates/${candidateId}/documents`,
