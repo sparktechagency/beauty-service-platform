@@ -77,10 +77,10 @@ export const reminder = () => {
 export const deleteExpiredOrders = () => {
   cron.schedule("*/5 * * * *", async () => {
     await expandOrderTimeAndDelete()
-    console.log("Deleted expired orders");
+    // console.log("Deleted expired orders");
   }, {
     scheduled: true,
-    timezone: "Asia/Dhaka",
+    timezone: "America/New_York",
   });
 };
 
