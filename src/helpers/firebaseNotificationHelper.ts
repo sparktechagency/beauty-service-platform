@@ -13,13 +13,23 @@ export const sendNotificationToFCM = async ({
   body,
   data,
 }: IFirebaseNotification) => {
+  let stringData:any = {}
+  if(data){
+    for(let keyData in data){
+      stringData[keyData]  = String(data[keyData])
+    }
+  }
+
+  
+  
+  
   const message = {
     notification: {
       title,
       body,
     },
     token,
-    data,
+    data:stringData,
   };
 
   try {

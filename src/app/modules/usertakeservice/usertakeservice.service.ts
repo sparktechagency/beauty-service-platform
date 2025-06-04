@@ -31,6 +31,7 @@ import config from "../../../config";
 import { BonusAndChallengeServices } from "../bonusAndChallenge/bonusAndChallenge.service";
 import { BONUS_TYPE } from "../bonusAndChallenge/bonusAndChallenge.interface";
 import { BonusAndChallenge } from "../bonusAndChallenge/bonusAndChallenge.model";
+import { INotification } from "../notification/notification.interface";
 
 const createUserTakeServiceIntoDB = async (
   payload: IUserTakeService,
@@ -125,22 +126,47 @@ const createUserTakeServiceIntoDB = async (
   });
 
   for (const provider of nearbyProviders) {
+    const notificationPayload = {
+      title: `Someone request for ${service.name}`,
+      message: "A new service request has been created near you",
+      filePath: "request",
+      serviceId: result._id,
+      userId: provider._id,
+      isRead: false,
+    }
  if(provider.deviceToken){
      await sendNotificationToFCM({
       body: `Someone request for ${service.name}`,
       title: "New Service Request",
       token: provider.deviceToken,
+      data:
+        {
+          ...notificationPayload,
+        }
+      
     });
  }
-    await sendNotifications({
+    await sendNotifications(
+      {
       receiver: [provider._id],
       title: `Someone request for ${service.name}`,
       message: "A new service request has been created near you",
       filePath: "request",
       serviceId: result._id,
-      userId: result.userId,
+      userId: provider._id,
       isRead: false,
-    });
+    }
+    );
+    if(userData?.deviceToken){
+      await sendNotificationToFCM({
+        body: `Someone request for ${service.name}`,
+        title: "New Service Request",
+        token: userData.deviceToken,
+        data:notificationPayload
+          
+        
+      });
+    }
   }
 
   
@@ -262,10 +288,51 @@ const confirmOrderToDB = async (orderId: ObjectId, userId: JwtPayload) => {
         total_amount: order.total_amount,
       }),
     },
+
   });
 
+  const user = await User.findById(userId.id);
+  const notificationPayload = {
+    title: `Your order has been confirmed`,
+    message: "Your order has been confirmed",
+    filePath: "order",
+    orderId,
+    userId: userId.id,
+    isRead: false,
+  }
+  if(user?.deviceToken){
+    await sendNotificationToFCM({
+      body: `Your order has been confirmed`,
+      title: "Order Confirmed",
+      token: user.deviceToken,
+      data:JSON.stringify(
+        {
+          orderId,
+          app_fee: order.app_fee,
+          total_amount: order.total_amount,
+        }
+      )
+    });
+  }
+  const artist = await User.findById(order.artiestId);
+  if(artist?.deviceToken){
+    await sendNotificationToFCM({
+      body: `${user?.name} has confirmed her order`,
+      title: "Order Confirmed",
+      token: artist.deviceToken,
+      data:JSON.stringify(
+        {
+          orderId,
+          app_fee: order.app_fee,
+          total_amount: order.total_amount,
+        }
+      )
+    })
+  }
+
   return session.url;
-};
+
+}
 
 export const nearByOrderByLatitudeAndLongitude = async (
   latitude: number,
@@ -346,7 +413,7 @@ export const nearByOrderByLatitudeAndLongitude = async (
     ])
     .sort({ createdAt: -1 })
     .lean();
-    console.log(result);
+    
     
 
   const filterData = result.filter((services) => {
@@ -357,6 +424,8 @@ export const nearByOrderByLatitudeAndLongitude = async (
         services.latitude,
         Number(services.longitude)
       );
+      console.log("distence",distance);
+      
 
       return distance <= 70;
     }
@@ -373,7 +442,7 @@ const getAllServiceAsArtistFromDB = async (
   longitude: number,
   status: boolean
 ) => {
-  if (status) {
+  if (status==true) {
     const filterData = await nearByOrderByLatitudeAndLongitude(
       latitude,
       longitude
@@ -508,21 +577,27 @@ const updateUserTakeServiceIntoDB = async (
     throw new ApiError(StatusCodes.NOT_FOUND, "Customer not found!");
   }
   if (customer?.deviceToken) {
+    const notificationPayload:INotification = {
+      title: `${findUser?.name} Accept your order`,
+      message: `Your request for ${result?.serviceId?.name} has been accepted by ${findUser?.name}`,
+      filePath:"booking",
+      isRead: false,
+      userId: customer?._id,
+
+    }
     await sendNotificationToFCM({
       body: `Your request for ${result?.serviceId?.name} has been accepted by ${findUser?.name}`,
       title: `${findUser?.name} Accept your order`,
       token: customer?.deviceToken,
-      data: {
-        serviceId: result._id,
-      },
+      data: notificationPayload,
     });
   }
 
   await sendNotifications({
-    receiver: isExist?.userId as any,
+    receiver: [isExist?.userId!],
     title: `${findUser?.name} Accept your order`,
     message: "Accepted your service request",
-    filePath: "request",
+    filePath: "booking",
     serviceId: result._id,
     isRead: false,
   });

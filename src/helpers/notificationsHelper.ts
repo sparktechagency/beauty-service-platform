@@ -13,7 +13,7 @@ export const sendNotifications = async (
   const socketIo = global.io;
 
   if (socketIo) {
-    socketIo.emit(`get-notification::${data?.receiver}`, result);
+    socketIo.emit(`get-notification::${data?.receiver![0]}`, result);
   }
 
   return result;

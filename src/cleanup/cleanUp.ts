@@ -75,7 +75,7 @@ export const reminder = () => {
 };
 
 export const deleteExpiredOrders = () => {
-  cron.schedule("*/1 * * * *", async () => {
+  cron.schedule("*/5 * * * *", async () => {
     await expandOrderTimeAndDelete()
     console.log("Deleted expired orders");
   }, {
@@ -95,27 +95,34 @@ const expandOrderTimeAndDelete = async () => {
   const orders_15_10 = await UserTakeService.find({
     createdAt: { $gte: minutesAgo(15), $lte: minutesAgo(10) },
     status: "pending",
+    isBooked:false
   }).lean();
 
-  for (const order of orders_15_10) {
-    await UserTakeServiceServices.expandAreaForOrder(order._id, 100);
-    // console.log("Expanded area by 100 for order:", order._id);
+  if(orders_15_10.length>0){
+    for (const order of orders_15_10) {
+      await UserTakeServiceServices.expandAreaForOrder(order._id, 100);
+      // console.log("Expanded area by 100 for order:", order._id);
+    }
   }
 
   const orders_30_25 = await UserTakeService.find({
     createdAt: { $gte: minutesAgo(30), $lte: minutesAgo(25) },
     status: "pending",
+    isBooked:false
   }).lean();
 
-  for (const order of orders_30_25) {
-    await UserTakeServiceServices.expandAreaForOrder(order._id, 150);
-    // console.log("Expanded area by 150 for order:", order._id);
+  if(orders_30_25.length>0){
+    for (const order of orders_30_25) {
+      await UserTakeServiceServices.expandAreaForOrder(order._id, 150);
+      // console.log("Expanded area by 200 for order:", order._id);
+    }
   }
 
   const cancelResult = await UserTakeService.updateMany(
     {
       createdAt: { $gte: minutesAgo(35), $lte: minutesAgo(30) },
       status: "pending",
+      isBooked:false
     },
     { status: "cancelled" }
   );
