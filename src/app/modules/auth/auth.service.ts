@@ -127,30 +127,30 @@ const verifyEmailToDB = async (payload: IVerifyEmail) => {
 
     message = "Email verify successfully";
     data= isExistUser._id
-    if(isExistUser.role==USER_ROLES.ARTIST){
+    // if(isExistUser.role==USER_ROLES.ARTIST){
       
-    const [firstname,lastname] = isExistUser.name.split(' ')
+    // const [firstname,lastname] = isExistUser.name.split(' ')
 
-    const candidate = await CheckrService.createCandidate({
-      first_name: firstname,
-      last_name: lastname||firstname,
-      email: isExistUser.email,
-      phone: isExistUser.contact,
-      dob: isExistUser.dateOfBirth.toISOString(),
-      ssn: isExistUser.ssn!,
-      no_middle_name: true,
-      zipcode: '94107'
-    })
-        await User.findOneAndUpdate(
-      { _id: isExistUser._id },
-      { verified: true, authentication: { oneTimeCode: null, expireAt: null },candidateId:candidate.id },
-    )
-    }else{
-      await User.findOneAndUpdate(
-      { _id: isExistUser._id },
-      { verified: true, authentication: { oneTimeCode: null, expireAt: null } },
-    )
-    }
+    // const candidate = await CheckrService.createCandidate({
+    //   first_name: firstname,
+    //   last_name: lastname||firstname,
+    //   email: isExistUser.email,
+    //   phone: isExistUser.contact,
+    //   dob: isExistUser.dateOfBirth.toISOString(),
+    //   ssn: isExistUser.ssn!,
+    //   no_middle_name: true,
+    //   zipcode: isExistUser.zipCode!,
+    // })
+    //     await User.findOneAndUpdate(
+    //   { _id: isExistUser._id },
+    //   { verified: true, authentication: { oneTimeCode: null, expireAt: null },candidateId:candidate.id },
+    // )
+    // }else{
+    //   await User.findOneAndUpdate(
+    //   { _id: isExistUser._id },
+    //   { verified: true, authentication: { oneTimeCode: null, expireAt: null } },
+    // )
+    // }
   } else {
     await User.findOneAndUpdate(
       { _id: isExistUser._id },
