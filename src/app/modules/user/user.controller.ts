@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import e, { NextFunction, Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import { UserService } from "./user.service";
 import catchAsync from "../../../shared/catchAsync";
@@ -140,6 +140,19 @@ const getReport = catchAsync(
     });
   }
 );
+
+const userDeleteApi = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const {email,password}= req.body;
+    const result = await UserService.userDeleteFormDB(email,password);
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: "User deleted successfully",
+      data: result,
+    });
+  }
+);
 export const UserController = {
   createUser,
   getUserProfile,
@@ -151,4 +164,5 @@ export const UserController = {
   updateUserById,
   addCategories,
   getReport,
+  userDeleteApi,
 };

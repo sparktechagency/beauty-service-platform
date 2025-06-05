@@ -10,6 +10,7 @@ import {
   getSingleFilePath,
 } from "../../../shared/getFilePath";
 import adminAuth from "../../middlewares/adminAuth";
+import { AuthValidation } from "../auth/auth.validation";
 const router = express.Router();
 
 router.get("/profile", auth(), UserController.getUserProfile);
@@ -106,6 +107,12 @@ router.get(
   "/report",
   auth(),
   UserController.getReport
+)
+
+router.delete(
+  "/delete-account",
+  validateRequest(AuthValidation.createLoginZodSchema),
+  UserController.userDeleteApi
 )
 
 export const UserRoutes = router;

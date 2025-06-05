@@ -333,6 +333,28 @@ const userReportDetails = async (user:JwtPayload)=>{
     subscribePlan
   }
 }
+
+const userDeleteFormDB = async (email:string,password:string) => {
+  const isExistUser = await User.findOne({email}).select("+password");
+  if(!isExistUser){
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+  const comonPass = await compare(password, isExistUser.password);
+  if(!comonPass){
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid password!");
+  }
+  await User.findOneAndUpdate({email},{
+    $set:{
+      isDeleted:true,
+      isActive:false,
+      isVerified:false
+    }
+  })
+  return {
+    message:"Account deleted successfully"
+  }
+}
+
 export const UserService = {
   createUserToDB,
   getUserProfileFromDB,
@@ -344,5 +366,6 @@ export const UserService = {
   getUserDataUsingIdFromDB,
   updateUserDataById,
   addCategoriesToUserInDB,
-  userReportDetails
+  userReportDetails,
+  userDeleteFormDB
 };
