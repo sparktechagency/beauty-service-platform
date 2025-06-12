@@ -45,6 +45,7 @@ export type IUser = {
   city?: string;
   zipCode?: string;
   permissions?: string[];
+  last_accept_date?: Date;
 };
 
 export type UserModal = {

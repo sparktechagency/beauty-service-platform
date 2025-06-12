@@ -110,7 +110,7 @@ const createUserTakeServiceIntoDB = async (
       $sort: { "subscription.package.price": -1 },
     },
   ]);
-
+  const currentDate = new Date();
   //  📍 Filter by 5km radius
   const nearbyProviders = allProviders.filter((provider) => {
     if (provider.latitude && provider.longitude) {
@@ -123,6 +123,19 @@ const createUserTakeServiceIntoDB = async (
 
       return distance <= 70;
     }
+  }).filter((provider) =>{
+    
+    
+    if(!provider.last_accept_date){
+      return true
+    }
+    const lastAcceptDate = new Date(provider.last_accept_date);
+    const timeDifference = currentDate.getTime() - lastAcceptDate.getTime();
+    const minutesDifference = timeDifference / (1000 * 60);
+    const hoursDifference = minutesDifference / 60;
+    
+    
+    return hoursDifference > 4;
   });
 
   for (const provider of nearbyProviders) {
@@ -276,6 +289,7 @@ const confirmOrderToDB = async (orderId: ObjectId, userId: JwtPayload) => {
         quantity: 1,
       },
     ],
+    
     customer_email: userId?.email,
     payment_method_types: ["card"],
     mode: "payment",
@@ -295,7 +309,7 @@ const confirmOrderToDB = async (orderId: ObjectId, userId: JwtPayload) => {
   const notificationPayload = {
     title: `Your order has been confirmed`,
     message: "Your order has been confirmed",
-    filePath: "order",
+    filePath: "request",
     orderId,
     userId: userId.id,
     isRead: false,
@@ -305,13 +319,7 @@ const confirmOrderToDB = async (orderId: ObjectId, userId: JwtPayload) => {
       body: `Your order has been confirmed`,
       title: "Order Confirmed",
       token: user.deviceToken,
-      data:JSON.stringify(
-        {
-          orderId,
-          app_fee: order.app_fee,
-          total_amount: order.total_amount,
-        }
-      )
+      data:notificationPayload
     });
   }
   const artist = await User.findById(order.artiestId);
@@ -320,13 +328,7 @@ const confirmOrderToDB = async (orderId: ObjectId, userId: JwtPayload) => {
       body: `${user?.name} has confirmed her order`,
       title: "Order Confirmed",
       token: artist.deviceToken,
-      data:JSON.stringify(
-        {
-          orderId,
-          app_fee: order.app_fee,
-          total_amount: order.total_amount,
-        }
-      )
+      data:notificationPayload
     })
   }
 
@@ -1168,6 +1170,7 @@ const expandAreaForOrder = async (order_id:Types.ObjectId,area:number)=>{
   const result = await UserTakeService.findById(order_id);
   if(!result) return
   const service = await ServiceManagement.findById(result?.serviceId);
+  const currentDate = new Date();
   const allProviders = await User.aggregate([
     {
       $match: {
@@ -1215,6 +1218,17 @@ const expandAreaForOrder = async (order_id:Types.ObjectId,area:number)=>{
 
       return distance <= (area||50);
     }
+  }).filter((provider) =>{
+    if(!provider.last_accept_date){
+      return true
+    }
+    const lastAcceptDate = new Date(provider.last_accept_date);
+    const timeDifference = currentDate.getTime() - lastAcceptDate.getTime();
+    const minutesDifference = timeDifference / (1000 * 60);
+    const hoursDifference = minutesDifference / 60;
+    
+    
+    return hoursDifference > 4;
   });
 
   for (const provider of nearbyProviders) {

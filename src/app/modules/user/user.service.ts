@@ -243,11 +243,11 @@ const deleteAccount = async (user: JwtPayload,password:string) => {
 
   
   await User.findByIdAndUpdate(user.id, {
-    $set: {
+  
       isDeleted: true,
       isActive: false,
       isVerified: false,
-    },
+    
   });
   return {
     message: "Account deleted successfully",

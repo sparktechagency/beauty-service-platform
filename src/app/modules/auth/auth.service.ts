@@ -37,6 +37,10 @@ const loginUserFromDB = async (payload: ILoginData) => {
     throw new ApiError(StatusCodes.BAD_REQUEST, "Password is incorrect!");
   }
 
+  if(isExistUser.isDeleted){
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Account not found!");
+  }
+
   if(payload.deviceToken){
     await User.findByIdAndUpdate(isExistUser._id, {
       deviceToken: payload.deviceToken,

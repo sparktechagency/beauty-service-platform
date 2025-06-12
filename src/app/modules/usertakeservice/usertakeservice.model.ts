@@ -1,5 +1,6 @@
 import { Schema, model } from "mongoose";
 import { IUserTakeService } from "./usertakeservice.interface";
+import { User } from "../user/user.model";
 
 const userTakeServiceSchema = new Schema<IUserTakeService>(
   {
@@ -101,7 +102,27 @@ const userTakeServiceSchema = new Schema<IUserTakeService>(
   }
 );
 
+userTakeServiceSchema.pre("findOneAndUpdate", async function (next) {
+  const update:any = this.getUpdate();
+  const user = update?.artiestId
+  console.log(user);
+  
+  if(user){
+    await User.findOneAndUpdate({_id:user},{
+
+        last_accept_date:new Date()
+      
+    })
+  }
+
+  
+  next();
+});
+
+
 export const UserTakeService = model<IUserTakeService>(
   "UserTakeService",
   userTakeServiceSchema
 );
+
+

@@ -146,7 +146,10 @@ const userSchema = new Schema<IUser, UserModal>(
     },
     referralCode: {
       type: String,
-    }
+    },
+    last_accept_date: {
+      type: Date,
+    },
      
   },
   { timestamps: true }
