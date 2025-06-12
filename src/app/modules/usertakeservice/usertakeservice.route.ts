@@ -48,7 +48,7 @@ router.patch(
 );
 
 router.route("/cancel/:id").delete(
-  auth(USER_ROLES.ARTIST),
+  auth(),
   validateRequest(UserTakeServiceValidations.cancelOrderZodSchema),
   UserTakeServiceController.cancel_order
 );
