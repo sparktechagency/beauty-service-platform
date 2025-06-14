@@ -24,7 +24,7 @@ import { ReferralService } from "../referral/referral.service";
 //login
 const loginUserFromDB = async (payload: ILoginData) => {
   const { email, password } = payload;
-  const isExistUser: any = await User.findOne({ email,status:"active",verified:true}).select("+password");
+  const isExistUser: any = await User.findOne({ email,isDeleted:{$ne:true}}).select("+password");
   if (!isExistUser) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
   }
