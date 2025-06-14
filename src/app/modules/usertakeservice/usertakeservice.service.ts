@@ -560,6 +560,19 @@ const updateUserTakeServiceIntoDB = async (
     throw new ApiError(StatusCodes.NOT_FOUND, "Service already booked !");
   }
   const userData = await User.findById(user.id);
+  const currentDate = new Date();
+  if(userData?.last_accept_date){
+    const last_accept_date = new Date(userData?.last_accept_date);
+    const diff = currentDate.getTime() - last_accept_date.getTime();
+    const diffInMinutes = Math.floor(diff / (1000 * 60));
+    const diffInHours = Math.floor(diff / (1000 * 60 * 60));
+    if (diffInHours<4) {
+      throw new ApiError(
+        StatusCodes.FORBIDDEN,
+        "You can't accept this service within 4 hours of the last accepted service."
+      );
+    }
+  }
   if (userData?.status == "deleted") {
     throw new ApiError(StatusCodes.FORBIDDEN, "you account is inactive");
   }
