@@ -17,6 +17,7 @@ import { BonusAndChallengeServices } from "../bonusAndChallenge/bonusAndChalleng
 import { BONUS_TYPE } from "../bonusAndChallenge/bonusAndChallenge.interface";
 import { BonusAndChallenge } from "../bonusAndChallenge/bonusAndChallenge.model";
 import { sendNotificationToFCM } from "../../../helpers/firebaseNotificationHelper";
+import { Subscription } from "../subscription/subscription.model";
 
 const getReferral = async (user:JwtPayload,query:Record<string,any>)=>{
     
@@ -40,7 +41,11 @@ const acceptReferral = async (user:Types.ObjectId,id:string)=>{
   try {
 
 
-      const OriginUserData = await User.findOne({reffralCodeDB:id})
+    const OriginUserData = await User.findOne({reffralCodeDB:id})
+    const subscription = await Subscription.findOne({user:OriginUserData?._id})
+    if(!subscription || subscription.price<=18){
+        return
+    }
     if(!OriginUserData) throw new Error("User not found")
     const referral = await Referral.findOne({token_user:user})
     if(referral) throw new ApiError(400,"You already accepted this referral")

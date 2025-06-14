@@ -64,6 +64,8 @@ export const cleanUp = () => {
   });
 };
 
+
+
 export const reminder = () => {
   cron.schedule("0 0 * * *", async () => {
     await UserTakeServiceServices.reminderToUsers();

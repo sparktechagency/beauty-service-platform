@@ -68,11 +68,16 @@ const getUserProfileFromDB = async (
 ): Promise<Partial<IUser>> => {
   const { id } = user;
   const isExistUser = await User.isExistUserById(id);
+  const subscription = await Subscription.findOne({ user: id });
+
   if (!isExistUser) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
   }
 
-  return isExistUser;
+  return {
+    ...isExistUser.toObject(),
+    isValidReferrer:(subscription && subscription?.price>18)?true:false,
+  };
 };
 
 
@@ -247,7 +252,7 @@ const deleteAccount = async (user: JwtPayload,password:string) => {
       isDeleted: true,
       isActive: false,
       isVerified: false,
-    
+      status:"deleted"
   });
   return {
     message: "Account deleted successfully",
@@ -344,11 +349,11 @@ const userDeleteFormDB = async (email:string,password:string) => {
     throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid password!");
   }
   await User.findOneAndUpdate({email},{
-    $set:{
+
       isDeleted:true,
       isActive:false,
-      isVerified:false
-    }
+      isVerified:false,
+      status:"deleted"
   })
   return {
     message:"Account deleted successfully"

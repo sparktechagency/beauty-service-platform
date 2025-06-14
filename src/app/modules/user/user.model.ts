@@ -22,7 +22,6 @@ const userSchema = new Schema<IUser, UserModal>(
     email: {
       type: String,
       required: true,
-      unique: true,
       lowercase: true,
     },
     password: {
@@ -93,7 +92,7 @@ const userSchema = new Schema<IUser, UserModal>(
     },
     status: {
       type: String,
-      enum: ["active", "inactive"],
+      enum: ["active", "deleted"],
     },
     social: {
       type: String,
@@ -204,17 +203,17 @@ userSchema.statics.HandleConnectStripe = async (data: Stripe.Account) => {
 //check user
 userSchema.pre("save", async function (next) {
   //check user
-  const isExist = await User.findOne({ email: this.email });
+  const isExist = await User.findOne({ email: this.email,status:{$ne:"deleted"},verified:true });
   if (isExist) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "Email already exist!");
   }
 
-  if(this.ssn){
-    const ssnExist = await User.findOne({ ssn: this.ssn });
-    if (ssnExist) {
-      throw new ApiError(StatusCodes.BAD_REQUEST, "SSN already exist!");
-    }
-  }
+  // if(this.ssn){
+  //   const ssnExist = await User.findOne({ ssn: this.ssn });
+  //   if (ssnExist) {
+  //     throw new ApiError(StatusCodes.BAD_REQUEST, "SSN already exist!");
+  //   }
+  // }
 
   if(this.permissions){
     this.permissions = [...this.permissions,"Log Out","Settings","Analytics"]

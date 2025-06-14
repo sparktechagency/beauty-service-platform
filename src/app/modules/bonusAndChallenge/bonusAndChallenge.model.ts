@@ -22,11 +22,13 @@ const IBonusAndChallenge = new Schema<IBonusAndChallenge>(
     },
     amount: {
       type: Number,
-      required: true,
+      required: false,
+      default: 0,
     },
     number: {
       type: Number,
-      required: true,
+      required: false,
+      default: 0,
     },
     role: {
       type: String,

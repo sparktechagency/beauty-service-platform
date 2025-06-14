@@ -24,7 +24,7 @@ import { ReferralService } from "../referral/referral.service";
 //login
 const loginUserFromDB = async (payload: ILoginData) => {
   const { email, password } = payload;
-  const isExistUser: any = await User.findOne({ email }).select("+password");
+  const isExistUser: any = await User.findOne({ email,status:"active",verified:true}).select("+password");
   if (!isExistUser) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
   }
@@ -37,9 +37,7 @@ const loginUserFromDB = async (payload: ILoginData) => {
     throw new ApiError(StatusCodes.BAD_REQUEST, "Password is incorrect!");
   }
 
-  if(isExistUser.isDeleted){
-    throw new ApiError(StatusCodes.BAD_REQUEST, "Account not found!");
-  }
+
 
   if(payload.deviceToken){
     await User.findByIdAndUpdate(isExistUser._id, {

@@ -8,7 +8,7 @@ export type IUser = {
   location: string;
   dateOfBirth: Date;
   nickName?: string;
-  status?: "active" | "inactive";
+  status?: "active" | "deleted";
   social?: string;
   role: USER_ROLES;
   password: string;
@@ -46,6 +46,7 @@ export type IUser = {
   zipCode?: string;
   permissions?: string[];
   last_accept_date?: Date;
+  isValidReferrer?: boolean;
 };
 
 export type UserModal = {

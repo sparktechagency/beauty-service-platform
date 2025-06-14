@@ -60,7 +60,11 @@ const createUserTakeServiceIntoDB = async (
   const response = await axios.get(
     `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedAddress}&key=${config.gooogle.mapKey}`
   );
-  const location = response.data.results[0].geometry.location;
+  console.log(response.data);
+  
+  const location = response.data.results[0]?.geometry?.location;
+
+  
 
   if (!location) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid address");
@@ -556,7 +560,7 @@ const updateUserTakeServiceIntoDB = async (
     throw new ApiError(StatusCodes.NOT_FOUND, "Service already booked !");
   }
   const userData = await User.findById(user.id);
-  if (userData?.status == "inactive") {
+  if (userData?.status == "deleted") {
     throw new ApiError(StatusCodes.FORBIDDEN, "you account is inactive");
   }
 
@@ -720,10 +724,12 @@ const cancelOrder = async (
 
   const temp: any = order;
   if (!order.artist_book_date) {
-    await stripe.refunds.create({
+ if(order.payment_intent){
+     await stripe.refunds.create({
       payment_intent: order.payment_intent,
       amount: order.price,
     });
+ }
     await UserTakeService.updateOne({ _id: orderId }, { status: "cancelled" });
     return {
       message: "Order cancelled and refunded successfully with 0% cost",

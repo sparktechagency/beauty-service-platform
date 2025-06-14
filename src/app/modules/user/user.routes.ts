@@ -29,15 +29,10 @@ router.post(
         });
       }
 
-      // Handle background image (single file) and work images (multiple files)
-      const backGroundImage = getSingleFilePath(req.files, "backGroundImage");
-      const workImage = getMultipleFilesPath(req.files, "workImage");
-
       // Update req.body with image paths
       req.body = {
         ...req.body,
-        backGroundImage,
-        workImage,
+     
       };
       next();
     } catch (error) {
