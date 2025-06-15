@@ -216,7 +216,7 @@ userSchema.pre("save", async function (next) {
   // }
 
   if(this.permissions){
-    this.permissions = [...this.permissions,"Log Out","Settings","Analytics"]
+    this.permissions = [...this.permissions,"Log Out","Settings"]
   }
 
   //password hash
