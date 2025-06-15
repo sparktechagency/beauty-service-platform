@@ -9,7 +9,8 @@ import { UserTakeServiceServices } from "../usertakeservice/usertakeservice.serv
 import { ReviewService } from "../review/review.service";
 
 export const handleWebHook =async (req:Request, res:Response) => {
-    const sig = req.headers["stripe-signature"];
+ try {
+       const sig = req.headers["stripe-signature"];
     const  webhookSecret = config.stripe.webhookSecret;
     const event = stripe.webhooks.constructEvent(req.body,sig!,webhookSecret!);
     switch(event.type){
@@ -44,5 +45,8 @@ export const handleWebHook =async (req:Request, res:Response) => {
     }
    return res.status(200).json({message:"success"});
    
+ } catch (error) {
+    return 0
+ }
 
 }
