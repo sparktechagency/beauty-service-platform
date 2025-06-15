@@ -903,7 +903,7 @@ const payoutOrderInDB = async (orderId: string) => {
     order.artiestId!,
     BONUS_TYPE.BOOKING
   );
-  if (currentBonus) {
+  if (currentBonus && currentBonus.amount) {
     const bookings = await UserTakeService.countDocuments({
       status: "completed",
       artiestId: order.artiestId,

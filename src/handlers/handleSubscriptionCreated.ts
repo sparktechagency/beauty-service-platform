@@ -75,7 +75,7 @@ export const handleSubscriptionCreated = async (data: Stripe.Subscription) => {
 
                     const currentBonus = await BonusAndChallengeServices.currentBonusForUser(existingUser._id,BONUS_TYPE.SUBSCRIPTION);
 
-                    if(currentBonus){
+                    if(currentBonus && currentBonus.amount){
                         await WalletService.updateWallet(existingUser._id,currentBonus.amount||0);
                         await Reward.create({
                             user:existingUser._id,

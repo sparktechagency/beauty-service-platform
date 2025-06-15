@@ -20,4 +20,5 @@ export enum BONUS_TYPE {
   SUBSCRIPTION = "subscription",
   BOOKING = "booking",
   REFERRAL = "referral",
+  NONE = "none",
 }

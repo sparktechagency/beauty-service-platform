@@ -67,7 +67,7 @@ const acceptReferral = async (user:Types.ObjectId,id:string)=>{
 
     const currenBonus = await BonusAndChallengeServices.currentBonusForUser(referral2.referral_user,BONUS_TYPE.REFERRAL)
 
-    if(currenBonus){
+    if(currenBonus && currenBonus.amount){
         const timePerodedRefferals = await Referral.countDocuments({
             referral_user:referral2.referral_user,
             createdAt:{
