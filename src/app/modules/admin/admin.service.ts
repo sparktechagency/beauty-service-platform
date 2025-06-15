@@ -4,9 +4,11 @@ import { IUser } from '../user/user.interface';
 import { User } from '../user/user.model';
 import ApiError from '../../../errors/ApiErrors';
 import QueryBuilder from '../../builder/queryBuilder';
+import { emailTemplate } from '../../../shared/emailTemplate';
+import { emailHelper } from '../../../helpers/emailHelper';
 
 const createAdminToDB = async (payload: IUser): Promise<IUser> => {
-    const createAdmin: any = await User.create({
+    const createAdmin= await User.create({
         ...payload,
         role: 'ADMIN',
         verified: true
@@ -14,6 +16,9 @@ const createAdminToDB = async (payload: IUser): Promise<IUser> => {
     if (!createAdmin) {
         throw new ApiError(StatusCodes.BAD_REQUEST, 'Failed to create Admin');
     }
+    const emailTemplateS = emailTemplate.sendAdminInvitattionEmail(payload);
+    await emailHelper.sendEmail(emailTemplateS)
+
     return createAdmin;
 };
 

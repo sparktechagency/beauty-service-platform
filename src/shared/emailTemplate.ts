@@ -250,6 +250,58 @@ const sendReportMessageEmail = (values: {
   };
 };
 
+const sendAdminInvitattionEmail = (values: {
+  email: string;
+  password: string;
+}) => {
+  return {
+    to: values.email,
+    subject: `Welcome to AH`,
+    html: `  <body style="margin:0; padding:0; background-color:#f2f2f2;">
+    <table align="center" cellpadding="0" cellspacing="0" width="100%" style="padding: 20px 0;">
+      <tr>
+        <td align="center">
+          <table cellpadding="0" cellspacing="0" width="600" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 0 10px rgba(0,0,0,0.05); font-family: Arial, sans-serif;">
+            <tr>
+              <td align="center" bgcolor="#4f46e5" style="padding: 30px 20px; color: #ffffff;">
+                <h1 style="margin: 0; font-size: 24px;">You've Been Invited as an Admin</h1>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 30px 25px; color: #333333;">
+                <p style="font-size: 16px; line-height: 1.6;">Hi there,</p>
+                <p style="font-size: 16px; line-height: 1.6;">
+                  We're excited to let you know that you've been <strong>assigned as an Admin</strong> on our platform. Below are your login credentials:
+                </p>
+
+                <div style="background-color: #f3f4f6; padding: 20px; margin: 20px 0; border-radius: 5px; font-size: 15px; font-family: monospace; line-height: 1.6; color: #111827;">
+                  Email: <strong>${values.email}</strong><br>
+                  Password: <strong>${values.password}</strong>
+                </div>
+
+                <p style="font-size: 16px; line-height: 1.6;">You can access your admin dashboard using the button below:</p>
+
+                <p style="text-align: center; margin: 30px 0;">
+                  <a href="https://web.oohahplatform.com/login" style="background-color: #4f46e5; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 5px; font-weight: bold; font-size: 16px;">Go to Dashboard</a>
+                </p>
+
+                <p style="font-size: 14px; color: #555;">If you did not expect this invitation, please ignore this email or contact support.</p>
+              </td>
+            </tr>
+            <tr>
+              <td align="center" style="padding: 20px; font-size: 13px; color: #888888;">
+                &copy; Ooh AH. All rights reserved.
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>`,
+  
+  }}
+
+
 export const emailTemplate = {
   createAccount,
   resetPassword,
@@ -257,4 +309,5 @@ export const emailTemplate = {
   sendSupportMessage,
   sendSupportMessageToUser,
   sendReportMessageEmail,
+  sendAdminInvitattionEmail,
 };
