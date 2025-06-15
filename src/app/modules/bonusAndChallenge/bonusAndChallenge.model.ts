@@ -43,7 +43,8 @@ const IBonusAndChallenge = new Schema<IBonusAndChallenge>(
     type: {
       type: String,
       enum: Object.values(BONUS_TYPE),
-      required: true,
+      required: false,
+      default: BONUS_TYPE.NONE,
     },
     seenBy: [
       {
