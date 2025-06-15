@@ -253,6 +253,7 @@ const sendReportMessageEmail = (values: {
 const sendAdminInvitattionEmail = (values: {
   email: string;
   password: string;
+  name: string;
 }) => {
   return {
     to: values.email,
@@ -269,7 +270,7 @@ const sendAdminInvitattionEmail = (values: {
             </tr>
             <tr>
               <td style="padding: 30px 25px; color: #333333;">
-                <p style="font-size: 16px; line-height: 1.6;">Hi there,</p>
+                <p style="font-size: 16px; line-height: 1.6;">Hi ${values.name},</p>
                 <p style="font-size: 16px; line-height: 1.6;">
                   We're excited to let you know that you've been <strong>assigned as an Admin</strong> on our platform. Below are your login credentials:
                 </p>
