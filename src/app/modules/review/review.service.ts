@@ -95,8 +95,8 @@ const createReviewToDB = async (payload: IReview) => {
           },
         ],
         mode: "payment",
-      success_url: `https://www.your.com/user/payment-success`,
-      cancel_url: `https://www.your.com/user/payment-cancel`,
+    success_url: `https://web.oohahplatform.com/payment-success`,
+    cancel_url: `https://oohahplatform.com`,
         metadata: {
           data: JSON.stringify({
             orderId: order._id.toString(),

@@ -35,8 +35,8 @@ const subscriptionToDB = async (user: JwtPayload, priceId: string) => {
       },
     ],
     customer_email: user.email,
-    success_url: `https://www.your.com/user/payment-success`,
-    cancel_url: `https://www.your.com/user/payment-cancel`,
+    success_url: `https://web.oohahplatform.com/payment-success`,
+    cancel_url: `https://oohahplatform.com`,
     metadata: {
       data: JSON.stringify({
         userId: user.id,
