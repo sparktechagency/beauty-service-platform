@@ -13,6 +13,8 @@ export const handleWebHook =async (req:Request, res:Response) => {
        const sig = req.headers["stripe-signature"];
     const  webhookSecret = config.stripe.webhookSecret;
     const event = stripe.webhooks.constructEvent(req.body,sig!,webhookSecret!);
+    
+    
     switch(event.type){
         case 'checkout.session.completed':
             if(event.data.object.mode!='subscription'){

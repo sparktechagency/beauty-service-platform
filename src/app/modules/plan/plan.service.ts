@@ -47,14 +47,15 @@ const updatePlanToDB = async (
   id: string,
   payload: Partial<IPlan>
 ): Promise<IPlan | null> => {
+  const existingPlan = await Plan.findById(id);
     if (payload.name) {
-        const product = await stripe.products.update(payload.productId!, {
+        const product = await stripe.products.update(existingPlan?.productId!, {
             name: payload.name,
         });
     }
     let price=payload.price_id;
     if (payload.price) {
-        const price2 = await stripe.prices.update(payload.price_id!, {
+        const price2 = await stripe.prices.update(existingPlan?.price_id!, {
             active:false
         });
         const formatPrice = parseInt((((payload.price)) * 100).toFixed(2))
@@ -65,9 +66,11 @@ const updatePlanToDB = async (
             recurring: {
               interval: "month",
             },
-            product: payload.productId,
+            product: existingPlan?.productId,
         });
         price=newPrice.id;
+        console.log(newPrice);
+        
         const paymentLink = await stripe.paymentLinks.create({
             line_items: [
               {
