@@ -138,9 +138,9 @@ const fileUploadHandler = () => {
     { name: "additional", maxCount: 5 },
     { name: "work", maxCount: 11 },
     { name: "background", maxCount: 1 },
-    { name: "license", maxCount: 5},
+    { name: "license", maxCount: 10},
     { name: "dashboard", maxCount: 1 },
-    { name: "portfolio", maxCount: 1 },
+    { name: "portfolio", maxCount: 10 },
   ]);
   return upload;
 };
