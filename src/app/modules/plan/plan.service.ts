@@ -54,7 +54,7 @@ const updatePlanToDB = async (
         });
     }
     let price=payload.price_id;
-    if (payload.price) {
+    if (payload.price!==undefined) {
         const price2 = await stripe.prices.update(existingPlan?.price_id!, {
             active:false
         });
