@@ -50,7 +50,7 @@ export const handleSubscriptionCreated = async (data: Stripe.Subscription) => {
                 
                 // Create a new subscription record
                 try {
-                    const newSubscription = await Subscription.create({
+                    const newSubscription:any = await Subscription.create({
                         user: existingUser._id,
                         customerId: customer?.id,
                         package: pricingPlan._id,
@@ -69,7 +69,7 @@ export const handleSubscriptionCreated = async (data: Stripe.Subscription) => {
                         {
                             subscription:newSubscription._id,
                         },
-                        { new: true },
+                        { new: true,session:sessions },
                     ); 
 
 
