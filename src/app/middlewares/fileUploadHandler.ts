@@ -137,9 +137,9 @@ const fileUploadHandler = () => {
     { name: "doc", maxCount: 3 },
     { name: "feature", maxCount: 1 },
     { name: "additional", maxCount: 5 },
-    { name: "work" },
+    { name: "work[]" },
     { name: "background", maxCount: 1 },
-    { name: "license"},
+    { name: "license[]"},
     { name: "dashboard", maxCount: 1 },
     { name: "portfolio", maxCount: 10 },
   ]);
