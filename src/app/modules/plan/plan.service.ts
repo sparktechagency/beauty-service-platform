@@ -54,7 +54,7 @@ const updatePlanToDB = async (
         });
     }
     let price=payload.price_id;
-    if (payload.price!==undefined) {
+    if (payload.price!=undefined) {
         const price2 = await stripe.prices.update(existingPlan?.price_id!, {
             active:false
         });
@@ -69,7 +69,7 @@ const updatePlanToDB = async (
             product: existingPlan?.productId,
         });
         price=newPrice.id;
-        console.log(newPrice);
+        
         
         const paymentLink = await stripe.paymentLinks.create({
             line_items: [
@@ -79,6 +79,8 @@ const updatePlanToDB = async (
               },
             ]
           })
+          console.log(paymentLink.url);
+          
         payload.paymentLink=paymentLink.url;
     }
 
