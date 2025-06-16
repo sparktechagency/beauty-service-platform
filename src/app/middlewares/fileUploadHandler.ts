@@ -25,6 +25,7 @@ const fileUploadHandler = () => {
     destination: (req, file, cb) => {
       
       let uploadDir;
+      
       switch (file.fieldname) {
         case "feature":
           uploadDir = path.join(baseUploadDir, "feature");
@@ -136,7 +137,7 @@ const fileUploadHandler = () => {
     { name: "doc", maxCount: 3 },
     { name: "feature", maxCount: 1 },
     { name: "additional", maxCount: 5 },
-    { name: "work", maxCount: 11 },
+    { name: "work" },
     { name: "background", maxCount: 1 },
     { name: "license", maxCount: 10},
     { name: "dashboard", maxCount: 1 },

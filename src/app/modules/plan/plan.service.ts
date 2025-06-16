@@ -71,7 +71,7 @@ const updatePlanToDB = async (
         const paymentLink = await stripe.paymentLinks.create({
             line_items: [
               {
-                price: price,
+                price: newPrice.id,
                 quantity: 1,
               },
             ]
