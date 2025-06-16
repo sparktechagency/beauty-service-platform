@@ -21,14 +21,14 @@ export const handleSubscriptionCreated = async (data: Stripe.Subscription) => {
         
     // Retrieve the subscription from Stripe
     const subscription = await stripe.subscriptions.retrieve(data.id);
-
+    console.log("Subscription",subscription);
     // Retrieve the customer associated with the subscription
     const customer = (await stripe.customers.retrieve( subscription.customer as string)) as Stripe.Customer;
    
     
     // Extract the price ID from the subscription items
     const priceId = subscription.items.data[0]?.price?.id;
-
+    console.log("Price ID",priceId);
     // Retrieve the invoice to get the transaction ID and amount paid
     const invoice = await stripe.invoices.retrieve(subscription.latest_invoice as string);
 
@@ -44,7 +44,7 @@ export const handleSubscriptionCreated = async (data: Stripe.Subscription) => {
         if (existingUser) {
             // Find the pricing plan by priceId
             const pricingPlan = await Plan.findOne({ price_id: priceId });
-    
+            console.log("Pricing Plan",pricingPlan);
             if (pricingPlan) {
                
                 

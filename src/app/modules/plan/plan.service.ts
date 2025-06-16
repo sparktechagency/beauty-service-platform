@@ -68,6 +68,15 @@ const updatePlanToDB = async (
             product: payload.productId,
         });
         price=newPrice.id;
+        const paymentLink = await stripe.paymentLinks.create({
+            line_items: [
+              {
+                price: price,
+                quantity: 1,
+              },
+            ]
+          })
+        payload.paymentLink=paymentLink.url;
     }
 
     if(price){
