@@ -248,10 +248,6 @@ const deleteAccount = async (user: JwtPayload,password:string) => {
 
   
   await User.findByIdAndUpdate(user.id, {
-  
-      isDeleted: true,
-      isActive: false,
-      isVerified: false,
       status:"deleted"
   });
   return {
@@ -349,10 +345,6 @@ const userDeleteFormDB = async (email:string,password:string) => {
     throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid password!");
   }
   await User.findOneAndUpdate({email},{
-
-      isDeleted:true,
-      isActive:false,
-      isVerified:false,
       status:"deleted"
   })
   return {
