@@ -61,16 +61,21 @@ export const handleSubscriptionCreated = async (data: Stripe.Subscription) => {
                         subscriptionId: subscription.id,
                         trxId: trxId||'demo',
                     });
+
+                    console.log("New Subscription",newSubscription);
+                    
         
             
                     // Update the user to reflect the active subscription
-                    await User.findByIdAndUpdate(
+                  const userData =  await User.findByIdAndUpdate(
                         existingUser._id,
                         {
                             subscription:newSubscription._id,
                         },
-                        { new: true,session:sessions },
+                        { new: true },
                     ); 
+
+                    console.log("User Data",userData);
 
 
                     const currentBonus = await BonusAndChallengeServices.currentBonusForUser(existingUser._id,BONUS_TYPE.SUBSCRIPTION);

@@ -51,5 +51,8 @@ export default{
     },
     gooogle:{
         mapKey: process.env.GOOGLE_MAP_API_KEY,
+    },
+    apple:{
+        password:process.env.APP_SHERED_SECRET
     }
 }
