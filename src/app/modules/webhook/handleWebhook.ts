@@ -14,6 +14,7 @@ export const handleWebHook =async (req:Request, res:Response) => {
     const  webhookSecret = config.stripe.webhookSecret;
     const event = stripe.webhooks.constructEvent(req.body,sig!,webhookSecret!);
     
+    console.log(event);
     
     switch(event.type){
         case 'checkout.session.completed':
