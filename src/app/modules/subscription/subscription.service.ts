@@ -43,6 +43,8 @@ const subscriptionToDB = async (user: JwtPayload, priceId: string) => {
         packageId: packageData.id,
       }),
     },
+  },{
+    stripeAccount:"acct_1RP5LrAIWeb012Yq"
   });
 
   return subscription.url;
