@@ -50,6 +50,15 @@ export const handleSubscriptionCreated = async (data: Stripe.Subscription) => {
                 
                 // Create a new subscription record
                 try {
+                    const isExistSubscription = await Subscription.findOne({
+                        user: existingUser._id,
+                        status: 'active',
+                    });
+                    if (isExistSubscription) {
+                       await Subscription.findByIdAndUpdate(isExistSubscription._id,{
+                        status:"expired"
+                       })
+                    }
                     const newSubscription:any = await Subscription.create({
                         user: existingUser._id,
                         customerId: customer?.id,
