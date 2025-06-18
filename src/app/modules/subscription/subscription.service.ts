@@ -56,6 +56,7 @@ const subscriptionDetailsFromDB = async (
   console.log(user);
   
   const subscription = await Subscription.find({ user: user.id, status: "active" })
+console.log(subscription);
 
   await Subscription.deleteMany({user:user.id,package:{
     $ne:"6851440fed3dc5d660bf78cc"
