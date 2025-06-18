@@ -57,6 +57,10 @@ const subscriptionDetailsFromDB = async (
   
   const subscription = await Subscription.findOne({ user: user.id, status: "active" })
     console.log(subscription);
+
+  const plans = await Plan.find({ status: { $ne: "delete" } }).lean();
+  console.log(plans);
+  
     
   if (!subscription) {
     return { subscription: {} }; // Return empty object if no subscription found
