@@ -55,10 +55,10 @@ const subscriptionDetailsFromDB = async (
 ): Promise<{ subscription: ISubscription | {} }> => {
   console.log(user);
   
-  const subscription = await Subscription.findOne({ user: user.id, status: "active" })
+  const subscription = await Subscription.find({ user: user.id, status: "active" })
     console.log(subscription);
 
-  const plans = await Plan.find({ status: { $ne: "delete" } }).lean();
+  const plans = await Plan.find({ status: { $ne: "delete" } },{_id:1}).lean();
   console.log(plans);
   
     
