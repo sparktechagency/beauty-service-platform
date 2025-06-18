@@ -56,19 +56,6 @@ const subscriptionDetailsFromDB = async (
   console.log(user);
   
   const subscription = await Subscription.findOne({ user: user.id, status: "active" }).populate("package").lean();
-
-  const subscribe = await Subscription.create({
-    user:"685257bbb75d284bc9f7eecb",
-    package:"685143fced3dc5d660bf78c6",
-    price:0,
-    currentPeriodStart:"2025-06-17T00:00:00.000Z",
-    currentPeriodEnd:"2025-07-17T00:00:00.000Z",
-    subscriptionId:"demo",
-    trxId:"demo",
-    customerId:"demo"
-  })
-
-  console.log(subscribe);
   
     
   if (!subscription) {
