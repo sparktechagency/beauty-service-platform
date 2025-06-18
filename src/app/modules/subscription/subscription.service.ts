@@ -62,7 +62,10 @@ const subscriptionDetailsFromDB = async (
     package:"685143fced3dc5d660bf78c6",
     price:0,
     currentPeriodStart:"2025-06-17T00:00:00.000Z",
-    currentPeriodEnd:"2025-07-17T00:00:00.000Z"
+    currentPeriodEnd:"2025-07-17T00:00:00.000Z",
+    subscriptionId:"demo",
+    trxId:"demo",
+    customerId:"demo"
   })
 
   console.log(subscribe);
