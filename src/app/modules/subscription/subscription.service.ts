@@ -53,9 +53,11 @@ const subscriptionToDB = async (user: JwtPayload, priceId: string) => {
 const subscriptionDetailsFromDB = async (
   user: JwtPayload
 ): Promise<{ subscription: ISubscription | {} }> => {
+  console.log(user);
+  
   const subscription = await Subscription.findOne({ user: user.id, status: "active" })
-    .populate("package")
-    .lean();
+    console.log(subscription);
+    
   if (!subscription) {
     return { subscription: {} }; // Return empty object if no subscription found
   }
