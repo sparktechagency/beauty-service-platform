@@ -55,7 +55,7 @@ const subscriptionDetailsFromDB = async (
 ): Promise<{ subscription: ISubscription | {} }> => {
   console.log(user);
   
-  const subscription = await Subscription.findOne({ user: user.id, status: "active" })
+  const subscription = await Subscription.findOne({ user: user.id, status: "active" }).populate("package").lean();
 
   
     
