@@ -55,15 +55,8 @@ const subscriptionDetailsFromDB = async (
 ): Promise<{ subscription: ISubscription | {} }> => {
   console.log(user);
   
-  const subscription = await Subscription.find({ user: user.id, status: "active" })
-console.log(subscription);
+  const subscription = await Subscription.findOne({ user: user.id, status: "active" })
 
-  await Subscription.deleteMany({user:user.id,package:{
-    $ne:"6851440fed3dc5d660bf78cc"
-  }})
-
-  const plans = await Plan.find({ status: { $ne: "delete" } },{_id:1}).lean();
-  console.log(plans);
   
     
   if (!subscription) {
