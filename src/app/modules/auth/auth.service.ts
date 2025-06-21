@@ -20,6 +20,7 @@ import { IUser } from "../user/user.interface";
 import { CheckrService } from "../checkr/checkr.service";
 import { USER_ROLES } from "../../../enums/user";
 import { ReferralService } from "../referral/referral.service";
+import { SubscriptionService } from "../subscription/subscription.service";
 
 //login
 const loginUserFromDB = async (payload: ILoginData) => {
@@ -155,6 +156,8 @@ const verifyEmailToDB = async (payload: IVerifyEmail) => {
     //   { verified: true, authentication: { oneTimeCode: null, expireAt: null } },
     // )
     // }
+    await SubscriptionService.createFreeSubscription(isExistUser._id as any);
+    
   } else {
     await User.findOneAndUpdate(
       { _id: isExistUser._id },

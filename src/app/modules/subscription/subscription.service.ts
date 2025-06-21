@@ -9,6 +9,7 @@ import QueryBuilder from "../../builder/queryBuilder";
 import { paginateHelper } from "../../../helpers/paginateHelper";
 import { date } from "zod";
 import { IPlan } from "../plan/plan.interface";
+import { ObjectId } from "mongoose";
 
 const subscriptionToDB = async (user: JwtPayload, priceId: string) => {
 
@@ -211,11 +212,42 @@ const subsriprionDetailsFromDB = async (user:JwtPayload)=>{
   return {priceOffer:packageData?.price_offer??10,allPackageOffers}
 }
 
+
+const createFreeSubscription = async (userId:ObjectId)=>{
+  const user = await User.findOne({_id:userId})
+  if(!user){
+    throw new ApiError(404,'User not found')
+  }
+
+  const freePlan = await Plan.findOne({for:user.role,price:0})
+  console.log(freePlan);
+  
+  if(!freePlan){
+    throw new ApiError(404,'Free plan not found')
+  }
+  const existSubScription = await Subscription.findOne({user:userId,status:'active'})
+  if(existSubScription){
+    await Subscription.findOneAndUpdate({user:userId,status:'active'},{status:'expired'})
+  }
+  
+  const subscription = await Subscription.create({
+    user:userId,
+    package:freePlan._id,
+    currentPeriodStart:new Date(),
+    currentPeriodEnd:new Date(new Date().getTime()+(1000*60*60*24*30)),
+    customerId:user._id.toString(),
+    price:0,
+    subscriptionId:'demo',
+    trxId:'demo',
+  })
+  return subscription
+}
 export const SubscriptionService = {
   subscriptionDetailsFromDB,
   subscriberFromDB,
   subscriptionToDB,
   changeSubscriptionStatus,
   overViewOfSubscription,
-  subsriprionDetailsFromDB
+  subsriprionDetailsFromDB,
+  createFreeSubscription
 };
