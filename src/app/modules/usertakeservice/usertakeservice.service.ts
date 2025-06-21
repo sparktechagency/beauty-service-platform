@@ -807,7 +807,7 @@ const payoutOrderInDB = async (orderId: string) => {
   const packageData: any = subscription?.package;
   const cost = packageData?.price_offer ?? basicPackage?.price_offer ?? 8;
 
-  const amount = order.price - (order.price * cost) / 100;
+  const amount = (order.price - (order.price * cost) / 100)-order.app_fee!;
 
   await Wallet.findOneAndUpdate(
     { user: order.artiestId },
