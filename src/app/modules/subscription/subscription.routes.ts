@@ -17,6 +17,11 @@ router.get("/",
     SubscriptionController.subscribers
 );
 
+router.delete('/cancel',
+    auth(),
+    SubscriptionController.cancelSubscription
+)
+
 router.get("/details", 
     auth(), 
     SubscriptionController.subscriptionDetails

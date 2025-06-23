@@ -60,7 +60,7 @@ const createUserTakeServiceIntoDB = async (
   const response = await axios.get(
     `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedAddress}&key=${config.gooogle.mapKey}`
   );
-  console.log(response.data);
+  
   
   const location = response.data.results[0]?.geometry?.location;
 
@@ -76,6 +76,7 @@ const createUserTakeServiceIntoDB = async (
   const serviceDate = new Date(
     `${payload.date}T${payload.time}:00Z`
   ).toISOString();
+
 
   data.service_date = serviceDate as any;
 
@@ -427,6 +428,8 @@ export const nearByOrderByLatitudeAndLongitude = async (
 
   const filterData = result.filter((services) => {
     if (services.latitude && services.longitude) {
+      console.log(services.latitude, services.longitude);
+      
       const distance = calculateDistanceInKm(
         latitude,
         longitude,
@@ -434,6 +437,7 @@ export const nearByOrderByLatitudeAndLongitude = async (
         Number(services.longitude)
       );
 
+      console.log(distance);
       
 
       return distance <= 70;
@@ -457,7 +461,8 @@ const getAllServiceAsArtistFromDB = async (
       longitude
     );
 
-
+    console.log(latitude, longitude);
+    
     
 
     filterData.forEach((item) => {
@@ -1084,6 +1089,11 @@ const getAllBookingsFromDB = async (
     ])
     .lean()
     .exec();
+
+    console.log(user);
+    
+
+
 
   return {
     paginationInfo,

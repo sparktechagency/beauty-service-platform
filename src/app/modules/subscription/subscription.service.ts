@@ -219,8 +219,13 @@ const createFreeSubscription = async (userId:ObjectId)=>{
     throw new ApiError(404,'User not found')
   }
 
-  const freePlan = await Plan.findOne({for:user.role,price:0})
+  const freePlan = await Plan.findOne({for:user.role,price:{
+    $lte:5
+  }}).lean()
+
   console.log(freePlan);
+  
+  
   
   if(!freePlan){
     throw new ApiError(404,'Free plan not found')
@@ -229,6 +234,9 @@ const createFreeSubscription = async (userId:ObjectId)=>{
   if(existSubScription){
     await Subscription.findOneAndUpdate({user:userId,status:'active'},{status:'expired'})
   }
+
+ 
+  
   
   const subscription = await Subscription.create({
     user:userId,
@@ -240,7 +248,24 @@ const createFreeSubscription = async (userId:ObjectId)=>{
     subscriptionId:'demo',
     trxId:'demo',
   })
+
+  
+
+ const cancel = await User.findOneAndUpdate({_id:userId},{subscription:subscription._id},{new:true})
+
+ 
+  
   return subscription
+}
+
+const cancelSubscription = async (user:JwtPayload)=>{
+  const subscription = await Subscription.findOne({user:user.id,status:'active'})
+  if(!subscription){
+    throw new ApiError(404,'Subscription not found')
+  }
+  await Subscription.findOneAndUpdate({user:user.id,status:'active'},{status:'canceled'})
+  const sub = await createFreeSubscription(user.id)
+  return sub
 }
 export const SubscriptionService = {
   subscriptionDetailsFromDB,
@@ -249,5 +274,6 @@ export const SubscriptionService = {
   changeSubscriptionStatus,
   overViewOfSubscription,
   subsriprionDetailsFromDB,
-  createFreeSubscription
+  createFreeSubscription,
+  cancelSubscription
 };

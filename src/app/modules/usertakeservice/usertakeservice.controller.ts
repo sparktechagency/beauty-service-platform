@@ -98,9 +98,7 @@ const getAllBookings = catchAsync(async (req: Request, res: Response) => {
   const user:any = req.user;
   const query = req.query;
   const userData = await User.findById(user.userId);
-  if([USER_ROLES.ADMIN,USER_ROLES.SUPER_ADMIN].includes(user.role) && [ADMIN_BADGE.AH_EXECUTTIVE,ADMIN_BADGE.AH_CARE].includes(userData?.badge!)){
-    throw new ApiError(400, "You are not authorized to perform this action");
-  }
+
   const result = await UserTakeServiceServices.getAllBookingsFromDB(user!, query);
   sendResponse(res, {
     statusCode: 200,

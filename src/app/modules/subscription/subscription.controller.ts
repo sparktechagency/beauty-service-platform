@@ -79,11 +79,23 @@ const PlansData = catchAsync(async(req:Request,res:Response)=>{
     })
 })
 
+const cancelSubscription = catchAsync(async(req:Request,res:Response)=>{
+    const user = req.user;
+    const result = await SubscriptionService.cancelSubscription(user);
+    sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "Subscription Canceled Successfully",
+        data: result
+    })
+})
+
 export const SubscriptionController = {
     subscribers,
     subscriptionDetails,
     subscribePlan,
     changeSubscriptionStatus,
     overView,
-    PlansData
+    PlansData,
+    cancelSubscription
 }
