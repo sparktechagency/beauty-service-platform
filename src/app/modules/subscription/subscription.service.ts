@@ -44,8 +44,6 @@ const subscriptionToDB = async (user: JwtPayload, priceId: string) => {
         packageId: packageData.id,
       }),
     },
-  },{
-    stripeAccount:"acct_1RP5LrAIWeb012Yq"
   });
 
   return subscription.url;
@@ -106,7 +104,7 @@ const changeSubscriptionStatus = async (
 ) => {
   const subscription = await Subscription.findOne({ _id: subscriptionId });
   if (!subscription) {
-    throw new ApiError(404, "Subscription not found");
+    throw new ApiError(404, "Member not found");
   }
   const subscribePlan = await Subscription.findOneAndUpdate(
     { _id: subscriptionId },
@@ -261,7 +259,7 @@ const createFreeSubscription = async (userId:ObjectId)=>{
 const cancelSubscription = async (user:JwtPayload)=>{
   const subscription = await Subscription.findOne({user:user.id,status:'active'})
   if(!subscription){
-    throw new ApiError(404,'Subscription not found')
+    throw new ApiError(404,'MemberShip not found')
   }
   await Subscription.findOneAndUpdate({user:user.id,status:'active'},{status:'canceled'})
   const sub = await createFreeSubscription(user.id)
