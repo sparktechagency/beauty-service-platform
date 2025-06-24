@@ -50,7 +50,9 @@ const createUserTakeServiceIntoDB = async (
   }
   const last_apoinment_date = new Date(userData?.last_apoinment_date||0);
   const currDate = new Date(serviceDate);
-  if(new Date(serviceDate)< new Date()) {
+  console.log(currDate);
+  
+  if(currDate< new Date()) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "you can't order service in past");
   }
   if(last_apoinment_date){
