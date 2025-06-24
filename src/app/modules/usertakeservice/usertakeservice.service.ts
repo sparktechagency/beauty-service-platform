@@ -40,21 +40,26 @@ const createUserTakeServiceIntoDB = async (
   if (!userId) {
     throw new ApiError(StatusCodes.UNAUTHORIZED, "Unauthorized access");
   }
+  const serviceDate  = new Date(
+    `${payload.date} ${payload.time}`
+  ).toISOString();
 
   const userData = await User.findById(userId.id);
   if(!userData) {
     throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
   }
   const last_apoinment_date = new Date(userData?.last_apoinment_date||0);
-  const currDate = new Date();
+  const currDate = new Date(serviceDate);
+  if(new Date(serviceDate)< new Date()) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "you can't order service in past");
+  }
   if(last_apoinment_date){
     const diff = currDate.getTime() - last_apoinment_date.getTime();
-    const diffInMinutes = Math.floor(diff / (1000 * 60));
     const diffInHours = Math.floor(diff / (1000 * 60 * 60));
     if (diffInHours<2) {
       throw new ApiError(
         StatusCodes.FORBIDDEN,
-        "You can't accept this service within 4 hours of the last accepted service."
+        "You can't order this service within 2 hours of the last order service."
       );
     }
   }
@@ -89,9 +94,9 @@ const createUserTakeServiceIntoDB = async (
   data.latitude = location.lat;
   data.longitude = location.lng;
 
-  const serviceDate  = new Date(
-    `${payload.date}T${payload.time}:00Z`
-  ).toISOString();
+
+  console.log(serviceDate);
+  
 
 
   data.service_date = serviceDate as any;
@@ -277,9 +282,9 @@ const createUserTakeServiceIntoDB = async (
     locationHelper({ receiver: provider._id, data: currentOrder! });
   }
      await User.findByIdAndUpdate(result.userId, {
-      $set: {
+
         last_apoinment_date:serviceDate,
-      },
+      
     });
   return result;
 };
@@ -460,7 +465,6 @@ export const nearByOrderByLatitudeAndLongitude = async (
         Number(services.longitude)
       );
 
-      console.log(distance);
       
 
       return distance <= 70;
