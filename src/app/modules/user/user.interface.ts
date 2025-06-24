@@ -47,6 +47,7 @@ export type IUser = {
   permissions?: string[];
   last_accept_date?: Date;
   isValidReferrer?: boolean;
+  last_apoinment_date?: Date;
 };
 
 export type UserModal = {

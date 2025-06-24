@@ -149,6 +149,9 @@ const userSchema = new Schema<IUser, UserModal>(
     last_accept_date: {
       type: Date,
     },
+    last_apoinment_date: {
+      type: Date,
+    }
      
   },
   { timestamps: true }

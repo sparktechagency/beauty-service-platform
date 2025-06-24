@@ -42,6 +42,22 @@ const createUserTakeServiceIntoDB = async (
   }
 
   const userData = await User.findById(userId.id);
+  if(!userData) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
+  }
+  const last_apoinment_date = new Date(userData?.last_apoinment_date||0);
+  const currDate = new Date();
+  if(last_apoinment_date){
+    const diff = currDate.getTime() - last_apoinment_date.getTime();
+    const diffInMinutes = Math.floor(diff / (1000 * 60));
+    const diffInHours = Math.floor(diff / (1000 * 60 * 60));
+    if (diffInHours<2) {
+      throw new ApiError(
+        StatusCodes.FORBIDDEN,
+        "You can't accept this service within 4 hours of the last accepted service."
+      );
+    }
+  }
   const service = await ServiceManagement.findById(payload.serviceId);
   if (!service) {
     throw new ApiError(StatusCodes.NOT_FOUND, "Service not found");
@@ -668,6 +684,12 @@ const bookOrder = async (
       console.log("result not found");
       return
     }
+
+    await User.findByIdAndUpdate(result.userId, {
+      $set: {
+        last_apoinment_date: new Date(),
+      },
+    });
 
     const updateOrder = await UserTakeService.findOneAndUpdate(
       { _id: payload },
