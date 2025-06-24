@@ -356,6 +356,12 @@ const confirmOrderToDB = async (orderId: ObjectId, userId: JwtPayload) => {
     })
   }
 
+      await User.findByIdAndUpdate(order.userId, {
+      $set: {
+        last_apoinment_date: new Date(),
+      },
+    });
+
   return session.url;
 
 }
@@ -685,11 +691,7 @@ const bookOrder = async (
       return
     }
 
-    await User.findByIdAndUpdate(result.userId, {
-      $set: {
-        last_apoinment_date: new Date(),
-      },
-    });
+
 
     const updateOrder = await UserTakeService.findOneAndUpdate(
       { _id: payload },
@@ -1108,18 +1110,24 @@ const getAllBookingsFromDB = async (
           },
         ],
       },
+      
     ])
     .lean()
     .exec();
 
-    console.log(user);
-    
+
+    const fixedData = data.map((item:any) => {
+      return {
+        ...item,
+        price:[USER_ROLES.ADMIN,USER_ROLES.SUPER_ADMIN].includes(user.role) ? item.price :user.role == USER_ROLES.ARTIST? item.price - (item.price * (10) / 100): item.price - (item.price * (item.app_fee || 0) / 100) + (item.price * (10) / 100),
+      }
+    });
 
 
 
   return {
     paginationInfo,
-    data,
+    data: fixedData,
   };
 };
 
