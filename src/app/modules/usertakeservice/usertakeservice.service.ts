@@ -451,7 +451,7 @@ export const nearByOrderByLatitudeAndLongitude = async (
 
   const filterData = result.filter((services) => {
     if (services.latitude && services.longitude) {
-      console.log(services.latitude, services.longitude);
+    
       
       const distance = calculateDistanceInKm(
         latitude,
@@ -466,7 +466,12 @@ export const nearByOrderByLatitudeAndLongitude = async (
       return distance <= 70;
     }
     return false;
-  });
+  }).map((item=>{
+    return {
+      ...item,
+      price:item.price - (item.price * (10/ 100))
+    }
+  }))
 
 
   return filterData;
