@@ -89,7 +89,7 @@ const createUserTakeServiceIntoDB = async (
   data.latitude = location.lat;
   data.longitude = location.lng;
 
-  const serviceDate = new Date(
+  const serviceDate  = new Date(
     `${payload.date}T${payload.time}:00Z`
   ).toISOString();
 
@@ -271,11 +271,16 @@ const createUserTakeServiceIntoDB = async (
       ],
     },
   ]);
+   
 
   for (const provider of nearbyProviders) {
     locationHelper({ receiver: provider._id, data: currentOrder! });
   }
-
+     await User.findByIdAndUpdate(result.userId, {
+      $set: {
+        last_apoinment_date:serviceDate,
+      },
+    });
   return result;
 };
 
@@ -356,11 +361,7 @@ const confirmOrderToDB = async (orderId: ObjectId, userId: JwtPayload) => {
     })
   }
 
-      await User.findByIdAndUpdate(order.userId, {
-      $set: {
-        last_apoinment_date: new Date(),
-      },
-    });
+    
 
   return session.url;
 
@@ -506,6 +507,7 @@ const getAllServiceAsArtistFromDB = async (
 };
 
 const getSingleUserService = async (
+  user: JwtPayload,
   id: string
 ): Promise<IUserTakeService | null> => {
   const result = await UserTakeService.findById(id).populate([
@@ -573,12 +575,15 @@ const getSingleUserService = async (
         },
       ],
     },
-  ]);
+  ]).lean()
 
   if (!result) {
     throw new ApiError(StatusCodes.NOT_FOUND, "Service not found");
   }
-  return result;
+  return {
+    ...result,
+    price:user.role == USER_ROLES.ARTIST ? result.price - (result.price) *(10/100) : result.price+ (result.price) *(10/100),
+  };
 };
 
 const updateUserTakeServiceIntoDB = async (

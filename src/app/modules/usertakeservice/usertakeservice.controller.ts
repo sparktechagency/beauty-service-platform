@@ -25,7 +25,7 @@ const createUserTakeService = catchAsync(
 
 const getSingleService = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const result = await UserTakeServiceServices.getSingleUserService(id);
+  const result = await UserTakeServiceServices.getSingleUserService(req.user,id);
   sendResponse(res, {
     statusCode: 200,
     success: true,
