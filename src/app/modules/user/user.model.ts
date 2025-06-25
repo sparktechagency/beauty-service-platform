@@ -158,12 +158,16 @@ const userSchema = new Schema<IUser, UserModal>(
 );
 //exist user check
 userSchema.statics.isExistUserById = async (id: string) => {
-  const isExist = await User.findOne({ _id: id ,status:"active",verified:true});
+  const isExist = await User.findOne({ _id: id ,status:{
+    $ne:"deleted"
+  },verified:true});
   return isExist;
 };
 
 userSchema.statics.isExistUserByEmail = async (email: string) => {
-  const isExist = await User.findOne({ email,status:'active',verified:true,});
+  const isExist = await User.findOne({ email,status:{
+    $ne:"deleted"
+  },verified:true,});
   return isExist;
 };
 
