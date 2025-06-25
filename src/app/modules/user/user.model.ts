@@ -158,16 +158,12 @@ const userSchema = new Schema<IUser, UserModal>(
 );
 //exist user check
 userSchema.statics.isExistUserById = async (id: string) => {
-  const isExist = await User.findOne({ _id: id ,status:{
-    $ne:"deleted"
-  },verified:true});
+  const isExist = await User.findOne({ _id: id});
   return isExist;
 };
 
 userSchema.statics.isExistUserByEmail = async (email: string) => {
-  const isExist = await User.findOne({ email,status:{
-    $ne:"deleted"
-  },verified:true,});
+  const isExist = await User.findOne({ email});
   return isExist;
 };
 
@@ -210,7 +206,7 @@ userSchema.statics.HandleConnectStripe = async (data: Stripe.Account) => {
 //check user
 userSchema.pre("save", async function (next) {
   //check user
-  const isExist = await User.findOne({ email: this.email });
+  const isExist = await User.findOne({ email: this.email,status: "active",verified:true });
   if (isExist) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "Email already exist!");
   }
