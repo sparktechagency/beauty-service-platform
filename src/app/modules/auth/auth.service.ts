@@ -157,7 +157,7 @@ const verifyEmailToDB = async (payload: IVerifyEmail) => {
     // )
     // }
     await SubscriptionService.createFreeSubscription(isExistUser._id as any);
-    
+
   } else {
     await User.findOneAndUpdate(
       { _id: isExistUser._id },
@@ -295,7 +295,11 @@ const newAccessTokenToUser = async (token: string) => {
     config.jwt.jwtRefreshSecret as Secret
   );
 
-  const isExistUser = await User.findById(verifyUser?.id);
+  const isExistUser = await User.findOne({
+    _id: verifyUser.id,
+    status: "active",
+    verified: true,
+  });
   if (!isExistUser) {
     throw new ApiError(StatusCodes.UNAUTHORIZED, "Unauthorized access");
   }
