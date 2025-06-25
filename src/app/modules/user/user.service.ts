@@ -71,7 +71,7 @@ const getUserProfileFromDB = async (
   const subscription = await Subscription.findOne({ user: id });
 
   if (!isExistUser) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+    throw new ApiError(StatusCodes.UNAUTHORIZED, "User doesn't exist!");
   }
 
   return {
