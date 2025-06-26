@@ -25,7 +25,7 @@ const createUserToDB = async (payload: Partial<IUser>): Promise<IUser> => {
   //set role
   const rafferalCode = cryptoToken(5);
   payload.reffralCodeDB = rafferalCode;
-await User.deleteMany({email:payload.email,verified:false});
+
   const createUser = await User.create(payload);
   
   if (!createUser) {
