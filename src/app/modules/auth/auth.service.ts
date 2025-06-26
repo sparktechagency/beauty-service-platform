@@ -136,26 +136,26 @@ const verifyEmailToDB = async (payload: IVerifyEmail) => {
       
     // const [firstname,lastname] = isExistUser.name.split(' ')
 
-    // const candidate = await CheckrService.createCandidate({
-    //   first_name: firstname,
-    //   last_name: lastname||firstname,
-    //   email: isExistUser.email,
-    //   phone: isExistUser.contact,
-    //   dob: isExistUser.dateOfBirth.toISOString(),
-    //   ssn: isExistUser.ssn!,
-    //   no_middle_name: true,
-    //   zipcode: isExistUser.zipCode!,
-    // })
+    // // const candidate = await CheckrService.createCandidate({
+    // //   first_name: firstname,
+    // //   last_name: lastname||firstname,
+    // //   email: isExistUser.email,
+    // //   phone: isExistUser.contact,
+    // //   dob: isExistUser.dateOfBirth.toISOString(),
+    // //   ssn: isExistUser.ssn!,
+    // //   no_middle_name: true,
+    // //   zipcode: isExistUser.zipCode!,
+    // // })
     //     await User.findOneAndUpdate(
     //   { _id: isExistUser._id },
     //   { verified: true, authentication: { oneTimeCode: null, expireAt: null },candidateId:candidate.id },
     // )
     // }else{
-    //   await User.findOneAndUpdate(
-    //   { _id: isExistUser._id },
-    //   { verified: true, authentication: { oneTimeCode: null, expireAt: null } },
-    // )
-    // }
+      await User.findOneAndUpdate(
+      { _id: isExistUser._id },
+      { verified: true, authentication: { oneTimeCode: null, expireAt: null } },
+    )
+    
     await SubscriptionService.createFreeSubscription(isExistUser._id as any);
 
   } else {
