@@ -206,7 +206,9 @@ userSchema.statics.HandleConnectStripe = async (data: Stripe.Account) => {
 //check user
 userSchema.pre("save", async function (next) {
   //check user
-  const isExist = await User.findOne({ email: this.email,status: "active",verified:true });
+  const isExist = await User.findOne({ email: this.email,status:{
+    $ne:"deleted"
+  },verified:true });
   if (isExist) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "Email already exist!");
   }
