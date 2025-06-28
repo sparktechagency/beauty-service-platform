@@ -42,6 +42,12 @@ router.get(
 );
 
 router.patch(
+  "/on-way/:id",
+  auth(USER_ROLES.ARTIST),
+  UserTakeServiceController.changeArtistOntheWay
+)
+
+router.patch(
   "/accept/:id",
   auth(USER_ROLES.ARTIST),
   UserTakeServiceController.updateUserTakeService

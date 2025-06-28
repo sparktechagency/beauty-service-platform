@@ -132,6 +132,17 @@ const confirmOrder = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const changeArtistOntheWay = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const result = await UserTakeServiceServices.artistOnTheWayStatus(id as any);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "UserTakeService updated successfully",
+    data: result,
+  });
+});
+
 export const UserTakeServiceController = {
   createUserTakeService,
   getSingleService,
@@ -142,4 +153,5 @@ export const UserTakeServiceController = {
   getAllBookings,
   getOverview,
   confirmOrder,
+  changeArtistOntheWay,
 };

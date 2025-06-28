@@ -46,12 +46,14 @@ const userTakeServiceSchema = new Schema<IUserTakeService>(
       type: Number,
     },
     addOns: {
-      type: [{
-        type: {
-          name: String,
-          price: Number,
+      type: [
+        {
+          type: {
+            name: String,
+            price: Number,
+          },
         },
-      }],
+      ],
     },
     app_fee: {
       type: Number,
@@ -66,36 +68,48 @@ const userTakeServiceSchema = new Schema<IUserTakeService>(
       type: String,
       required: true,
     },
-    artist_book_date:{
-      type:Date
+    artist_book_date: {
+      type: Date,
     },
-    cancelled_by:{
-      type:String,
-      enum:["user","artist","admin"]
+    cancelled_by: {
+      type: String,
+      enum: ["user", "artist", "admin"],
     },
-    cancelled_reason:{
-      type:String
+    cancelled_reason: {
+      type: String,
     },
-    cancel_status:{
-      type:String,
-      enum:["low","high"]
+    cancel_status: {
+      type: String,
+      enum: ["low", "high"],
     },
-    trxId:{
-      type:String
+    trxId: {
+      type: String,
     },
-    artist_app_fee:{
-      type:Number
+    artist_app_fee: {
+      type: Number,
     },
-    refund:{
-      type:Boolean,
-      default:false
+    refund: {
+      type: Boolean,
+      default: false,
     },
-    refund_amount:{
-      type:Number
+    refund_amount: {
+      type: Number,
     },
-    service_date:{
-      type:Date
-    }
+    service_date: {
+      type: Date,
+    },
+    date: {
+      type: Date,
+    },
+    time: {
+      type: String,
+    },
+    isOnTheWay: {
+      type: Boolean,
+    },
+    arriveTime: {
+      type: Date,
+    },
   },
   {
     timestamps: true,
@@ -103,26 +117,23 @@ const userTakeServiceSchema = new Schema<IUserTakeService>(
 );
 
 userTakeServiceSchema.pre("findOneAndUpdate", async function (next) {
-  const update:any = this.getUpdate();
-  const user = update?.artiestId
+  const update: any = this.getUpdate();
+  const user = update?.artiestId;
   console.log(user);
-  
-  if(user){
-    await User.findOneAndUpdate({_id:user},{
 
-        last_accept_date:new Date()
-      
-    })
+  if (user) {
+    await User.findOneAndUpdate(
+      { _id: user },
+      {
+        last_accept_date: new Date(),
+      }
+    );
   }
 
-  
   next();
 });
-
 
 export const UserTakeService = model<IUserTakeService>(
   "UserTakeService",
   userTakeServiceSchema
 );
-
-

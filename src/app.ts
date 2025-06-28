@@ -7,8 +7,26 @@ import globalErrorHandler from './app/middlewares/globalErrorHandler';
 import session from "express-session";
 import { handleWebHook } from "./app/modules/webhook/handleWebhook";
 import { handleCheckrWebhook } from "./app/modules/webhook/handleCheckrWebhook";
+import rateLimit from "express-rate-limit";
+import requestIp from 'request-ip';
+import ApiError from "./errors/ApiErrors";
 const app = express();
 
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 1000,
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req, res) => {
+        if (!req.clientIp) {
+            throw new ApiError(StatusCodes.BAD_REQUEST, 'Unable to determine client IP!');
+        }
+        return req.clientIp;
+    },
+    handler: (req, res, next, options) => {
+        throw new ApiError(options?.statusCode, `Rate limit exceeded. Try again in ${options.windowMs / 60000} minutes.`);
+    }
+});
 
 // morgan
 app.use(Morgan.successHandler);
@@ -36,6 +54,8 @@ app.use(session({
     saveUninitialized: true,
     cookie: { secure: false } // Secure should be true in production with HTTPS
 }));
+app.use(requestIp.mw());
+app.use(limiter);
 
 
 //router

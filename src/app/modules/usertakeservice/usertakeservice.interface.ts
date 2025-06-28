@@ -31,4 +31,6 @@ export type IUserTakeService = {
   date?: Date;
   time?: string;
   service_date?: Date;
+  isOnTheWay?:boolean,
+  arriveTime?:Date
 };
