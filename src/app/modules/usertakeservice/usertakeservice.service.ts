@@ -34,6 +34,8 @@ import { BonusAndChallenge } from "../bonusAndChallenge/bonusAndChallenge.model"
 import { INotification } from "../notification/notification.interface";
 import { getEstimatedArrivalTime } from "../../../helpers/timeAndDistanceCalculator";
 
+
+
 const createUserTakeServiceIntoDB = async (
   payload: IUserTakeService,
   userId: JwtPayload
@@ -49,20 +51,26 @@ const createUserTakeServiceIntoDB = async (
   if(!userData) {
     throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
   }
-  const last_apoinment_date = new Date(userData?.last_apoinment_date||0);
-  const currDate = new Date(serviceDate);
-  console.log(currDate);
   
-  if(currDate< new Date()) {
+  
+  const last_apoinment_date = new Date(userData?.last_apoinment_date||0);
+  const serviceDateData = new Date(serviceDate);
+const currDate = new Date();
+  
+  if(serviceDateData< new Date()) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "That time’s already gone! Pick a future time to continue");
   }
-  if(last_apoinment_date){
+  if(last_apoinment_date && userData?.last_apoinment_date){
     const diff = currDate.getTime() - last_apoinment_date.getTime();
     const diffInHours = Math.floor(diff / (1000 * 60 * 60));
-    if (diffInHours<0.7) {
+  
+    
+    console.log(diffInHours);
+    
+    if (diffInHours<2) {
       throw new ApiError(
         StatusCodes.FORBIDDEN,
-        "You can't order this service within 2 hours of the last order service."
+        "You can only book appointments at least 2 hours in advance. Please choose a later time."
       );
     }
   }
@@ -96,11 +104,6 @@ const createUserTakeServiceIntoDB = async (
 
   data.latitude = location.lat;
   data.longitude = location.lng;
-
-
-  console.log(serviceDate);
-  
-
 
   data.service_date = serviceDate as any;
 
@@ -286,7 +289,7 @@ const createUserTakeServiceIntoDB = async (
   }
      await User.findByIdAndUpdate(result.userId, {
 
-        last_apoinment_date:serviceDate,
+        last_apoinment_date:new Date(),
       
     });
   return result;
