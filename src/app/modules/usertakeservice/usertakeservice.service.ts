@@ -53,11 +53,13 @@ const createUserTakeServiceIntoDB = async (
   }
 
   const last_apoinment_date: any = new Date(userData?.last_apoinment_date || 0);
-  const serviceDateData:any = new Date(serviceDate);
+  const serviceDateData = new Date(serviceDate);
+  console.log(serviceDateData.toLocaleDateString());
+  
   if (serviceDateData < new Date()) {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
-      "That time’s already gone! Pick a future time to continue"
+      "Please book at least 2 hours in advance to allow time for artists to prepare and travel."
     );
   }
   if (last_apoinment_date && userData?.last_apoinment_date) {
