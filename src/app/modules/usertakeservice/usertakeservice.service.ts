@@ -54,7 +54,12 @@ const createUserTakeServiceIntoDB = async (
 
   const last_apoinment_date: any = new Date(userData?.last_apoinment_date || 0);
   const serviceDateData = new Date(serviceDate);
-  console.log(serviceDateData.toLocaleString());
+  const now = dayjs.utc();
+  const serviceDateDataUTC = dayjs.utc(serviceDateData);
+  const diffInHours = now.diff(serviceDateDataUTC, "hours");
+
+  console.log(diffInHours);
+  
   
   if ( new Date(serviceDateData.toISOString())< new Date()) {
     throw new ApiError(
