@@ -56,7 +56,7 @@ const createUserTakeServiceIntoDB = async (
   const serviceDateData = new Date(serviceDate);
   const now = dayjs.utc();
   const serviceDateDataUTC = dayjs.utc(serviceDateData);
-  const diffInHours = now.diff(serviceDateDataUTC, "hours");
+  const diffInHours = now.utc().isBefore(serviceDateDataUTC);
 
   console.log(diffInHours);
   
