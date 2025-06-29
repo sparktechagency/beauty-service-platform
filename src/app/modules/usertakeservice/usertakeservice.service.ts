@@ -33,6 +33,10 @@ import { BONUS_TYPE } from "../bonusAndChallenge/bonusAndChallenge.interface";
 import { BonusAndChallenge } from "../bonusAndChallenge/bonusAndChallenge.model";
 import { INotification } from "../notification/notification.interface";
 import { getEstimatedArrivalTime } from "../../../helpers/timeAndDistanceCalculator";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+
+dayjs.extend(utc);
 
 const createUserTakeServiceIntoDB = async (
   payload: IUserTakeService,
@@ -50,8 +54,6 @@ const createUserTakeServiceIntoDB = async (
 
   const last_apoinment_date: any = new Date(userData?.last_apoinment_date || 0);
   const serviceDateData:any = new Date(serviceDate);
-  const currDate: any = new Date();
-
   if (serviceDateData < new Date()) {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
@@ -59,12 +61,12 @@ const createUserTakeServiceIntoDB = async (
     );
   }
   if (last_apoinment_date && userData?.last_apoinment_date) {
-    const diff = last_apoinment_date - serviceDateData;
-    const diffInMinutes = Math.floor(diff / (1000 * 60));
-    const diffInHours = Math.floor(diff / (1000 * 60 * 60));
+    
+    const now = dayjs.utc(serviceDateData);
+    const lastAppointment = dayjs.utc(last_apoinment_date);
+    const diffInHours = now.diff(lastAppointment, "hours");
 
     
-
     if (Math.abs(diffInHours) < 2) {
       throw new ApiError(
         StatusCodes.FORBIDDEN,
@@ -158,10 +160,8 @@ const createUserTakeServiceIntoDB = async (
       if (!provider.last_accept_date) {
         return true;
       }
-      const lastAcceptDate = new Date(provider.last_accept_date);
-      const timeDifference = currentDate.getTime() - lastAcceptDate.getTime();
-      const minutesDifference = timeDifference / (1000 * 60);
-      const hoursDifference = minutesDifference / 60;
+      const lastAcceptDate = dayjs.utc(provider.last_accept_date);
+      const hoursDifference = dayjs.utc().diff(lastAcceptDate, "hours");
 
       return hoursDifference > 4;
     });
