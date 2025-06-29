@@ -60,7 +60,7 @@ const createUserTakeServiceIntoDB = async (
 
   
   
-  if (diffInHours) {
+  if (new Date(serviceDateData.getUTCDate()) as any < new Date().getUTCDate() as any) {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
       "Please book at least 2 hours in advance to allow time for artists to prepare and travel."
