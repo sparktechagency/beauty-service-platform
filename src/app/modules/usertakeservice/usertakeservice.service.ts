@@ -34,8 +34,6 @@ import { BonusAndChallenge } from "../bonusAndChallenge/bonusAndChallenge.model"
 import { INotification } from "../notification/notification.interface";
 import { getEstimatedArrivalTime } from "../../../helpers/timeAndDistanceCalculator";
 
-
-
 const createUserTakeServiceIntoDB = async (
   payload: IUserTakeService,
   userId: JwtPayload
@@ -43,31 +41,31 @@ const createUserTakeServiceIntoDB = async (
   if (!userId) {
     throw new ApiError(StatusCodes.UNAUTHORIZED, "Unauthorized access");
   }
-  const serviceDate  = new Date(
-    `${payload.date} ${payload.time}`
-  ).toISOString();
+  const serviceDate = new Date(`${payload.date} ${payload.time}`).toISOString();
 
   const userData = await User.findById(userId.id);
-  if(!userData) {
+  if (!userData) {
     throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
   }
-  
-  
-  const last_apoinment_date = new Date(userData?.last_apoinment_date||0);
-  const serviceDateData = new Date(serviceDate);
-const currDate = new Date();
-  
-  if(serviceDateData< new Date()) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "That time’s already gone! Pick a future time to continue");
+
+  const last_apoinment_date: any = new Date(userData?.last_apoinment_date || 0);
+  const serviceDateData:any = new Date(serviceDate);
+  const currDate: any = new Date();
+
+  if (serviceDateData < new Date()) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      "That time’s already gone! Pick a future time to continue"
+    );
   }
-  if(last_apoinment_date && userData?.last_apoinment_date){
-    const diff = currDate.getTime() - last_apoinment_date.getTime();
+  if (last_apoinment_date && userData?.last_apoinment_date) {
+    const diff = last_apoinment_date - serviceDateData;
+    const diffInMinutes = Math.floor(diff / (1000 * 60));
     const diffInHours = Math.floor(diff / (1000 * 60 * 60));
-  
+
     
-    console.log(diffInHours);
-    
-    if (diffInHours<2) {
+
+    if (Math.abs(diffInHours) < 2) {
       throw new ApiError(
         StatusCodes.FORBIDDEN,
         "You can only book appointments at least 2 hours in advance. Please choose a later time."
@@ -92,11 +90,8 @@ const currDate = new Date();
   const response = await axios.get(
     `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedAddress}&key=${config.gooogle.mapKey}`
   );
-  
-  
-  const location = response.data.results[0]?.geometry?.location;
 
-  
+  const location = response.data.results[0]?.geometry?.location;
 
   if (!location) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid address");
@@ -144,34 +139,32 @@ const currDate = new Date();
   ]);
   const currentDate = new Date();
   //  📍 Filter by 5km radius
-  const nearbyProviders = allProviders.filter((provider) => {
-    if (provider.latitude && provider.longitude) {
-      const distance = calculateDistanceInKm(
-        result.latitude,
-        result.longitude,
-        provider.latitude,
-        Number(provider.longitude)
-      );
+  const nearbyProviders = allProviders
+    .filter((provider) => {
+      if (provider.latitude && provider.longitude) {
+        const distance = calculateDistanceInKm(
+          result.latitude,
+          result.longitude,
+          provider.latitude,
+          Number(provider.longitude)
+        );
 
-      console.log(distance);
-      
+        console.log(distance);
 
-      return distance <= 70;
-    }
-  }).filter((provider) =>{
-    
-    
-    if(!provider.last_accept_date){
-      return true
-    }
-    const lastAcceptDate = new Date(provider.last_accept_date);
-    const timeDifference = currentDate.getTime() - lastAcceptDate.getTime();
-    const minutesDifference = timeDifference / (1000 * 60);
-    const hoursDifference = minutesDifference / 60;
-    
-    
-    return hoursDifference > 4;
-  });
+        return distance <= 70;
+      }
+    })
+    .filter((provider) => {
+      if (!provider.last_accept_date) {
+        return true;
+      }
+      const lastAcceptDate = new Date(provider.last_accept_date);
+      const timeDifference = currentDate.getTime() - lastAcceptDate.getTime();
+      const minutesDifference = timeDifference / (1000 * 60);
+      const hoursDifference = minutesDifference / 60;
+
+      return hoursDifference > 4;
+    });
 
   for (const provider of nearbyProviders) {
     const notificationPayload = {
@@ -181,21 +174,18 @@ const currDate = new Date();
       serviceId: result._id,
       userId: provider._id,
       isRead: false,
-    }
- if(provider.deviceToken){
-     await sendNotificationToFCM({
-      body: `Someone request for ${service.name}`,
-      title: "New Service Request",
-      token: provider.deviceToken,
-      data:
-        {
+    };
+    if (provider.deviceToken) {
+      await sendNotificationToFCM({
+        body: `Someone request for ${service.name}`,
+        title: "New Service Request",
+        token: provider.deviceToken,
+        data: {
           ...notificationPayload,
-        }
-      
-    });
- }
-    await sendNotifications(
-      {
+        },
+      });
+    }
+    await sendNotifications({
       receiver: [provider._id],
       title: `Someone request for ${service.name}`,
       message: "A new service request has been created near you",
@@ -203,22 +193,16 @@ const currDate = new Date();
       serviceId: result._id,
       userId: provider._id,
       isRead: false,
-    }
-    );
-    if(userData?.deviceToken){
+    });
+    if (userData?.deviceToken) {
       await sendNotificationToFCM({
         body: `Someone request for ${service.name}`,
         title: "New Service Request",
         token: userData.deviceToken,
-        data:notificationPayload
-          
-        
+        data: notificationPayload,
       });
     }
   }
-
-  
-  
 
   const currentOrder = await UserTakeService.findById(result._id).populate([
     {
@@ -282,16 +266,13 @@ const currDate = new Date();
       ],
     },
   ]);
-   
 
   for (const provider of nearbyProviders) {
     locationHelper({ receiver: provider._id, data: currentOrder! });
   }
-     await User.findByIdAndUpdate(result.userId, {
-
-        last_apoinment_date:new Date(),
-      
-    });
+  await User.findByIdAndUpdate(result.userId, {
+    last_apoinment_date: serviceDateData,
+  });
   return result;
 };
 
@@ -329,7 +310,7 @@ const confirmOrderToDB = async (orderId: ObjectId, userId: JwtPayload) => {
         quantity: 1,
       },
     ],
-    
+
     customer_email: userId?.email,
     payment_method_types: ["card"],
     mode: "payment",
@@ -342,7 +323,6 @@ const confirmOrderToDB = async (orderId: ObjectId, userId: JwtPayload) => {
         total_amount: order.total_amount,
       }),
     },
-
   });
 
   const user = await User.findById(userId.id);
@@ -353,30 +333,27 @@ const confirmOrderToDB = async (orderId: ObjectId, userId: JwtPayload) => {
     orderId,
     userId: userId.id,
     isRead: false,
-  }
-  if(user?.deviceToken){
+  };
+  if (user?.deviceToken) {
     await sendNotificationToFCM({
       body: `Your order has been confirmed`,
       title: "Order Confirmed",
       token: user.deviceToken,
-      data:notificationPayload
+      data: notificationPayload,
     });
   }
   const artist = await User.findById(order.artiestId);
-  if(artist?.deviceToken){
+  if (artist?.deviceToken) {
     await sendNotificationToFCM({
       body: `${user?.name} has confirmed her order`,
       title: "Order Confirmed",
       token: artist.deviceToken,
-      data:notificationPayload
-    })
+      data: notificationPayload,
+    });
   }
 
-    
-
   return session.url;
-
-}
+};
 
 export const nearByOrderByLatitudeAndLongitude = async (
   latitude: number,
@@ -457,32 +434,27 @@ export const nearByOrderByLatitudeAndLongitude = async (
     ])
     .sort({ createdAt: -1 })
     .lean();
-    
-    
 
-  const filterData = result.filter((services) => {
-    if (services.latitude && services.longitude) {
-    
-      
-      const distance = calculateDistanceInKm(
-        latitude,
-        longitude,
-        services.latitude,
-        Number(services.longitude)
-      );
+  const filterData = result
+    .filter((services) => {
+      if (services.latitude && services.longitude) {
+        const distance = calculateDistanceInKm(
+          latitude,
+          longitude,
+          services.latitude,
+          Number(services.longitude)
+        );
 
-      
-
-      return distance <= 70;
-    }
-    return false;
-  }).map((item=>{
-    return {
-      ...item,
-      price:item.price - (item.price * (10/ 100))
-    }
-  }))
-
+        return distance <= 70;
+      }
+      return false;
+    })
+    .map((item) => {
+      return {
+        ...item,
+        price: item.price - item.price * (10 / 100),
+      };
+    });
 
   return filterData;
 };
@@ -493,15 +465,13 @@ const getAllServiceAsArtistFromDB = async (
   longitude: number,
   status: boolean
 ) => {
-  if (status==true) {
+  if (status == true) {
     const filterData = await nearByOrderByLatitudeAndLongitude(
       latitude,
       longitude
     );
 
     console.log(latitude, longitude);
-    
-    
 
     filterData.forEach((item) => {
       locationHelper({ receiver: user.id, data: item });
@@ -525,79 +495,84 @@ const getSingleUserService = async (
   user: JwtPayload,
   id: string
 ): Promise<IUserTakeService | null> => {
-  const result = await UserTakeService.findById(id).populate([
-    {
-      path: "serviceId",
-      select: ["name", "category", "subCategory", "image", "addOns"],
-      populate: [
-        {
-          path: "category",
-          select: ["name"],
-        },
-        {
-          path: "subCategory",
-          select: ["name"],
-        },
-      ],
-    },
-    {
-      path: "userId",
-      select: [
-        "name",
-        "email",
-        "phone",
-        "profile",
-        "isActive",
-        "status",
-        "subscription",
-        "location",
-      ],
-      populate: [
-        {
-          path: "subscription",
-          select: ["package", "status"],
-          populate: [
-            {
-              path: "package",
-              select: ["name", "price", "price_offer"],
-            },
-          ],
-        },
-      ],
-    },
-    {
-      path: "artiestId",
-      select: [
-        "name",
-        "email",
-        "phone",
-        "profile",
-        "isActive",
-        "status",
-        "subscription",
-        "location",
-      ],
-      populate: [
-        {
-          path: "subscription",
-          select: ["package", "status"],
-          populate: [
-            {
-              path: "package",
-              select: ["name", "price", "price_offer"],
-            },
-          ],
-        },
-      ],
-    },
-  ]).lean()
+  const result = await UserTakeService.findById(id)
+    .populate([
+      {
+        path: "serviceId",
+        select: ["name", "category", "subCategory", "image", "addOns"],
+        populate: [
+          {
+            path: "category",
+            select: ["name"],
+          },
+          {
+            path: "subCategory",
+            select: ["name"],
+          },
+        ],
+      },
+      {
+        path: "userId",
+        select: [
+          "name",
+          "email",
+          "phone",
+          "profile",
+          "isActive",
+          "status",
+          "subscription",
+          "location",
+        ],
+        populate: [
+          {
+            path: "subscription",
+            select: ["package", "status"],
+            populate: [
+              {
+                path: "package",
+                select: ["name", "price", "price_offer"],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        path: "artiestId",
+        select: [
+          "name",
+          "email",
+          "phone",
+          "profile",
+          "isActive",
+          "status",
+          "subscription",
+          "location",
+        ],
+        populate: [
+          {
+            path: "subscription",
+            select: ["package", "status"],
+            populate: [
+              {
+                path: "package",
+                select: ["name", "price", "price_offer"],
+              },
+            ],
+          },
+        ],
+      },
+    ])
+    .lean();
 
   if (!result) {
     throw new ApiError(StatusCodes.NOT_FOUND, "Service not found");
   }
   return {
     ...result,
-    price:user.role == USER_ROLES.ARTIST ? result.price - (result.price) *(10/100) : result.price+ (result.price) *(10/100),
+    price:
+      user.role == USER_ROLES.ARTIST
+        ? result.price - result.price * (10 / 100)
+        : result.price + result.price * (10 / 100),
   };
 };
 
@@ -611,12 +586,12 @@ const updateUserTakeServiceIntoDB = async (
   }
   const userData = await User.findById(user.id);
   const currentDate = new Date();
-  if(userData?.last_accept_date){
+  if (userData?.last_accept_date) {
     const last_accept_date = new Date(userData?.last_accept_date);
     const diff = currentDate.getTime() - last_accept_date.getTime();
     const diffInMinutes = Math.floor(diff / (1000 * 60));
     const diffInHours = Math.floor(diff / (1000 * 60 * 60));
-    if (diffInHours<4) {
+    if (diffInHours < 4) {
       throw new ApiError(
         StatusCodes.FORBIDDEN,
         "You can't accept this service within 4 hours of the last accepted service."
@@ -646,14 +621,13 @@ const updateUserTakeServiceIntoDB = async (
     throw new ApiError(StatusCodes.NOT_FOUND, "Customer not found!");
   }
   if (customer?.deviceToken) {
-    const notificationPayload:INotification = {
+    const notificationPayload: INotification = {
       title: `${findUser?.name} Accept your order`,
       message: `Your request for ${result?.serviceId?.name} has been accepted by ${findUser?.name}`,
-      filePath:"booking",
+      filePath: "booking",
       isRead: false,
       userId: customer?._id,
-
-    }
+    };
     await sendNotificationToFCM({
       body: `Your request for ${result?.serviceId?.name} has been accepted by ${findUser?.name}`,
       title: `${findUser?.name} Accept your order`,
@@ -708,10 +682,8 @@ const bookOrder = async (
 
     if (!result) {
       console.log("result not found");
-      return
+      return;
     }
-
-
 
     const updateOrder = await UserTakeService.findOneAndUpdate(
       { _id: payload },
@@ -789,12 +761,12 @@ const cancelOrder = async (
 
   const temp: any = order;
   if (!order.artist_book_date) {
- if(order.payment_intent){
-     await stripe.refunds.create({
-      payment_intent: order.payment_intent,
-      amount: order.price,
-    });
- }
+    if (order.payment_intent) {
+      await stripe.refunds.create({
+        payment_intent: order.payment_intent,
+        amount: order.price,
+      });
+    }
     await UserTakeService.updateOne({ _id: orderId }, { status: "cancelled" });
     return {
       message: "Order cancelled and refunded successfully with 0% cost",
@@ -835,227 +807,249 @@ const cancelOrder = async (
 
 const payoutOrderInDB = async (orderId: string) => {
   const session = await mongoose.startSession();
-  
+
   try {
     session.startTransaction();
-      const order = await UserTakeService.findById(orderId).session(session);
-  if (!order) {
-    throw new ApiError(StatusCodes.NOT_FOUND, "Order not found");
-  }
-
-  if (["completed", "cancelled"].includes(order.status)) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "Order is not completable");
-  }
-
-  const subscription = await Subscription.findOne({
-    user: order.artiestId,
-    status: "active",
-  }).populate("package").session(session);
-
-  const basicPackage = (await Plan.find({
-    for: USER_ROLES.ARTIST,
-  }))[0]
-
-  const packageData: any = subscription?.package;
-  const cost = packageData?.price_offer ?? basicPackage?.price_offer ?? 10;
-console.log(order);
-
-  const amount = (order.price - (order.price * cost) / 100)-(order.app_fee!||0);
-  console.log(amount);
-  
-  if(isNaN(amount)){
-    throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid amount");
-  }
-  await Wallet.findOneAndUpdate(
-    { user: order.artiestId },
-    { $inc: { balance: amount } }
-  ).session(session);
-  const txtId = "TXN" + cryptoToken(6);
-  await UserTakeService.updateOne(
-    { _id: orderId },
-    {
-      status: "completed",
-      artist_app_fee: (order.price * cost) / 100 || 0,
-      trxId: txtId,
+    const order = await UserTakeService.findById(orderId).session(session);
+    if (!order) {
+      throw new ApiError(StatusCodes.NOT_FOUND, "Order not found");
     }
-  ).session(session);
 
-  //Bonus section after the completion of the order
-  const clienBookings = await UserTakeService.countDocuments({
-    userId: order.userId,
-    status: "completed",
-  });
-  if (clienBookings == 1) {
-    await WalletService.updateWallet(order.userId, 5);
-    await Reward.create({
-      user: order.userId,
-      occation: "UserTakeService",
-      amount: 5,
-      occationId: order._id,
-      title: "completed first booking",
-    },{session})
-  }
-  if (clienBookings == 5) {
-    await WalletService.updateWallet(order.userId, 5);
-    await Reward.create({
-      user: order.userId,
-      occation: "UserTakeService",
-      amount: 5,
-      occationId: order._id,
-      title: `completed 5 bookings`,
+    if (["completed", "cancelled"].includes(order.status)) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, "Order is not completable");
+    }
+
+    const subscription = await Subscription.findOne({
+      user: order.artiestId,
+      status: "active",
+    })
+      .populate("package")
+      .session(session);
+
+    const basicPackage = (
+      await Plan.find({
+        for: USER_ROLES.ARTIST,
+      })
+    )[0];
+
+    const packageData: any = subscription?.package;
+    const cost = packageData?.price_offer ?? basicPackage?.price_offer ?? 10;
+    console.log(order);
+
+    const amount =
+      order.price - (order.price * cost) / 100 - (order.app_fee! || 0);
+    console.log(amount);
+
+    if (isNaN(amount)) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid amount");
+    }
+    await Wallet.findOneAndUpdate(
+      { user: order.artiestId },
+      { $inc: { balance: amount } }
+    ).session(session);
+    const txtId = "TXN" + cryptoToken(6);
+    await UserTakeService.updateOne(
+      { _id: orderId },
+      {
+        status: "completed",
+        artist_app_fee: (order.price * cost) / 100 || 0,
+        trxId: txtId,
+      }
+    ).session(session);
+
+    //Bonus section after the completion of the order
+    const clienBookings = await UserTakeService.countDocuments({
+      userId: order.userId,
+      status: "completed",
     });
-  }
+    if (clienBookings == 1) {
+      await WalletService.updateWallet(order.userId, 5);
+      await Reward.create(
+        {
+          user: order.userId,
+          occation: "UserTakeService",
+          amount: 5,
+          occationId: order._id,
+          title: "completed first booking",
+        },
+        { session }
+      );
+    }
+    if (clienBookings == 5) {
+      await WalletService.updateWallet(order.userId, 5);
+      await Reward.create({
+        user: order.userId,
+        occation: "UserTakeService",
+        amount: 5,
+        occationId: order._id,
+        title: `completed 5 bookings`,
+      });
+    }
 
-  const startOfMonth = new Date(
-    new Date().getFullYear(),
-    new Date().getMonth(),
-    1
-  );
-  const endOfMonth = new Date(
-    new Date().getFullYear(),
-    new Date().getMonth() + 1,
-    0,
-    23,
-    59,
-    59,
-    999
-  );
+    const startOfMonth = new Date(
+      new Date().getFullYear(),
+      new Date().getMonth(),
+      1
+    );
+    const endOfMonth = new Date(
+      new Date().getFullYear(),
+      new Date().getMonth() + 1,
+      0,
+      23,
+      59,
+      59,
+      999
+    );
 
-  const monthlyBookings = await UserTakeService.countDocuments({
-    createdAt: { $gte: startOfMonth, $lte: endOfMonth },
-    status: "completed",
-    userId: order.userId,
-  });
+    const monthlyBookings = await UserTakeService.countDocuments({
+      createdAt: { $gte: startOfMonth, $lte: endOfMonth },
+      status: "completed",
+      userId: order.userId,
+    });
 
-  if (monthlyBookings == 3) {
-    await WalletService.updateWallet(order.userId, 10);
-    await Reward.create({
-      user: order.userId,
-      occation: "UserTakeService",
-      amount: 10,
-      occationId: order._id,
-    },{session})
-    await Reward.create({
-      user: order.userId,
-      occation: "UserTakeService",
-      amount: 10,
-      occationId: order._id,
-      title: `completed ${monthlyBookings} bookings in the month`,
-    },{session});
-  }
+    if (monthlyBookings == 3) {
+      await WalletService.updateWallet(order.userId, 10);
+      await Reward.create(
+        {
+          user: order.userId,
+          occation: "UserTakeService",
+          amount: 10,
+          occationId: order._id,
+        },
+        { session }
+      );
+      await Reward.create(
+        {
+          user: order.userId,
+          occation: "UserTakeService",
+          amount: 10,
+          occationId: order._id,
+          title: `completed ${monthlyBookings} bookings in the month`,
+        },
+        { session }
+      );
+    }
 
-  const artistBookings = await UserTakeService.countDocuments({
-    status: "completed",
-    artiestId: order.artiestId,
-  });
-  if (artistBookings == 10) {
-    await WalletService.updateWallet(order.artiestId!, 10);
-    await Reward.create({
-      user: order.artiestId!,
-      occation: "UserTakeService",
-      amount: 10,
-      occationId: order._id,
-      title: `completed ${monthlyBookings} bookings`,
-    },{session});
-  }
-
-  const currentBonus = await BonusAndChallengeServices.currentBonusForUser(
-    order.artiestId!,
-    BONUS_TYPE.BOOKING
-  );
-  if (currentBonus && currentBonus.amount) {
-    const bookings = await UserTakeService.countDocuments({
+    const artistBookings = await UserTakeService.countDocuments({
       status: "completed",
       artiestId: order.artiestId,
-      createdAt: { $gte: startOfMonth, $lte: endOfMonth },
     });
-
-    if (bookings == currentBonus.amount) {
-      await WalletService.updateWallet(order.artiestId!, currentBonus.amount);
-      await Reward.create({
-        user: order.artiestId!,
-        occation: "UserTakeService",
-        amount: currentBonus.amount,
-        occationId: order._id,
-        title: `completed ${monthlyBookings}`,
-      },{session});
-      await BonusAndChallenge.findOneAndUpdate(
-        { _id: order.artiestId },
-        { $push: { tekenUsers: order.artiestId } }
-      ).session(session);
-      const artist3 = await User.findById(order.artiestId);
-      if (artist3?.deviceToken) {
-        await sendNotificationToFCM({
-          token: artist3?.deviceToken,
-          title: "Congratulations",
-          body: `You have completed ${bookings} bookings in the month.`,
-          data: {
-            type: "booking",
-            bookingId: order._id,
-          },
-        });
-      }
+    if (artistBookings == 10) {
+      await WalletService.updateWallet(order.artiestId!, 10);
+      await Reward.create(
+        {
+          user: order.artiestId!,
+          occation: "UserTakeService",
+          amount: 10,
+          occationId: order._id,
+          title: `completed ${monthlyBookings} bookings`,
+        },
+        { session }
+      );
     }
 
-    const userCurrentBonus =
-      await BonusAndChallengeServices.currentBonusForUser(
-        order.userId,
-        BONUS_TYPE.BOOKING
-      );
-    if (userCurrentBonus) {
-      await WalletService.updateWallet(order.userId!, userCurrentBonus.amount);
-      await Reward.create({
-        user: order.userId!,
-        occation: "UserTakeService",
-        amount: userCurrentBonus.amount,
-        occationId: order._id,
-        title: `completed ${monthlyBookings}`,
+    const currentBonus = await BonusAndChallengeServices.currentBonusForUser(
+      order.artiestId!,
+      BONUS_TYPE.BOOKING
+    );
+    if (currentBonus && currentBonus.amount) {
+      const bookings = await UserTakeService.countDocuments({
+        status: "completed",
+        artiestId: order.artiestId,
+        createdAt: { $gte: startOfMonth, $lte: endOfMonth },
       });
-      await BonusAndChallenge.findOneAndUpdate(
-        { _id: order.userId },
-        { $push: { tekenUsers: order.userId } }
-      );
-      const user3 = await User.findById(order.userId);
-      if (user3?.deviceToken) {
-        await sendNotificationToFCM({
-          token: user3?.deviceToken,
-          title: "Congratulations",
-          body: `You have completed ${bookings} bookings in the month.`,
-          data: {
-            type: "booking",
-            bookingId: order._id,
+
+      if (bookings == currentBonus.amount) {
+        await WalletService.updateWallet(order.artiestId!, currentBonus.amount);
+        await Reward.create(
+          {
+            user: order.artiestId!,
+            occation: "UserTakeService",
+            amount: currentBonus.amount,
+            occationId: order._id,
+            title: `completed ${monthlyBookings}`,
           },
+          { session }
+        );
+        await BonusAndChallenge.findOneAndUpdate(
+          { _id: order.artiestId },
+          { $push: { tekenUsers: order.artiestId } }
+        ).session(session);
+        const artist3 = await User.findById(order.artiestId);
+        if (artist3?.deviceToken) {
+          await sendNotificationToFCM({
+            token: artist3?.deviceToken,
+            title: "Congratulations",
+            body: `You have completed ${bookings} bookings in the month.`,
+            data: {
+              type: "booking",
+              bookingId: order._id,
+            },
+          });
+        }
+      }
+
+      const userCurrentBonus =
+        await BonusAndChallengeServices.currentBonusForUser(
+          order.userId,
+          BONUS_TYPE.BOOKING
+        );
+      if (userCurrentBonus) {
+        await WalletService.updateWallet(
+          order.userId!,
+          userCurrentBonus.amount
+        );
+        await Reward.create({
+          user: order.userId!,
+          occation: "UserTakeService",
+          amount: userCurrentBonus.amount,
+          occationId: order._id,
+          title: `completed ${monthlyBookings}`,
         });
+        await BonusAndChallenge.findOneAndUpdate(
+          { _id: order.userId },
+          { $push: { tekenUsers: order.userId } }
+        );
+        const user3 = await User.findById(order.userId);
+        if (user3?.deviceToken) {
+          await sendNotificationToFCM({
+            token: user3?.deviceToken,
+            title: "Congratulations",
+            body: `You have completed ${bookings} bookings in the month.`,
+            data: {
+              type: "booking",
+              bookingId: order._id,
+            },
+          });
+        }
       }
     }
-  }
 
-  const customer = await User.findById(order.userId);
-  const artist = await User.findById(order.artiestId);
+    const customer = await User.findById(order.userId);
+    const artist = await User.findById(order.artiestId);
 
-  if (artist?.deviceToken) {
-    await sendNotificationToFCM({
-      title: `${customer?.name} has completed the booking`,
-      body: `${customer?.name} has completed the booking`,
-      data: {
-        type: "booking_completed",
-        bookingId: order._id,
-      },
-      token: artist?.deviceToken,
-    });
-  }
+    if (artist?.deviceToken) {
+      await sendNotificationToFCM({
+        title: `${customer?.name} has completed the booking`,
+        body: `${customer?.name} has completed the booking`,
+        data: {
+          type: "booking_completed",
+          bookingId: order._id,
+        },
+        token: artist?.deviceToken,
+      });
+    }
 
-  await session.commitTransaction();
- await session.endSession();
+    await session.commitTransaction();
+    await session.endSession();
 
-  return {
-    message: "Order completed and payout successfully",
-  };
-  } catch (error:any) {
+    return {
+      message: "Order completed and payout successfully",
+    };
+  } catch (error: any) {
     await session.abortTransaction();
     await session.endSession();
     throw new ApiError(500, error.message);
-    
   }
 };
 
@@ -1147,20 +1141,22 @@ const getAllBookingsFromDB = async (
           },
         ],
       },
-      
     ])
     .lean()
     .exec();
 
-
-    const fixedData = data.map((item:any) => {
-      return {
-        ...item,
-        price:[USER_ROLES.ADMIN,USER_ROLES.SUPER_ADMIN].includes(user.role) ? item.price :user.role == USER_ROLES.ARTIST? item.price - (item.price * (10) / 100): item.price - (item.price * (item.app_fee || 0) / 100) + (item.price * (10) / 100),
-      }
-    });
-
-
+  const fixedData = data.map((item: any) => {
+    return {
+      ...item,
+      price: [USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN].includes(user.role)
+        ? item.price
+        : user.role == USER_ROLES.ARTIST
+        ? item.price - (item.price * 10) / 100
+        : item.price -
+          (item.price * (item.app_fee || 0)) / 100 +
+          (item.price * 10) / 100,
+    };
+  });
 
   return {
     paginationInfo,
@@ -1262,12 +1258,11 @@ const reminderToUsers = async () => {
   }
 };
 
+/// expand Area
 
-/// expand Area 
-
-const expandAreaForOrder = async (order_id:Types.ObjectId,area:number)=>{
+const expandAreaForOrder = async (order_id: Types.ObjectId, area: number) => {
   const result = await UserTakeService.findById(order_id);
-  if(!result) return
+  if (!result) return;
   const service = await ServiceManagement.findById(result?.serviceId);
   const currentDate = new Date();
   const allProviders = await User.aggregate([
@@ -1306,38 +1301,38 @@ const expandAreaForOrder = async (order_id:Types.ObjectId,area:number)=>{
   ]);
 
   //  📍 Filter by 5km radius
-  const nearbyProviders = allProviders.filter((provider) => {
-    if (provider.latitude && provider.longitude) {
-      const distance = calculateDistanceInKm(
-        result.latitude,
-        result.longitude,
-        provider.latitude,
-        Number(provider.longitude)
-      );
+  const nearbyProviders = allProviders
+    .filter((provider) => {
+      if (provider.latitude && provider.longitude) {
+        const distance = calculateDistanceInKm(
+          result.latitude,
+          result.longitude,
+          provider.latitude,
+          Number(provider.longitude)
+        );
 
-      return distance <= (area||50);
-    }
-  }).filter((provider) =>{
-    if(!provider.last_accept_date){
-      return true
-    }
-    const lastAcceptDate = new Date(provider.last_accept_date);
-    const timeDifference = currentDate.getTime() - lastAcceptDate.getTime();
-    const minutesDifference = timeDifference / (1000 * 60);
-    const hoursDifference = minutesDifference / 60;
-    
-    
-    return hoursDifference > 4;
-  });
+        return distance <= (area || 50);
+      }
+    })
+    .filter((provider) => {
+      if (!provider.last_accept_date) {
+        return true;
+      }
+      const lastAcceptDate = new Date(provider.last_accept_date);
+      const timeDifference = currentDate.getTime() - lastAcceptDate.getTime();
+      const minutesDifference = timeDifference / (1000 * 60);
+      const hoursDifference = minutesDifference / 60;
+
+      return hoursDifference > 4;
+    });
 
   for (const provider of nearbyProviders) {
-    if(provider.deviceToken){
-         await sendNotificationToFCM({
-      body: `Someone request for ${service?.name}`,
-      title: "New Service Request",
-      token: provider.deviceToken,
-
-    });
+    if (provider.deviceToken) {
+      await sendNotificationToFCM({
+        body: `Someone request for ${service?.name}`,
+        title: "New Service Request",
+        token: provider.deviceToken,
+      });
     }
     await sendNotifications({
       receiver: [provider._id],
@@ -1416,22 +1411,25 @@ const expandAreaForOrder = async (order_id:Types.ObjectId,area:number)=>{
   for (const provider of nearbyProviders) {
     locationHelper({ receiver: provider._id, data: currentOrder! });
   }
+};
 
-
-}
-
-const artistOnTheWayStatus = async (orderId:string)=>{
+const artistOnTheWayStatus = async (orderId: string) => {
   const order = await UserTakeService.findById(orderId);
-  if(!order) throw new ApiError(StatusCodes.NOT_FOUND, "Order not found");
-  if(order.isOnTheWay){
-    return
+  if (!order) throw new ApiError(StatusCodes.NOT_FOUND, "Order not found");
+  if (order.isOnTheWay) {
+    return;
   }
   const artist = await User.findById(order.artiestId);
-  if(!artist) throw new ApiError(StatusCodes.NOT_FOUND, "Artist not found");
+  if (!artist) throw new ApiError(StatusCodes.NOT_FOUND, "Artist not found");
   const user = await User.findById(order.userId);
-  if(!user) throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
+  if (!user) throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
 
-  console.log(artist?.latitude,artist?.longitude,order.latitude,order.longitude);
+  console.log(
+    artist?.latitude,
+    artist?.longitude,
+    order.latitude,
+    order.longitude
+  );
   const arrivalTime = await getEstimatedArrivalTime(
     artist?.latitude!,
     artist?.longitude!,
@@ -1440,24 +1438,26 @@ const artistOnTheWayStatus = async (orderId:string)=>{
   );
 
   console.log(arrivalTime.toDateString());
-  
 
-  const orderData = await UserTakeService.findByIdAndUpdate(orderId, {
-    isOnTheWay: true,
-    arriveTime: arrivalTime,
-  },{new:true});
+  const orderData = await UserTakeService.findByIdAndUpdate(
+    orderId,
+    {
+      isOnTheWay: true,
+      arriveTime: arrivalTime,
+    },
+    { new: true }
+  );
 
-if(user?.deviceToken){
+  if (user?.deviceToken) {
     await sendNotificationToFCM({
-    body: `Artist is on the way he will be there in ${arrivalTime.toLocaleDateString()}`,
-    title: "Artist is on the way",
-    token: user?.deviceToken!,
-  });
-}
+      body: `Artist is on the way he will be there in ${arrivalTime.toLocaleDateString()}`,
+      title: "Artist is on the way",
+      token: user?.deviceToken!,
+    });
+  }
 
   return orderData;
-
-}
+};
 
 export const UserTakeServiceServices = {
   createUserTakeServiceIntoDB,
@@ -1474,5 +1474,4 @@ export const UserTakeServiceServices = {
   reminderToUsers,
   expandAreaForOrder,
   artistOnTheWayStatus,
-
 };

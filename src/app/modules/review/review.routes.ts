@@ -30,6 +30,12 @@ router.route('/')
     ReviewController.getAllReviews
 )
 
+router.route('/:id')
+.get(
+    auth(USER_ROLES.USER,USER_ROLES.ARTIST),
+    ReviewController.getAllReviewsByOrder
+)
+
 
 
 export const ReviewRoutes = router;

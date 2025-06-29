@@ -182,5 +182,15 @@ const getAllReviews = async (service:string,artist:string,query:Record<string, a
   }
 }
 
+const getAllReviewsByOrder = async (orderId: string) => {
+  const result = await Review.find({ order:orderId }).populate([
+    {
+      path: "user",
+      select: "name email profile",
+    },
+  ]);
+  return result;
+}
 
-export const ReviewService = { createReviewToDB, handleTip, getAllReviews };
+
+export const ReviewService = { createReviewToDB, handleTip, getAllReviews, getAllReviewsByOrder };
