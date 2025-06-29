@@ -58,10 +58,9 @@ const createUserTakeServiceIntoDB = async (
   const serviceDateDataUTC = dayjs.utc(serviceDateData);
   const diffInHours = serviceDateDataUTC.isBefore(now)
 
-  console.log(diffInHours);
   
   
-  if ( new Date(serviceDateData.toISOString())< new Date()) {
+  if (diffInHours) {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
       "Please book at least 2 hours in advance to allow time for artists to prepare and travel."
