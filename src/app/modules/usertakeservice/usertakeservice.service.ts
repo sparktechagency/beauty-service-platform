@@ -56,7 +56,7 @@ const createUserTakeServiceIntoDB = async (
   const serviceDateData = new Date(serviceDate);
   console.log(serviceDateData.toLocaleString());
   
-  if (serviceDateData < new Date()) {
+  if (dayjs.utc(serviceDateData) < dayjs.utc()) {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
       "Please book at least 2 hours in advance to allow time for artists to prepare and travel."
