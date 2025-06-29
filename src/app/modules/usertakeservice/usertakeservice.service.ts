@@ -54,7 +54,7 @@ const createUserTakeServiceIntoDB = async (
 
   const last_apoinment_date: any = new Date(userData?.last_apoinment_date || 0);
   const serviceDateData = new Date(serviceDate);
-  console.log(serviceDateData.toLocaleDateString());
+  console.log(serviceDateData.toLocaleString());
   
   if (serviceDateData < new Date()) {
     throw new ApiError(
