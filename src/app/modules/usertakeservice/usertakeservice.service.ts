@@ -73,7 +73,7 @@ const createUserTakeServiceIntoDB = async (
     const diffInHours = now.diff(lastAppointment, "hours");
 
     
-    if (Math.abs(diffInHours) < 1) {
+    if (Math.abs(diffInHours) < 1 && (new Date().getDate() == serviceDateData.getDate())) {
       throw new ApiError(
         StatusCodes.FORBIDDEN,
         "Please book at least 2 hours in advance to allow time for artists to prepare and travel."
