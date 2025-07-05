@@ -14,7 +14,7 @@ const expireSubscriptions = async ()=>{
     
     
     subscriptions.forEach(async (subscription) => {
-        const subscribePlan:any = await Subscription.findByIdAndUpdate(subscription._id, {
+        const subscribePlan:any = await Subscription.findByIdAndUpdate(subscription?._id, {
             status: "expired",
         },{new:true}).populate('package').lean().exec()
         
@@ -44,7 +44,7 @@ const expireSubscriptions = async ()=>{
         
 
         await User.findByIdAndUpdate(subscription.user, {
-            subscription: sub._id,
+            subscription: sub?._id,
         });
     });
 
@@ -102,7 +102,7 @@ const expandOrderTimeAndDelete = async () => {
 
   if(orders_15_10.length>0){
     for (const order of orders_15_10) {
-      await UserTakeServiceServices.expandAreaForOrder(order._id, 100);
+      await UserTakeServiceServices.expandAreaForOrder(order?._id, 100);
       // console.log("Expanded area by 100 for order:", order._id);
     }
   }
@@ -115,7 +115,7 @@ const expandOrderTimeAndDelete = async () => {
 
   if(orders_30_25.length>0){
     for (const order of orders_30_25) {
-      await UserTakeServiceServices.expandAreaForOrder(order._id, 150);
+      await UserTakeServiceServices.expandAreaForOrder(order?._id, 150);
       // console.log("Expanded area by 200 for order:", order._id);
     }
   }

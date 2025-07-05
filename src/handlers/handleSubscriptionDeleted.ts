@@ -21,19 +21,19 @@ export const handleSubscriptionDeleted = async (data: Stripe.Subscription) => {
 
         // Deactivate the subscription
         await Subscription.findByIdAndUpdate(
-            userSubscription._id,
+            userSubscription?._id,
             { status: 'expired' },
             { new: true }
         );
     
         // Find the user associated with the subscription
         const existingUser = await User.findById(userSubscription?.user);
-        if(existingUser?.subscription,toString() !== userSubscription._id.toString()){
+        if(existingUser?.subscription?.toString() !== userSubscription?._id.toString()){
             throw new ApiError(StatusCodes.NOT_FOUND, `User not found.`);
         }
         if (existingUser) {
             await User.findByIdAndUpdate(
-                existingUser._id,
+                existingUser?._id,
                 { subscription: null },
                 { new: true },
             );
