@@ -51,7 +51,7 @@ export const handleSubscriptionCreated = async (data: Stripe.Subscription) => {
                 // Create a new subscription record
                 try {
                     const isExistSubscription = await Subscription.findOne({
-                        user: existingUser._id,
+                        user: existingUser?._id,
                         status: 'active',
                     });
                     if (isExistSubscription) {
@@ -60,9 +60,9 @@ export const handleSubscriptionCreated = async (data: Stripe.Subscription) => {
                        })
                     }
                     const newSubscription:any = await Subscription.create({
-                        user: existingUser._id,
+                        user: existingUser?._id,
                         customerId: customer?.id,
-                        package: pricingPlan._id,
+                        package: pricingPlan?._id,
                         status: 'active',
                         price: amountPaid,
                         currentPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString(),
@@ -77,34 +77,34 @@ export const handleSubscriptionCreated = async (data: Stripe.Subscription) => {
             
                     // Update the user to reflect the active subscription
                   const userData =  await User.findByIdAndUpdate(
-                        existingUser._id,
+                        existingUser?._id,
                         {
-                            subscription:newSubscription._id,
+                            subscription:newSubscription?._id,
                         },
                         { new: true },
                     ); 
 
-                    console.log("User Data",userData);
+                    // console.log("User Data",userData);
 
 
-                    const currentBonus = await BonusAndChallengeServices.currentBonusForUser(existingUser._id,BONUS_TYPE.SUBSCRIPTION);
+                    const currentBonus = await BonusAndChallengeServices.currentBonusForUser(existingUser?._id,BONUS_TYPE.SUBSCRIPTION);
 
                     if(currentBonus && currentBonus.amount){
                         await WalletService.updateWallet(existingUser._id,currentBonus.amount||0);
                         await Reward.create({
-                            user:existingUser._id,
-                            amount:currentBonus.amount||0,
+                            user:existingUser?._id,
+                            amount:currentBonus?.amount||0,
                             occation:"Subscription",
-                            occationId:newSubscription._id,
+                            occationId:newSubscription?._id,
                             title:currentBonus.name,
                         })
                         await BonusAndChallenge.findOneAndUpdate(
                             {
-                                _id:currentBonus._id
+                                _id:currentBonus?._id
                             },
                             {
                                 $push:{
-                                    tekenUsers:existingUser._id
+                                    tekenUsers:existingUser?._id
                                 }
                             }
                         )
