@@ -584,8 +584,8 @@ const getSingleUserService = async (
     ...result,
     price:
       user.role == USER_ROLES.ARTIST
-        ? result.price - (result.artist_app_fee||0)
-        : result.price + (result.app_fee||0),
+        ? result.price - result.price * (plan.price_offer??10 / 100)
+        : result.price + result.price * (plan.price_offer??10 / 100),
   };
 };
 
