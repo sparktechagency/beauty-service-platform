@@ -574,12 +574,18 @@ const getSingleUserService = async (
   if (!result) {
     throw new ApiError(StatusCodes.NOT_FOUND, "Service not found");
   }
+  const subscription = await Subscription.findOne({user: user.id}).populate({
+    path: "package",
+    select: ["name", "price", "price_offer"],
+  }).lean()
+
+  const plan = subscription?.package as any as IPlan
   return {
     ...result,
     price:
       user.role == USER_ROLES.ARTIST
-        ? result.price - result.price * (10 / 100)
-        : result.price + result.price * (10 / 100),
+        ? result.price - (result.artist_app_fee||0)
+        : result.price + (result.app_fee||0),
   };
 };
 
