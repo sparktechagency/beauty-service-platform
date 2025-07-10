@@ -1,7 +1,8 @@
 import { StatusCodes } from 'http-status-codes'
-import ApiError from '../../../errors/ApiErrors'
+
 import { IRule } from './rule.interface'
 import { Rule } from './rule.model'
+import ApiError from '../../../../errors/ApiErrors'
 
 //privacy policy
 const createPrivacyPolicyToDB = async (payload: IRule) => {

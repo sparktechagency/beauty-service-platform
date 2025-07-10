@@ -297,7 +297,7 @@ const confirmOrderToDB = async (orderId: ObjectId, userId: JwtPayload) => {
 
   const plan: any = subscription?.package;
 
-  let fee = plan?.price_offer || 10;
+  let fee = 10;
   order!.app_fee = order.price * (fee / 100);
   order.total_amount = order.price + order.app_fee;
 

@@ -207,7 +207,7 @@ const subsriprionDetailsFromDB = async (user:JwtPayload)=>{
   
   
 
-  return {priceOffer:packageData?.price_offer??10,allPackageOffers}
+  return {priceOffer:10,allPackageOffers}
 }
 
 

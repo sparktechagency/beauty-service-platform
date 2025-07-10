@@ -55,7 +55,7 @@ export const handleSubscriptionCreated = async (data: Stripe.Subscription) => {
                         status: 'active',
                     });
                     if (isExistSubscription) {
-                       await Subscription.findByIdAndUpdate(isExistSubscription._id,{
+                       await Subscription.findByIdAndUpdate(isExistSubscription?._id,{
                         status:"expired"
                        })
                     }

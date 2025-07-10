@@ -38,7 +38,7 @@ export const handleWebHook =async (req:Request, res:Response) => {
             
             break;
         case 'customer.subscription.deleted':
-            await handleSubscriptionDeleted(event.data.object);
+            // await handleSubscriptionDeleted(event.data.object);
             
             break;
             case "account.updated":
