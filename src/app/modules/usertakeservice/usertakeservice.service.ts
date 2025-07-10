@@ -35,6 +35,7 @@ import { INotification } from "../notification/notification.interface";
 import { getEstimatedArrivalTime } from "../../../helpers/timeAndDistanceCalculator";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
+import { IPlan } from "../plan/plan.interface";
 
 dayjs.extend(utc);
 
@@ -295,9 +296,9 @@ const confirmOrderToDB = async (orderId: ObjectId, userId: JwtPayload) => {
     status: "active",
   }).populate("package");
 
-  const plan: any = subscription?.package;
+  const plan  = subscription?.package as any as IPlan
 
-  let fee = 10;
+  let fee = plan.price_offer??10
   order!.app_fee = order.price * (fee / 100);
   order.total_amount = order.price + order.app_fee;
 
