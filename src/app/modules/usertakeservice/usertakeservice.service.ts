@@ -1158,16 +1158,18 @@ const getAllBookingsFromDB = async (
     .lean()
     .exec();
 
+    const subscription = await Subscription.findOne({user:user.id}).populate([
+      {
+        path: "package",
+        select: ["name", "price", "price_offer"],
+      },
+    ]);
+    const plan = subscription?.package as any as IPlan
+
   const fixedData = data.map((item: any) => {
     return {
       ...item,
-      price: [USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN].includes(user.role)
-        ? item.price
-        : user.role == USER_ROLES.ARTIST
-        ? item.price - (item.price * 10) / 100
-        : item.price -
-          (item.price * (item.app_fee || 0)) / 100 +
-          (item.price * 10) / 100,
+      price:user.role == USER_ROLES.ARTIST ? (item.price- (item.price * (plan.price_offer/100))) :(item.price+ (item.price * (plan.price_offer/100)))  ,
     };
   });
 
