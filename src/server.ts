@@ -7,6 +7,7 @@ import { socketHelper } from "./helpers/socketHelper";
 import { Server } from "socket.io";
 import seedSuperAdmin from "./DB";
 import { cleanUp, deleteExpiredOrders, reminder } from "./cleanup/cleanUp";
+import { compareDatesInHours } from "./shared/timeComparator";
 
 
 //uncaught exception
@@ -29,7 +30,7 @@ async function main() {
 
        deleteExpiredOrders()
 
-
+    //    console.log(compareDatesInHours(new Date(), new Date('2025-07-11T14:00:00'), 'America/New_York'))
 
         mongoose.connect(config.database_url as string);
         logger.info(colors.green('🚀 Database connected successfully'));

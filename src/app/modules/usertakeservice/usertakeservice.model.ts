@@ -125,7 +125,7 @@ userTakeServiceSchema.pre("findOneAndUpdate", async function (next) {
     await User.findOneAndUpdate(
       { _id: user },
       {
-        last_accept_date: new Date(),
+        last_accept_date: update.service_date,
       }
     );
   }

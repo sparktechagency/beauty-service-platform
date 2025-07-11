@@ -36,6 +36,8 @@ import { getEstimatedArrivalTime } from "../../../helpers/timeAndDistanceCalcula
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import { IPlan } from "../plan/plan.interface";
+import { compareDatesInHours } from "../../../shared/timeComparator";
+import { log } from "winston";
 
 dayjs.extend(utc);
 
@@ -68,13 +70,19 @@ const createUserTakeServiceIntoDB = async (
     );
   }
   if (last_apoinment_date && userData?.last_apoinment_date) {
+    console.log(last_apoinment_date);
+    console.log(serviceDateData);
+    const diffInHours = compareDatesInHours(
+      last_apoinment_date,
+      serviceDateData,
+      // "Asia/Dhaka"
+    );
+
+    console.log(diffInHours);
     
-    const now = dayjs.utc(serviceDateData);
-    const lastAppointment = dayjs.utc(last_apoinment_date);
-    const diffInHours = now.diff(lastAppointment, "hours");
 
     
-    if (Math.abs(diffInHours) < 1 && (new Date().getDate() == serviceDateData.getDate())) {
+    if (diffInHours < 2 && (new Date().getDate() == serviceDateData.getDate())) {
       throw new ApiError(
         StatusCodes.FORBIDDEN,
         "Please book at least 2 hours in advance to allow time for artists to prepare and travel."
@@ -83,9 +91,9 @@ const createUserTakeServiceIntoDB = async (
   }
   const service = await ServiceManagement.findById(payload.serviceId);
   if (!service) {
-    throw new ApiError(StatusCodes.NOT_FOUND, "Service not found");
+    // throw new ApiError(StatusCodes.NOT_FOUND, "Service not found");
   }
-  if (service.status == "paused") {
+  if (service?.status == "paused") {
     throw new ApiError(StatusCodes.BAD_REQUEST, "Service is paused");
   }
 
@@ -117,7 +125,7 @@ const createUserTakeServiceIntoDB = async (
       $match: {
         role: USER_ROLES.ARTIST,
         isActive: true,
-        categories: { $in: [service._id] },
+        categories: { $in: [service?._id] },
       },
     },
     {
@@ -167,15 +175,18 @@ const createUserTakeServiceIntoDB = async (
       if (!provider.last_accept_date) {
         return true;
       }
-      const lastAcceptDate = dayjs.utc(provider.last_accept_date);
-      const hoursDifference = dayjs.utc().diff(lastAcceptDate, "hours");
+      const lastAcceptDate = new Date(provider.last_accept_date);
+      const hoursDifference = compareDatesInHours(
+        lastAcceptDate,
+        serviceDateData,
+      );
 
       return hoursDifference > 4;
     });
 
   for (const provider of nearbyProviders) {
     const notificationPayload = {
-      title: `Someone request for ${service.name}`,
+      title: `Someone request for ${service?.name}`,
       message: "A new service request has been created near you",
       filePath: "request",
       serviceId: result._id,
@@ -184,7 +195,7 @@ const createUserTakeServiceIntoDB = async (
     };
     if (provider.deviceToken) {
       await sendNotificationToFCM({
-        body: `Someone request for ${service.name}`,
+        body: `Someone request for ${service?.name}`,
         title: "New Service Request",
         token: provider.deviceToken,
         data: {
@@ -194,7 +205,7 @@ const createUserTakeServiceIntoDB = async (
     }
     await sendNotifications({
       receiver: [provider._id],
-      title: `Someone request for ${service.name}`,
+      title: `Someone request for ${service?.name}`,
       message: "A new service request has been created near you",
       filePath: "request",
       serviceId: result._id,
@@ -203,7 +214,7 @@ const createUserTakeServiceIntoDB = async (
     });
     if (userData?.deviceToken) {
       await sendNotificationToFCM({
-        body: `Someone request for ${service.name}`,
+        body: `Someone request for ${service?.name}`,
         title: "New Service Request",
         token: userData.deviceToken,
         data: notificationPayload,
@@ -600,11 +611,11 @@ const updateUserTakeServiceIntoDB = async (
   const userData = await User.findById(user.id);
   const currentDate = new Date();
   if (userData?.last_accept_date) {
-    const last_accept_date = new Date(userData?.last_accept_date);
-    const diff = currentDate.getTime() - last_accept_date.getTime();
-    const diffInMinutes = Math.floor(diff / (1000 * 60));
-    const diffInHours = Math.floor(diff / (1000 * 60 * 60));
-    if (diffInHours < 4) {
+    const diffInHours = compareDatesInHours(
+      isExist?.service_date!,
+      userData.last_accept_date
+    );
+    if (diffInHours < 4 && (new Date(isExist?.service_date!).getDate() == new Date(userData.last_accept_date).getDate())) {
       throw new ApiError(
         StatusCodes.FORBIDDEN,
         "You can't accept this service within 4 hours of the last accepted service."
@@ -1169,7 +1180,7 @@ const getAllBookingsFromDB = async (
   const fixedData = data.map((item: any) => {
     return {
       ...item,
-      price:user.role == USER_ROLES.ARTIST ? (item.price- (item.artist_app_fee?? ((item.price * (plan.price_offer/100))))) :(item.price+ (item.app_fee ?? (item.price * (plan.price_offer/100))))  ,
+      price:user.role == USER_ROLES.ARTIST ? (item.price- (item.artist_app_fee?? ((item.price * (plan?.price_offer/100)))??0)) :(item.price+ (item.app_fee ?? (item.price * (plan?.price_offer/100))??0))  ,
     };
   });
 
