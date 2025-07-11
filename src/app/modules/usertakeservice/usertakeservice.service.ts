@@ -1169,7 +1169,7 @@ const getAllBookingsFromDB = async (
   const fixedData = data.map((item: any) => {
     return {
       ...item,
-      price:user.role == USER_ROLES.ARTIST ? (item.price- (item.price * (plan.price_offer/100))) :(item.price+ (item.price * (plan.price_offer/100)))  ,
+      price:user.role == USER_ROLES.ARTIST ? (item.price- (item.artist_app_fee?? ((item.price * (plan.price_offer/100))))) :(item.price+ (item.app_fee ?? (item.price * (plan.price_offer/100))))  ,
     };
   });
 
