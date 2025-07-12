@@ -602,8 +602,8 @@ const getSingleUserService = async (
     ...result,
     price:
       user.role == USER_ROLES.ARTIST
-        ? result.price - result.price * (plan?.price_offer??10 / 100)
-        : result.price + result.price * (userPlan?.price_offer??10 / 100),
+        ? result.price - (result.price * (plan?.price_offer??10 / 100))
+        : result.price + (result.price * (userPlan?.price_offer??10 / 100)),
   };
 };
 
@@ -1175,19 +1175,19 @@ const getAllBookingsFromDB = async (
     ])
     .lean()
     .exec();
+  
+  const artistPlan = await Plan.findOne({
+    for:USER_ROLES.ARTIST,
+  }).lean()
 
-    const subscription = await Subscription.findOne({user:user.id}).populate([
-      {
-        path: "package",
-        select: ["name", "price", "price_offer"],
-      },
-    ]);
-    const plan = subscription?.package as any as IPlan
+  const userPlan = await Plan.findOne({
+    for:USER_ROLES.USER,
+  }).lean()
 
   const fixedData = data.map((item: any) => {
     return {
       ...item,
-      price:user.role == USER_ROLES.ARTIST ? (item.price- (item.artist_app_fee?? ((item.price * (plan?.price_offer/100)))??0)) :(item.price+ (item.app_fee ?? (item.price * (plan?.price_offer/100))??0))  ,
+      price:user.role == USER_ROLES.ARTIST ? (item.price- (item.artist_app_fee?? ((item.price * (artistPlan?.price_offer??10/100)))??0)) :(item.price+ (item.app_fee ?? (item.price * (userPlan?.price_offer??10/100))??0))  ,
     };
   });
 
