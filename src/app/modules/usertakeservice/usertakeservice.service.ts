@@ -593,7 +593,7 @@ const getSingleUserService = async (
   const plan = subscription?.package as any as IPlan
 
   const userPlan = await Plan.findOne({
-    for: user.role,
+    for: USER_ROLES.USER,
   }).lean()
   return {
     ...result,
