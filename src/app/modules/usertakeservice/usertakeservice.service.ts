@@ -595,6 +595,9 @@ const getSingleUserService = async (
   const userPlan = await Plan.findOne({
     for: USER_ROLES.USER,
   }).lean()
+
+  console.log(userPlan);
+  
   return {
     ...result,
     price:
