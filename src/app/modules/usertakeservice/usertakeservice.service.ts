@@ -842,6 +842,9 @@ const payoutOrderInDB = async (orderId: string) => {
   try {
     session.startTransaction();
     const order = await UserTakeService.findById(orderId).session(session);
+    if(!order?.isOnTheWay){
+      throw new ApiError(StatusCodes.BAD_REQUEST, "Artist is not on the way");
+    }
     if (!order) {
       throw new ApiError(StatusCodes.NOT_FOUND, "Order not found");
     }
