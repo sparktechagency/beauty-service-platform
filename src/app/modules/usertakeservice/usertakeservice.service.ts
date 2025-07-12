@@ -591,12 +591,16 @@ const getSingleUserService = async (
   }).lean()
 
   const plan = subscription?.package as any as IPlan
+
+  const userPlan = await Plan.findOne({
+    for: user.role,
+  }).lean()
   return {
     ...result,
     price:
       user.role == USER_ROLES.ARTIST
-        ? result.price - result.price * (plan.price_offer??10 / 100)
-        : result.price + result.price * (plan.price_offer??10 / 100),
+        ? result.price - result.price * (plan?.price_offer??10 / 100)
+        : result.price + result.price * (userPlan?.price_offer??10 / 100),
   };
 };
 
