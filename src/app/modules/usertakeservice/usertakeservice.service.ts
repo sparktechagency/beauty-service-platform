@@ -38,6 +38,7 @@ import utc from "dayjs/plugin/utc";
 import { IPlan } from "../plan/plan.interface";
 import { compareDatesInHours } from "../../../shared/timeComparator";
 import { log } from "winston";
+import { IServiceManagement } from "../servicemanagement/servicemanagement.interface";
 
 dayjs.extend(utc);
 
@@ -523,7 +524,7 @@ const getSingleUserService = async (
     .populate([
       {
         path: "serviceId",
-        select: ["name", "category", "subCategory", "image" ],
+        select: ["name", "category", "subCategory", "image","addOns" ],
         populate: [
           {
             path: "category",
@@ -592,13 +593,17 @@ const getSingleUserService = async (
     throw new ApiError(StatusCodes.NOT_FOUND, "Service not found");
   }
 
+  const service = result.serviceId as any as IServiceManagement
   
   return {
     ...result,
     serviceId:{
       ...result.serviceId,
-      //@ts-ignore
-      addOns:result.addOns||[]
+      // @ts-ignore
+      addOns:result.addOns?.map((item:any)=>({
+        title:item?.name,
+        price:item?.price,
+      }))||[]
     },
     
     price:
