@@ -117,7 +117,7 @@ const createUserTakeServiceIntoDB = async (
     let fee = plan?.price_offer??10
   console.log(fee);
   data!.app_fee = data.price * (fee / 100);
-  console.log(data.app_fee);
+
   
  
 
@@ -523,7 +523,7 @@ const getSingleUserService = async (
     .populate([
       {
         path: "serviceId",
-        select: ["name", "category", "subCategory", "image", "addOns"],
+        select: ["name", "category", "subCategory", "image" ],
         populate: [
           {
             path: "category",
@@ -591,25 +591,20 @@ const getSingleUserService = async (
   if (!result) {
     throw new ApiError(StatusCodes.NOT_FOUND, "Service not found");
   }
-  const subscription = await Subscription.findOne({user: user.id}).populate({
-    path: "package",
-    select: ["name", "price", "price_offer"],
-  }).lean()
 
-  const plan = subscription?.package as any as IPlan
-
-  const userPlan = await Plan.findOne({
-    for: USER_ROLES.USER,
-  }).lean()
-
-  console.log(userPlan);
   
   return {
     ...result,
+    serviceId:{
+      ...result.serviceId,
+      //@ts-ignore
+      addOns:result.addOns||[]
+    },
+    
     price:
       user.role == USER_ROLES.ARTIST
-        ? result.price - (result.price * (plan?.price_offer??10 / 100))
-        : result.price + (result.price * (userPlan?.price_offer??10 / 100)),
+        ? result.price -(result?.artist_app_fee||0)
+        : result.price + (result?.app_fee||0),
   };
 };
 
