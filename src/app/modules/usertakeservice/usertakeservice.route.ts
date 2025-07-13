@@ -48,6 +48,12 @@ router.patch(
 )
 
 router.patch(
+  "/start/:id",
+  auth(USER_ROLES.ARTIST),
+  UserTakeServiceController.startOrderService
+)
+
+router.patch(
   "/accept/:id",
   auth(USER_ROLES.ARTIST),
   UserTakeServiceController.updateUserTakeService

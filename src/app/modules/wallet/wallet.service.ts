@@ -13,6 +13,7 @@ import { JwtPayload } from "jsonwebtoken";
 import { UserTakeService } from "../usertakeservice/usertakeservice.model";
 import { Subscription } from "../subscription/subscription.model";
 import { Plan } from "../plan/plan.model";
+import { sendNotifications } from "../../../helpers/notificationsHelper";
 
 const createWallet = async (user:Types.ObjectId): Promise<IWallet | null> => {
     const isExist = await Wallet.findOne({ user });
@@ -58,7 +59,7 @@ const applyForWidthdraw = async (user:Types.ObjectId, amount:number) => {
     if(!userData){
         throw new ApiError(404,"User not found")
     }
-    if(!userData.accountInfo){
+    if(!userData.accountInfo?.loginLink){
         throw new ApiError(400,"Please add you stripe account info")
     }
     const wallet = await Wallet.findOne({ user });
@@ -68,8 +69,7 @@ const applyForWidthdraw = async (user:Types.ObjectId, amount:number) => {
     if (wallet.balance < amount) {
         throw new ApiError(400, "Insufficient balance");
     }
-    wallet.balance -= amount;
-    await wallet.save();
+    await wallet.updateOne({ balance: wallet.balance - amount },{session:transaction});
     const widthdraw = await Widthdraw.create({
         user,
         amount,
@@ -80,6 +80,14 @@ const applyForWidthdraw = async (user:Types.ObjectId, amount:number) => {
         currency: "usd",
         destination: userData.accountInfo.stripeAccountId,
     });
+
+    await sendNotifications({
+        title:"Withdraw Request",
+        message:"Your withdraw request has been approved",
+        isRead:false,
+        receiver:[user._id],
+        userId:user._id,
+    })
     await transaction.commitTransaction();
     await transaction.endSession();
     return widthdraw;

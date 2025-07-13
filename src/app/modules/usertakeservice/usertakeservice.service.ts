@@ -302,16 +302,12 @@ const confirmOrderToDB = async (orderId: ObjectId, userId: JwtPayload) => {
   if (order.payment_intent) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "Order already confirmed");
   }
-  const subscription = await Subscription.findOne({
-    user: userId.id,
-    status: "active",
-  }).populate("package");
 
-  const plan  = subscription?.package as any as IPlan
+  const plan  = await Plan.findOne({for:USER_ROLES.USER}).lean()
 
-  let fee = plan.price_offer??10
+  let fee = plan?.price_offer??10
   order!.app_fee = order.price * (fee / 100);
-  order.total_amount = order.price + order.app_fee;
+  order.total_amount = order.price + order?.app_fee;
 
   const service = await ServiceManagement.findById(order.serviceId);
 
@@ -612,6 +608,9 @@ const updateUserTakeServiceIntoDB = async (
   user: JwtPayload
 ): Promise<IUserTakeService | null> => {
   const isExist = await UserTakeService.findOne({ _id: id });
+  if (!isExist) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "Service not found");
+  }
   if (isExist?.isBooked === true) {
     throw new ApiError(StatusCodes.NOT_FOUND, "Service already booked !");
   }
@@ -633,9 +632,13 @@ const updateUserTakeServiceIntoDB = async (
     throw new ApiError(StatusCodes.FORBIDDEN, "you account is inactive");
   }
 
+  const plan = await Plan.findOne({for:USER_ROLES.ARTIST}).lean()
+
+  const artist_app_fee = (isExist?.price * (plan?.price_offer??10 / 100))
+
   const result: any = await UserTakeService.findOneAndUpdate(
     { _id: id },
-    { artiestId: user.id, artist_book_date: new Date(), isBooked: true },
+    { artiestId: user.id, artist_book_date: new Date(), isBooked: true,artist_app_fee: artist_app_fee },
     { new: true }
   ).populate("serviceId");
 
@@ -845,6 +848,9 @@ const payoutOrderInDB = async (orderId: string) => {
     if(!order?.isOnTheWay){
       throw new ApiError(StatusCodes.BAD_REQUEST, "Artist is not on the way");
     }
+    if(!order?.isServiceStart){
+      throw new ApiError(StatusCodes.BAD_REQUEST, "Service is not started");
+    }
     if (!order) {
       throw new ApiError(StatusCodes.NOT_FOUND, "Order not found");
     }
@@ -871,8 +877,8 @@ const payoutOrderInDB = async (orderId: string) => {
     console.log(order);
 
     const amount =
-      order.price - (order.price * cost) / 100 - (order.app_fee! || 0);
-    console.log(amount);
+      order.price - order?.artist_app_fee!||0
+
 
     if (isNaN(amount)) {
       throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid amount");
@@ -1452,20 +1458,15 @@ const expandAreaForOrder = async (order_id: Types.ObjectId, area: number) => {
 const artistOnTheWayStatus = async (orderId: string) => {
   const order = await UserTakeService.findById(orderId);
   if (!order) throw new ApiError(StatusCodes.NOT_FOUND, "Order not found");
-  if (order.isOnTheWay) {
-    return;
-  }
+  // if (order.isOnTheWay) {
+  //   return;
+  // }
   const artist = await User.findById(order.artiestId);
   if (!artist) throw new ApiError(StatusCodes.NOT_FOUND, "Artist not found");
   const user = await User.findById(order.userId);
   if (!user) throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
 
-  console.log(
-    artist?.latitude,
-    artist?.longitude,
-    order.latitude,
-    order.longitude
-  );
+
   const arrivalTime = await getEstimatedArrivalTime(
     artist?.latitude!,
     artist?.longitude!,
@@ -1473,13 +1474,15 @@ const artistOnTheWayStatus = async (orderId: string) => {
     order.longitude
   );
 
-  console.log(arrivalTime.toDateString());
+  // console.log(arrivalTime);
+  
+ 
 
   const orderData = await UserTakeService.findByIdAndUpdate(
     orderId,
     {
       isOnTheWay: true,
-      arriveTime: arrivalTime,
+      // arriveTime: arrivalTime,
     },
     { new: true }
   );
@@ -1494,6 +1497,39 @@ const artistOnTheWayStatus = async (orderId: string) => {
 
   return orderData;
 };
+
+const startOrderService = async (orderId: string) => {
+  const order = await UserTakeService.findById(orderId);
+  if (!order) throw new ApiError(StatusCodes.NOT_FOUND, "Order not found");
+  if (order.isServiceStart) {
+    return;
+  }
+  const user = await User.findById(order.userId);
+
+  const artist = await User.findById(order.artiestId);
+
+  if (!user) throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
+  if (!artist)
+    throw new ApiError(StatusCodes.NOT_FOUND, "Artist not found");
+
+  await UserTakeService.findByIdAndUpdate(
+    orderId,
+    {
+      isServiceStart: true,
+    },
+    { new: true }
+  );
+  if (user?.deviceToken) {
+    await sendNotificationToFCM({
+      body: `Artist has started the service`,
+      title: "Artist has started the service",
+      token: user?.deviceToken!,
+    });
+  }
+
+
+}
+
 
 export const UserTakeServiceServices = {
   createUserTakeServiceIntoDB,
@@ -1510,4 +1546,5 @@ export const UserTakeServiceServices = {
   reminderToUsers,
   expandAreaForOrder,
   artistOnTheWayStatus,
+  startOrderService,
 };

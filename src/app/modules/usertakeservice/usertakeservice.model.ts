@@ -110,6 +110,10 @@ const userTakeServiceSchema = new Schema<IUserTakeService>(
     arriveTime: {
       type: Date,
     },
+    isServiceStart: {
+      type: Boolean,
+      default: false,
+    }
   },
   {
     timestamps: true,
