@@ -78,7 +78,7 @@ const createUserTakeServiceIntoDB = async (
       // "Asia/Dhaka"
     );
 
-    console.log(diffInHours);
+    // console.log(diffInHours);
     
 
     
@@ -113,6 +113,13 @@ const createUserTakeServiceIntoDB = async (
   if (!location) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid address");
   }
+  const plan = await Plan.findOne({for:userId.role})
+    let fee = plan?.price_offer??10
+  console.log(fee);
+  data!.app_fee = data.price * (fee / 100);
+  console.log(data.app_fee);
+  
+ 
 
   data.latitude = location.lat;
   data.longitude = location.lng;
@@ -306,7 +313,10 @@ const confirmOrderToDB = async (orderId: ObjectId, userId: JwtPayload) => {
   const plan  = await Plan.findOne({for:USER_ROLES.USER}).lean()
 
   let fee = plan?.price_offer??10
+  console.log(fee);
   order!.app_fee = order.price * (fee / 100);
+ 
+  
   order.total_amount = order.price + order?.app_fee;
 
   const service = await ServiceManagement.findById(order.serviceId);
@@ -634,7 +644,9 @@ const updateUserTakeServiceIntoDB = async (
 
   const plan = await Plan.findOne({for:USER_ROLES.ARTIST}).lean()
 
-  const artist_app_fee = (isExist?.price * (plan?.price_offer??10 / 100))
+  const artist_app_fee = (isExist?.price * ((plan?.price_offer??10) / 100))
+  console.log(artist_app_fee);
+  
 
   const result: any = await UserTakeService.findOneAndUpdate(
     { _id: id },
@@ -912,7 +924,7 @@ const payoutOrderInDB = async (orderId: string) => {
           occationId: order._id,
           title: "completed first booking",
         },
-        { session }
+
       );
     }
     if (clienBookings == 5) {
@@ -956,7 +968,6 @@ const payoutOrderInDB = async (orderId: string) => {
           amount: 10,
           occationId: order._id,
         },
-        { session }
       );
       await Reward.create(
         {
@@ -966,7 +977,6 @@ const payoutOrderInDB = async (orderId: string) => {
           occationId: order._id,
           title: `completed ${monthlyBookings} bookings in the month`,
         },
-        { session }
       );
     }
 
@@ -984,7 +994,6 @@ const payoutOrderInDB = async (orderId: string) => {
           occationId: order._id,
           title: `completed ${monthlyBookings} bookings`,
         },
-        { session }
       );
     }
 
@@ -1009,7 +1018,6 @@ const payoutOrderInDB = async (orderId: string) => {
             occationId: order._id,
             title: `completed ${monthlyBookings}`,
           },
-          { session }
         );
         await BonusAndChallenge.findOneAndUpdate(
           { _id: order.artiestId },
@@ -1196,7 +1204,7 @@ const getAllBookingsFromDB = async (
   const fixedData = data.map((item: any) => {
     return {
       ...item,
-      price:user.role == USER_ROLES.ARTIST ? (item.price- (item.artist_app_fee?? ((item.price * (artistPlan?.price_offer??10/100)))??0)) :(item.price+ (item.app_fee ?? (item.price * (userPlan?.price_offer??10/100))??0))  ,
+      price:user.role == USER_ROLES.ARTIST ? (item.price- (item.artist_app_fee?? ((item.price * (artistPlan?.price_offer??(10/100))))??0)) :(item.price+ (item.app_fee ?? (item.price * (userPlan?.price_offer??10/100))??0))  ,
     };
   });
 

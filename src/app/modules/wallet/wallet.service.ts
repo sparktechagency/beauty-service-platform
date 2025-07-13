@@ -175,7 +175,7 @@ const userEarnings = async (user:JwtPayload,query:Record<string,any>)=>{
         const date = new Date(item.createdAt).toDateString().slice(4,10)
         return {
             title:`${date} - ${item?.serviceId?.name||"demo"}`,
-            amount:`$${item.price}/$${item.price-(item?.artist_app_fee??0)}`,
+            amount:`$${item.price-(item?.artist_app_fee??0)}`,
         }
     })
     const lastWidthdraw:any = await Widthdraw.findOne({user:user.id,status:WITHDRAW_STATUS.APPROVED}).sort({createdAt:-1}).lean().exec()
