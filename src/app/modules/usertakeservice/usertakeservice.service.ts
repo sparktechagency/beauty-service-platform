@@ -49,7 +49,10 @@ const createUserTakeServiceIntoDB = async (
   if (!userId) {
     throw new ApiError(StatusCodes.UNAUTHORIZED, "Unauthorized access");
   }
-  const serviceDate = new Date(`${payload.date} ${payload.time}`).toISOString();
+  const serviceDate = new Date(`${payload.date} ${payload.time}`);
+
+  // console.log(serviceDate.toLocaleString());
+  
 
   const userData = await User.findById(userId.id);
   if (!userData) {
@@ -1205,6 +1208,7 @@ const getAllBookingsFromDB = async (
     return {
       ...item,
       price:user.role == USER_ROLES.ARTIST ? (item.price- (item.artist_app_fee?? ((item.price * (artistPlan?.price_offer??(10/100))))??0)) :(item.price+ (item.app_fee ?? (item.price * (userPlan?.price_offer??10/100))??0))  ,
+      service_date: new Date(item.service_date).toLocaleString(),
     };
   });
 

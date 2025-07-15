@@ -13,13 +13,13 @@ const createAccount = (values: ICreateAccount) => {
                 <div style="width: 100%; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #fff; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
     
                     <!-- Logo -->
-                    <img src="https://res.cloudinary.com/dabd4udau/image/upload/v1746444343/ubirra0v3j4wyeaojcxv.png" alt="beauty service Logo" style="display: block; margin: 0 auto 20px; width:150px" />
+                    <img src="https://res.cloudinary.com/dabd4udau/image/upload/v1746444343/ubirra0v3j4wyeaojcxv.png" alt="Ooh Ah Logo" style="display: block; margin: 0 auto 20px; width:150px" />
 
                     <!-- Greeting -->
                     <h2 style="color: #9558b7; font-size: 24px; margin-bottom: 20px;">Hey, ${values.name}!</h2>
 
                     <!-- Verification Instructions -->
-                    <p style="color: #555; font-size: 16px; line-height: 1.5; margin-bottom: 20px;">Thank you for signing up for beauty service. Please verify your email address to activate your account.</p>
+                    <p style="color: #555; font-size: 16px; line-height: 1.5; margin-bottom: 20px;">Thank you for signing up for Ooh Ah. Please verify your email address to activate your account.</p>
 
                     <!-- OTP Section -->
                     <div style="text-align: center;">
@@ -29,8 +29,8 @@ const createAccount = (values: ICreateAccount) => {
                     </div>
 
                     <!-- Footer -->
-                    <p style="color: #999; font-size: 12px; text-align: center; margin-top: 30px;">If you did not sign up for beauty service, please ignore this email.</p>
-                    <p style="color: #999; font-size: 12px; text-align: center;">&copy; 2025 beauty service. All rights reserved.</p>
+                    <p style="color: #999; font-size: 12px; text-align: center; margin-top: 30px;">If you did not sign up for Ooh Ah, please ignore this email.</p>
+                    <p style="color: #999; font-size: 12px; text-align: center;">&copy; 2025 Ooh Ah. All rights reserved.</p>
 
                 </div>
             </body>
