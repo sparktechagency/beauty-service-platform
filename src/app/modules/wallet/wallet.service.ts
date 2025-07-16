@@ -35,7 +35,7 @@ const getWallet = async (user:Types.ObjectId,query:Record<string,any>)=> {
     const withdraws = await queryBuilder.modelQuery.lean().exec()
     return {
         data:{
-            wallet,
+            wallet:parseFloat(wallet?.balance.toFixed(2)||"0.00"),
             withdraws
         },
         paginationResult:paginationResult
@@ -208,7 +208,7 @@ const weeklyEarningFromDb = async (user:JwtPayload)=>{
     const subscription:any = await Subscription.findOne({user:user.id}).populate('package').lean().exec();
     return {
         weekly:totalEarnings,
-        currentBalance:walletPrice?.balance,
+        currentBalance:parseFloat(walletPrice?.balance.toFixed(2)||"0"),
         subscription:subscription?.package?.name||"free",
 
     }
