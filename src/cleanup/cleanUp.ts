@@ -7,7 +7,8 @@ import { Plan } from "../app/modules/plan/plan.model";
 import { Socket } from "socket.io";
 
 const expireSubscriptions = async ()=>{
-    const subscriptions = await Subscription.find({
+   try {
+     const subscriptions = await Subscription.find({
         status: "active",
         currentPeriodEnd: { $lte: new Date() },
     }).lean()
@@ -51,12 +52,20 @@ const expireSubscriptions = async ()=>{
     await User.deleteMany({
         verified: false,
     })
+   } catch (error) {
+    console.log(error)
+   }
 }
 
 
 export const cleanUp = () => {
   cron.schedule("0 0 * * *", async () => {
-    await expireSubscriptions();
+    try {
+      await expireSubscriptions();
+    } catch (error) {
+      console.log(error)
+      
+    }
 
   }, {
     scheduled: true,
@@ -68,7 +77,12 @@ export const cleanUp = () => {
 
 export const reminder = () => {
   cron.schedule("0 0 * * *", async () => {
-    await UserTakeServiceServices.reminderToUsers();
+    try {
+      await UserTakeServiceServices.reminderToUsers();
+    } catch (error) {
+      console.log(error)
+
+    }
 
   }, {
     scheduled: true,
@@ -78,8 +92,13 @@ export const reminder = () => {
 
 export const deleteExpiredOrders = () => {
   cron.schedule("*/5 * * * *", async () => {
-    await expandOrderTimeAndDelete()
+    try {
+         await expandOrderTimeAndDelete()
     // console.log("Deleted expired orders");
+    } catch (error) {
+      console.log(error)
+    }
+ 
   }, {
     scheduled: true,
     timezone: "America/New_York",
