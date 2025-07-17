@@ -8,6 +8,7 @@ import { Socket } from "socket.io";
 
 const expireSubscriptions = async ()=>{
    try {
+    console.log("==========================================Expire Subscriptions==========================================");
      const subscriptions = await Subscription.find({
         status: "active",
         currentPeriodEnd: { $lte: new Date() },
@@ -30,7 +31,7 @@ const expireSubscriptions = async ()=>{
 
            const sub = await Subscription.create({
                 user:subscription.user,
-                package:firstFreePlan._id,
+                package:firstFreePlan?._id,
                 status:"active",
                 currentPeriodStart:new Date(),
                 currentPeriodEnd:new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0),
@@ -93,6 +94,7 @@ export const reminder = () => {
 export const deleteExpiredOrders = () => {
   cron.schedule("*/5 * * * *", async () => {
     try {
+      console.log("==========================================Deleted expired orders==========================================");
          await expandOrderTimeAndDelete()
     // console.log("Deleted expired orders");
     } catch (error) {
@@ -109,7 +111,9 @@ export const deleteExpiredOrders = () => {
 
 
 const expandOrderTimeAndDelete = async () => {
-  const now = new Date();
+  try {
+    console.log("==========================================Deleted expired orders==========================================");
+    const now = new Date();
 
   const minutesAgo = (mins:any) => new Date(now.getTime() - mins * 60 * 1000);
 
@@ -148,6 +152,10 @@ const expandOrderTimeAndDelete = async () => {
     { status: "cancelled" }
   );
 
+  } catch (error) {
+    console.log(error)
+    
+  }
   // console.log("Cancelled orders:", cancelResult.modifiedCount);
 };
 

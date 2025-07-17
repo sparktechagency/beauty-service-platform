@@ -1284,15 +1284,15 @@ const reminderToUsers = async () => {
   });
 
   for (const order of orders) {
-    const customer = await User.findById(order.userId);
-    const artist = await User.findById(order.artiestId);
+    const customer = await User.findById(order?.userId);
+    const artist = await User.findById(order?.artiestId);
     if (customer?.deviceToken) {
       await sendNotificationToFCM({
         title: `Reminder for your booking`,
         body: `${customer?.name} has booked a service from you`,
         data: {
           type: "booking_reminder",
-          bookingId: order._id,
+          bookingId: order?._id,
         },
         token: customer?.deviceToken,
       });
@@ -1304,7 +1304,7 @@ const reminderToUsers = async () => {
         body: `${customer?.name} has booked a service from you`,
         data: {
           type: "booking_reminder",
-          bookingId: order._id,
+          bookingId: order?._id,
         },
         token: artist?.deviceToken!,
       });
@@ -1315,7 +1315,8 @@ const reminderToUsers = async () => {
 /// expand Area
 
 const expandAreaForOrder = async (order_id: Types.ObjectId, area: number) => {
-  const result = await UserTakeService.findById(order_id);
+  try {
+    const result = await UserTakeService.findById(order_id);
   if (!result) return;
   const service = await ServiceManagement.findById(result?.serviceId);
   const currentDate = new Date();
@@ -1357,12 +1358,12 @@ const expandAreaForOrder = async (order_id: Types.ObjectId, area: number) => {
   //  📍 Filter by 5km radius
   const nearbyProviders = allProviders
     .filter((provider) => {
-      if (provider.latitude && provider.longitude) {
+      if (provider?.latitude && provider?.longitude) {
         const distance = calculateDistanceInKm(
-          result.latitude,
-          result.longitude,
-          provider.latitude,
-          Number(provider.longitude)
+          result?.latitude,
+          result?.longitude,
+          provider?.latitude,
+          Number(provider?.longitude)
         );
 
         return distance <= (area || 50);
@@ -1389,17 +1390,17 @@ const expandAreaForOrder = async (order_id: Types.ObjectId, area: number) => {
       });
     }
     await sendNotifications({
-      receiver: [provider._id],
+      receiver: [provider?._id],
       title: `Someone request for ${service?.name}`,
       message: "A new service request has been created near you",
       filePath: "request",
-      serviceId: result._id,
-      userId: result.userId,
+      serviceId: result?._id,
+      userId: result?.userId,
       isRead: false,
     });
   }
 
-  const currentOrder = await UserTakeService.findById(result._id).populate([
+  const currentOrder = await UserTakeService.findById(result?._id).populate([
     {
       path: "serviceId",
       select: ["name", "category", "subCategory"],
@@ -1463,7 +1464,10 @@ const expandAreaForOrder = async (order_id: Types.ObjectId, area: number) => {
   ]);
 
   for (const provider of nearbyProviders) {
-    locationHelper({ receiver: provider._id, data: currentOrder! });
+    locationHelper({ receiver: provider?._id, data: currentOrder! });
+  }
+  } catch (error) {
+    console.log(error);
   }
 };
 
