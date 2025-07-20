@@ -59,7 +59,7 @@ const applyForWidthdraw = async (user:Types.ObjectId, amount:number) => {
     if(!userData){
         throw new ApiError(404,"User not found")
     }
-    if(!userData.accountInfo?.loginLink){
+    if(!userData.accountInfo?.stripeAccountId){
         throw new ApiError(400,"Please add you stripe account info")
     }
     const wallet = await Wallet.findOne({ user });

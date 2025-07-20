@@ -119,7 +119,6 @@ const createUserTakeServiceIntoDB = async (
   }
   const plan = await Plan.findOne({for:userId.role})
     let fee = plan?.price_offer??10
-  console.log(fee);
   data!.app_fee = data.price * (fee / 100);
 
   
@@ -176,8 +175,6 @@ const createUserTakeServiceIntoDB = async (
           provider.latitude,
           Number(provider.longitude)
         );
-
-        console.log(distance);
 
         return distance <= 70;
       }
@@ -1545,6 +1542,9 @@ const startOrderService = async (orderId: string) => {
 
 
 }
+
+
+
 
 
 export const UserTakeServiceServices = {
