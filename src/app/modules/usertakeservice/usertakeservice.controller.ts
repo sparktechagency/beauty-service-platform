@@ -155,6 +155,19 @@ const startOrderService = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const createOrderToSpecificArtist = catchAsync(async (req: Request, res: Response) => {
+  const user = req.user;
+  const { ...userTakeServiceData } = req.body;
+  
+  const result = await UserTakeServiceServices.createOrderToSpecificArtist(userTakeServiceData as any,user!);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "UserTakeService updated successfully",
+    data: result,
+  });
+});
+
 export const UserTakeServiceController = {
   createUserTakeService,
   getSingleService,
@@ -166,5 +179,6 @@ export const UserTakeServiceController = {
   getOverview,
   confirmOrder,
   changeArtistOntheWay,
-  startOrderService
+  startOrderService,
+  createOrderToSpecificArtist,
 };

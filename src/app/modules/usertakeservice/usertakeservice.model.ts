@@ -113,6 +113,10 @@ const userTakeServiceSchema = new Schema<IUserTakeService>(
     isServiceStart: {
       type: Boolean,
       default: false,
+    },
+    specficOrder: {
+      type: Boolean,
+      default: false,
     }
   },
   {

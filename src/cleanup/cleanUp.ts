@@ -92,9 +92,9 @@ export const reminder = () => {
 };
 
 export const deleteExpiredOrders = () => {
-  cron.schedule("*/5 * * * *", async () => {
+  cron.schedule("*/0.01 * * * *", async () => {
     try {
-      console.log("==========================================Deleted expired orders==========================================");
+      // console.log("==========================================Deleted expired orders==========================================");
          await expandOrderTimeAndDelete()
     // console.log("Deleted expired orders");
     } catch (error) {
@@ -118,7 +118,7 @@ const expandOrderTimeAndDelete = async () => {
   const minutesAgo = (mins:any) => new Date(now.getTime() - mins * 60 * 1000);
 
   const orders_15_10 = await UserTakeService.find({
-    createdAt: { $gte: minutesAgo(15), $lte: minutesAgo(10) },
+    createdAt: { $gte: minutesAgo(1), $lte: minutesAgo(10) },
     status: "pending",
     isBooked:false
   }).lean();
@@ -131,7 +131,7 @@ const expandOrderTimeAndDelete = async () => {
   }
 
   const orders_30_25 = await UserTakeService.find({
-    createdAt: { $gte: minutesAgo(30), $lte: minutesAgo(25) },
+    createdAt: { $gte: minutesAgo(1), $lte: minutesAgo(25) },
     status: "pending",
     isBooked:false
   }).lean();
@@ -145,7 +145,7 @@ const expandOrderTimeAndDelete = async () => {
 
   const cancelResult = await UserTakeService.updateMany(
     {
-      createdAt: { $gte: minutesAgo(35), $lte: minutesAgo(30) },
+      createdAt: { $gte: minutesAgo(1), $lte: minutesAgo(30) },
       status: "pending",
       isBooked:false
     },

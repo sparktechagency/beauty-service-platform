@@ -75,6 +75,12 @@ router.route("/complete/:id").patch(
   UserTakeServiceController.payoutOrder
 );
 
+router.route("/order-to-artist").post(
+  auth(USER_ROLES.USER),
+  validateRequest(UserTakeServiceValidations.createServiceZodSchema),
+  UserTakeServiceController.createOrderToSpecificArtist
+);
+
 
 
 export const UserTakeServiceRoutes = router;

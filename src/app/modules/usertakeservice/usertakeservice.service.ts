@@ -757,11 +757,53 @@ const cancelOrder = async (
 ) => {
   const order = await UserTakeService.findById(orderId);
   if (!order) {
-    throw new ApiError(StatusCodes.NOT_FOUND, "Order not found");
+    throw new ApiError(StatusCodes.NOT_FOUND, "Order not found")
   }
 
   if (["completed", "cancelled"].includes(order.status)) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "Order is not cancellable");
+  }
+
+  if (order.specficOrder){
+    await UserTakeService.updateOne(
+      { _id: orderId },
+      {
+        status: "cancelled",
+      }
+    );
+
+    const userDetails = await User.findById(order.userId);
+    try {
+      await sendNotifications({
+        receiver: [order.userId],
+        title: "Order Cancelled",
+        message: "Your order has been cancelled",
+        filePath: "booking",
+        serviceId: order._id,
+        isRead: false,
+      });
+
+      if(userDetails?.deviceToken){
+        await sendNotificationToFCM({
+          body: "Your order has been cancelled",
+          title: "Order Cancelled",
+          token: userDetails?.deviceToken,
+          data: {
+            title: "Order Cancelled",
+            message: "Your order has been cancelled",
+            filePath: "booking",
+            serviceId: order._id,
+            isRead: false,
+          },
+        });
+      }
+      
+      
+    } catch (error) {
+      console.log(error);
+      
+    }
+    return;
   }
 
   if (user.role == USER_ROLES.ARTIST) {
@@ -1315,6 +1357,9 @@ const expandAreaForOrder = async (order_id: Types.ObjectId, area: number) => {
   try {
     const result = await UserTakeService.findById(order_id);
   if (!result) return;
+  if(result?.specficOrder){
+    return true
+  }
   const service = await ServiceManagement.findById(result?.serviceId);
   const currentDate = new Date();
   const allProviders = await User.aggregate([
@@ -1544,6 +1589,213 @@ const startOrderService = async (orderId: string) => {
 }
 
 
+const createOrderToSpecificArtist = async( payload: IUserTakeService & {artist:string},
+  userId: JwtPayload)=>{
+    console.log(payload);
+    
+    if(!payload.artist){
+      throw new ApiError(StatusCodes.BAD_REQUEST, "Artist is required");
+    }
+      if (!userId) {
+    throw new ApiError(StatusCodes.UNAUTHORIZED, "Unauthorized access");
+  }
+  const serviceDate = new Date(`${payload.date} ${payload.time}`);
+
+  // console.log(serviceDate.toLocaleString());
+  
+
+  const userData = await User.findById(userId.id);
+  if (!userData) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
+  }
+
+  const last_apoinment_date: any = new Date(userData?.last_apoinment_date || 0);
+  const serviceDateData = new Date(serviceDate);
+  const now = dayjs.utc();
+  const serviceDateDataUTC = dayjs.utc(serviceDateData);
+  const diffInHours = serviceDateDataUTC.isBefore(now)
+
+  
+  
+  if (new Date(serviceDate) < new Date()) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      "Please book at least 2 hours in advance to allow time for artists to prepare and travel."
+    );
+  }
+  if (last_apoinment_date && userData?.last_apoinment_date) {
+    console.log(last_apoinment_date);
+    console.log(serviceDateData);
+    const diffInHours = compareDatesInHours(
+      last_apoinment_date,
+      serviceDateData,
+      // "Asia/Dhaka"
+    );
+
+    // console.log(diffInHours);
+    
+
+    
+    if (diffInHours < 2 && (new Date().getDate() == serviceDateData.getDate())) {
+      throw new ApiError(
+        StatusCodes.FORBIDDEN,
+        "Please book at least 2 hours in advance to allow time for artists to prepare and travel."
+      );
+    }
+  }
+  const service = await ServiceManagement.findById(payload.serviceId);
+  if (!service) {
+    // throw new ApiError(StatusCodes.NOT_FOUND, "Service not found");
+  }
+  if (service?.status == "paused") {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Service is paused");
+  }
+
+  const data = {
+    ...payload,
+    userId: new Types.ObjectId(userId.id),
+  };
+
+  const encodedAddress = encodeURIComponent(payload.address);
+
+  const response = await axios.get(
+    `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedAddress}&key=${config.gooogle.mapKey}`
+  );
+
+  const location = response.data.results[0]?.geometry?.location;
+
+  if (!location) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid address");
+  }
+  const plan = await Plan.findOne({for:userId.role})
+    let fee = plan?.price_offer??10
+  data!.app_fee = data.price * (fee / 100);
+
+  
+ 
+
+  data.latitude = location.lat;
+  data.longitude = location.lng;
+
+  data.service_date = serviceDate as any;
+  data.specficOrder= true
+  data.artiestId = payload.artist as any 
+
+  const result = await UserTakeService.create(data);
+
+  const artistData = await User.findById(payload.artist);
+
+  if(payload.artist){
+    const notificationPayload = {
+      title: `${userData.name} is request for ${service?.name}`,
+      message: "A new service request has been created near you",
+      filePath: "request",
+      serviceId: result._id,
+      userId: artistData?._id,
+      isRead: false,
+    };
+    try {
+     await sendNotificationToFCM({
+        body: `${userData.name} is request for ${service?.name}`,
+        title: "New Service Request",
+        token: artistData?.deviceToken!,
+        data: {
+          ...notificationPayload,
+        },
+      });
+    
+      
+    await sendNotifications({
+      receiver: [artistData?._id!],
+      title: `${userData.name} is request for ${service?.name}`,
+      message: "A new service request has been created near you",
+      filePath: "request",
+      serviceId: result._id,
+      userId: artistData?._id,
+      isRead: false,
+    });
+    } catch (error) {
+      console.log(error);
+      
+    }
+  }
+
+     const currentOrder = await UserTakeService.findById(result._id).populate([
+    {
+      path: "serviceId",
+      select: ["name", "category", "subCategory"],
+      populate: [
+        {
+          path: "category",
+          select: ["name"],
+        },
+      ],
+    },
+    {
+      path: "userId",
+      select: [
+        "name",
+        "email",
+        "phone",
+        "profile",
+        "isActive",
+        "status",
+        "subscription",
+        "location",
+      ],
+      populate: [
+        {
+          path: "subscription",
+          select: ["package", "status"],
+          populate: [
+            {
+              path: "package",
+              select: ["name", "price", "price_offer"],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      path: "artiestId",
+      select: [
+        "name",
+        "email",
+        "phone",
+        "profile",
+        "isActive",
+        "status",
+        "subscription",
+        "location",
+      ],
+      populate: [
+        {
+          path: "subscription",
+          select: ["package", "status"],
+          populate: [
+            {
+              path: "package",
+              select: ["name", "price", "price_offer"],
+            },
+          ],
+        },
+      ],
+    },
+  ]);
+
+locationHelper({ receiver: artistData?._id!, data: currentOrder! });
+
+  await User.findByIdAndUpdate(result.userId, {
+    last_apoinment_date: serviceDateData,
+  });
+  return result;
+}
+
+
+
+
+
+  
 
 
 
@@ -1563,4 +1815,5 @@ export const UserTakeServiceServices = {
   expandAreaForOrder,
   artistOnTheWayStatus,
   startOrderService,
+  createOrderToSpecificArtist
 };
