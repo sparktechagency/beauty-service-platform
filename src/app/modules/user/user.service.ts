@@ -178,8 +178,8 @@ const createStripeAccoutToDB = async (
 
   const accountLink = await stripe.accountLinks.create({
     account: account.id,
-    refresh_url: "https://your-website.com/reauth",
-    return_url: "https://your-website.com/dashboard",
+    refresh_url: "https://web.oohahplatform.com/account-create-fail",
+    return_url: "https://web.oohahplatform.com/account-create-success",
     type: "account_onboarding",
   });
   await User.findOneAndUpdate(

@@ -340,7 +340,7 @@ const confirmOrderToDB = async (orderId: ObjectId, userId: JwtPayload) => {
     payment_method_types: ["card"],
     mode: "payment",
     success_url: `https://web.oohahplatform.com/payment-success`,
-    cancel_url: `https://oohahplatform.com`,
+    cancel_url: `https://web.oohahplatform.com/payment-fail`,
     metadata: {
       data: JSON.stringify({
         orderId,
