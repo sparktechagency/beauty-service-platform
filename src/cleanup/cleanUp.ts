@@ -8,7 +8,7 @@ import { Socket } from "socket.io";
 
 const expireSubscriptions = async ()=>{
    try {
-    console.log("==========================================Expire Subscriptions==========================================");
+    // console.log("==========================================Expire Subscriptions==========================================");
      const subscriptions = await Subscription.find({
         status: "active",
         currentPeriodEnd: { $lte: new Date() },
@@ -112,7 +112,7 @@ export const deleteExpiredOrders = () => {
 
 const expandOrderTimeAndDelete = async () => {
   try {
-    console.log("==========================================Deleted expired orders==========================================");
+    // console.log("==========================================Deleted expired orders==========================================");
     const now = new Date();
 
   const minutesAgo = (mins:any) => new Date(now.getTime() - mins * 60 * 1000);
