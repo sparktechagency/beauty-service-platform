@@ -116,7 +116,7 @@ const userSchema = new Schema<IUser, UserModal>(
     categories: [
       {
         type: Schema.Types.ObjectId,
-        ref: "Category",
+        ref: "ServiceManagement",
       },
     ],
     state: {

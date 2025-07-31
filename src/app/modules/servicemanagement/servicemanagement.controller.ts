@@ -123,6 +123,20 @@ const categoryWiseAndSubCategoryWiseService = catchAsync(
   }
 );
 
+
+const getAllServicesOfArtist = catchAsync(
+  async (req: Request, res: Response) => {
+    const id = req.params.id;
+    const result = await ServiceManagementServices.getServicesOfArtistFromDB(id);
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "ServiceManagement retrieved successfully",
+      data: result,
+    });
+  }
+)
+
 export const ServiceManagementController = {
   createServiceManagement,
   getAllServiceManagement,
@@ -131,4 +145,5 @@ export const ServiceManagementController = {
   deleteServiceManagement,
   getStatsData,
   categoryWiseAndSubCategoryWiseService,
+  getAllServicesOfArtist
 };

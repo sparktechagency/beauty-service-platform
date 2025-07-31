@@ -42,6 +42,8 @@ router.post(
   ServiceManagementController.createServiceManagement
 );
 
+router.get("/artist/:id",auth(), ServiceManagementController.getAllServicesOfArtist)
+
 // * get all service management
 router.get(
   "/",

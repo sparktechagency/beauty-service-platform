@@ -6,6 +6,7 @@ import QueryBuilder from "../../builder/queryBuilder";
 import unlinkFile from "../../../shared/unlinkFile";
 import { paginateHelper } from "../../../helpers/paginateHelper";
 import usStates from "../../../demoData/states";
+import { User } from "../user/user.model";
 
 
 const createServiceManagementIntoDB = async (payload: IServiceManagement) => {
@@ -190,6 +191,20 @@ const deleteServiceManagementFromDB = async (id: string) => {
 const statsDataFromArray = async ()=>{
 return usStates
 }
+
+const getServicesOfArtistFromDB = async (id: string) => {
+  const result = await User.findById(id).lean();
+  if (!result) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User not found");
+  }
+  const services = await Promise.all(result?.categories?.map(async (item)=>{
+    const service = await ServiceManagement.findById(item).lean();
+    return service
+  })!)
+
+  return services
+}
+
 export const ServiceManagementServices = {
   createServiceManagementIntoDB,
   getAllServiceManagementFromDB,
@@ -197,5 +212,6 @@ export const ServiceManagementServices = {
   updateServiceManagementIntoDB,
   deleteServiceManagementFromDB,
   statsDataFromArray,
-  categoryWiseAndSubCategoryWiseServiceManagementFromDB
+  categoryWiseAndSubCategoryWiseServiceManagementFromDB,
+  getServicesOfArtistFromDB
 };
