@@ -10,9 +10,9 @@ const exitDisclaimer = await Disclaimer.findOne({ type: payload.type });
   return result;
 };
 
-const getAllDisclaimerFromDb = async (type:string): Promise<IDisclaimer | null> => {
+const getAllDisclaimerFromDb = async (type:string): Promise<IDisclaimer | ""> => {
   const result = await Disclaimer.findOne({type:type});
-  return result;
+  return result??""
 };
 
 export const DisclaimerService = {
