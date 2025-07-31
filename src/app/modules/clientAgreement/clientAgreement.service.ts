@@ -17,7 +17,7 @@ const createClientAgreementSchemaIntoDB = async (payload: IClientAgreement) => {
 
   const getAllClientAgreementSchemaFromDB = async (type:string,forData:string) => {
     const clientAgreements = await clientAgreementSchema.findOne({type: type,for: forData})
-    return clientAgreements;
+    return clientAgreements??"";
   };
 
 
