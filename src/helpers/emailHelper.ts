@@ -28,6 +28,29 @@ const sendEmail = async (values: ISendEmail) => {
     }
 };
 
+// sendmail by sandgrid
+const sendEmailBySendGrid = async (values: ISendEmail) => {
+    try {
+        const sgMail = require('@sendgrid/mail');
+        sgMail.setApiKey(config.sandgrid.api_key);
+
+        const msg = {
+            to: values.to,
+            from: config.sandgrid.email,
+            subject: values.subject,
+            html: values.html,
+        };
+
+        sgMail.send(msg).then(() => {
+            logger.info('Mail send successfully');
+        }).catch((error:any) => {
+            errorLogger.error('Email', error);
+        });
+    }catch (error) {
+        errorLogger.error('Email', error);
+    }
+}
+
 export const emailHelper = {
     sendEmail
 };

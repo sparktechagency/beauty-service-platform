@@ -7,6 +7,8 @@ const getWallet = catchAsync(async (req: Request, res: Response) => {
     const user:any = req.user;
     const query = req.query;
     const result = await WalletService.getWallet(user.id!,query);
+    console.log(result);
+    
     sendResponse(res, {
         statusCode: 200,
         success: true,
@@ -64,6 +66,8 @@ const userEarnings = catchAsync(async (req: Request, res: Response) => {
     const user:any = req.user;
     const query = req.query;
     const result = await WalletService.userEarnings(user, query);
+    console.log(result.data);
+    
     sendResponse(res, {
         statusCode: 200,
         success: true,

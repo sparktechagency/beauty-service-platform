@@ -54,5 +54,9 @@ export default{
     },
     apple:{
         password:process.env.APP_SHERED_SECRET
+    },
+    sandgrid:{
+        email:process.env.SANDGRID_EMAIL,
+        api_key:process.env.SANDGRID_API_KEY
     }
 }

@@ -138,31 +138,6 @@ const createUserTakeServiceIntoDB = async (
         categories: { $in: [service?._id] },
       },
     },
-    {
-      $lookup: {
-        from: "subscriptions",
-        localField: "subscription",
-        foreignField: "_id",
-        as: "subscription",
-      },
-    },
-    {
-      $unwind: "$subscription",
-    },
-    {
-      $lookup: {
-        from: "plans",
-        localField: "subscription.package",
-        foreignField: "_id",
-        as: "subscription.package",
-      },
-    },
-    {
-      $unwind: "$subscription.package",
-    },
-    {
-      $sort: { "subscription.package.price": -1 },
-    },
   ]);
   const currentDate = new Date();
   //  📍 Filter by 5km radius
@@ -175,6 +150,9 @@ const createUserTakeServiceIntoDB = async (
           provider.latitude,
           Number(provider.longitude)
         );
+
+        console.log(distance);
+        
 
         return distance <= 70;
       }
@@ -293,7 +271,13 @@ const createUserTakeServiceIntoDB = async (
     },
   ]);
 
+  console.log(currentOrder);
+  
+console.log(nearbyProviders);
+
   for (const provider of nearbyProviders) {
+    console.log(provider);
+    
     locationHelper({ receiver: provider._id, data: currentOrder! });
   }
   await User.findByIdAndUpdate(result.userId, {

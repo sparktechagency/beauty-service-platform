@@ -257,9 +257,27 @@ const createFreeSubscription = async (userId:ObjectId)=>{
 }
 
 const cancelSubscription = async (user:JwtPayload)=>{
+  console.log(user);
+  
   const subscription = await Subscription.findOne({user:user.id,status:'active'})
+  const packages = await Plan.find({for:user.role}).sort({price:1}).lean()
+
   if(!subscription){
-    throw new ApiError(404,'MemberShip not found')
+    const packageData = packages[0]
+    const subscription = await Subscription.create({
+      package:packageData._id,
+      user:user.id,
+      currentPeriodStart:new Date(),
+      currentPeriodEnd:new Date(new Date().getTime()+(1000*60*60*24*30)),
+      customerId:user.id,
+      price:packageData.price,
+      subscriptionId:'demo',
+      trxId:'demo',
+      
+    })
+
+    await User.findOneAndUpdate({_id:user.id},{subscription:subscription._id},{new:true})
+    return subscription
   }
   await Subscription.findOneAndUpdate({user:user.id,status:'active'},{status:'canceled'})
   const sub = await createFreeSubscription(user.id)

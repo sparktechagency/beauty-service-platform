@@ -35,7 +35,9 @@ const getWallet = async (user:Types.ObjectId,query:Record<string,any>)=> {
     const withdraws = await queryBuilder.modelQuery.lean().exec()
     return {
         data:{
-            wallet:parseFloat(wallet?.balance.toFixed(2)||"0.00"),
+            wallet:{
+                balance:parseFloat(wallet?.balance.toFixed(2)||"0.00") 
+            },
             withdraws
         },
         paginationResult:paginationResult
@@ -171,6 +173,7 @@ const userEarnings = async (user:JwtPayload,query:Record<string,any>)=>{
     const result = new QueryBuilder(UserTakeService.find({artiestId:user.id,status:"completed"}),query).sort().paginate()
     const paginationResult = await result.getPaginationInfo()
     const data = await result.modelQuery.populate('serviceId','name').lean().exec()
+    let wallet = await Wallet.findOne({ user:user.id }).lean()
     const mappedData = data.map((item:any)=>{
         const date = new Date(item.createdAt).toDateString().slice(4,10)
         return {
@@ -182,6 +185,7 @@ const userEarnings = async (user:JwtPayload,query:Record<string,any>)=>{
     const lastWithdrawDate = lastWidthdraw?.createdAt
     return {
         data:{
+            wallet:parseFloat(wallet?.balance.toFixed(2)||"0.00"),
             lastWithdrawDate,
             data:mappedData
         },
@@ -190,20 +194,24 @@ const userEarnings = async (user:JwtPayload,query:Record<string,any>)=>{
 }
 
 const weeklyEarningFromDb = async (user:JwtPayload)=>{
+    console.log(user);
+    
     const startOfWeek = new Date();
     startOfWeek.setDate(startOfWeek.getDate() - 7);
     const endOfWeek = new Date();
     const query = {
-        updatedAt: {
+        createdAt: {
             $gte: startOfWeek,
             $lte: endOfWeek
         },
         status:"completed",
-        artistId:user.id
+        artiestId:user.id
     };
     const earnings = await UserTakeService.find(query).lean().exec();
+    // console.log(earnings);
     
-    const totalEarnings = earnings.reduce((total, item) => total + item.price, 0);
+    
+    const totalEarnings = earnings.reduce((total, item) => total + (item.price-(item.artist_app_fee||0)), 0);
     const walletPrice = await Wallet.findOne({user:user.id}).lean().exec();
     const subscription:any = await Subscription.findOne({user:user.id}).populate('package').lean().exec();
     return {

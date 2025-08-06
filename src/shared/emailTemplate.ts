@@ -10,30 +10,37 @@ const createAccount = (values: ICreateAccount) => {
     subject: "Verify your account",
     html: `
             <body style="font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 50px; padding: 20px; color: #555;">
-                <div style="width: 100%; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #fff; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
-    
-                    <!-- Logo -->
-                  
+  <div style="width: 100%; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
 
-                    <!-- Greeting -->
-                    <h2 style="color: #9558b7; font-size: 24px; margin-bottom: 20px;">Hey, ${values.name}!</h2>
+    <!-- Optional Logo -->
+    <!-- <div style="text-align: center; margin-bottom: 20px;">
+      <img src="https://yourdomain.com/logo.png" alt="Ooh Ah Logo" style="max-height: 60px;">
+    </div> -->
 
-                    <!-- Verification Instructions -->
-                    <p style="color: #555; font-size: 16px; line-height: 1.5; margin-bottom: 20px;">Thank you for signing up for Ooh Ah. Please verify your email address to activate your account.</p>
+    <!-- Greeting -->
+    <h2 style="color: #9558b7; font-size: 24px; margin-bottom: 20px;">Hey, ${values.name}!</h2>
 
-                    <!-- OTP Section -->
-                    <div style="text-align: center;">
-                        <p style="color: #555; font-size: 16px; line-height: 1.5; margin-bottom: 20px;">Your single use code is:</p>
-                        <div style="background-color: #9558b7; width: 120px; padding: 10px; text-align: center; border-radius: 8px; color: #fff; font-size: 25px; letter-spacing: 2px; margin: 20px auto;">${values.otp}</div>
-                        <p style="color: #555; font-size: 16px; line-height: 1.5; margin-bottom: 20px;">This code is valid for 3 minutes.</p>
-                    </div>
+    <!-- Message -->
+    <p style="font-size: 16px; line-height: 1.5; margin-bottom: 20px;">
+      Thank you for signing up for <strong>Ooh Ah</strong>. To complete your registration, please verify your email address using the code below.
+    </p>
 
-                    <!-- Footer -->
-                    <p style="color: #999; font-size: 12px; text-align: center; margin-top: 30px;">If you did not sign up for Ooh Ah, please ignore this email.</p>
-                    <p style="color: #999; font-size: 12px; text-align: center;">&copy; 2025 Ooh Ah. All rights reserved.</p>
+    <!-- OTP -->
+    <div style="text-align: center;">
+      <p style="font-size: 16px; line-height: 1.5; margin-bottom: 10px;">Your verification code is:</p>
+      <div style="background-color: #9558b7; width: 120px; padding: 10px; border-radius: 8px; color: #ffffff; font-size: 25px; letter-spacing: 2px; margin: 10px auto;">
+        ${values.otp}
+      </div>
+      <p style="font-size: 14px; color: #777; margin-top: 10px;">This code is valid for 3 minutes.</p>
+    </div>
 
-                </div>
-            </body>
+    <!-- Footer -->
+    <p style="font-size: 12px; color: #999; text-align: center; margin-top: 30px;">
+      If you didn’t request this code or didn’t sign up for Ooh Ah, you can safely ignore this message.
+    </p>
+    <p style="font-size: 12px; color: #999; text-align: center;">&copy; 2025 Ooh Ah. All rights reserved.</p>
+  </div>
+</body>
         `,
   };
 
