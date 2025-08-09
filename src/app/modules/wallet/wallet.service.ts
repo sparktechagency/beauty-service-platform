@@ -194,7 +194,6 @@ const userEarnings = async (user:JwtPayload,query:Record<string,any>)=>{
 }
 
 const weeklyEarningFromDb = async (user:JwtPayload)=>{
-    console.log(user);
     
     const startOfWeek = new Date();
     startOfWeek.setDate(startOfWeek.getDate() - 7);

@@ -52,8 +52,7 @@ const subscriptionToDB = async (user: JwtPayload, priceId: string) => {
 const subscriptionDetailsFromDB = async (
   user: JwtPayload
 ): Promise<{ subscription: ISubscription | {} }> => {
-  console.log(user);
-  
+
   const subscription = await Subscription.findOne({ user: user.id, status: "active" }).populate("package").lean();
   
     
@@ -221,9 +220,7 @@ const createFreeSubscription = async (userId:ObjectId)=>{
     $lte:5
   }}).lean()
 
-  console.log(freePlan);
-  
-  
+
   
   if(!freePlan){
     throw new ApiError(404,'Free plan not found')
@@ -257,7 +254,6 @@ const createFreeSubscription = async (userId:ObjectId)=>{
 }
 
 const cancelSubscription = async (user:JwtPayload)=>{
-  console.log(user);
   
   const subscription = await Subscription.findOne({user:user.id,status:'active'})
   const packages = await Plan.find({for:user.role}).sort({price:1}).lean()

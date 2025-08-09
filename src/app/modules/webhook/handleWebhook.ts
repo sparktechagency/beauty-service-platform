@@ -11,12 +11,11 @@ import { ReviewService } from "../review/review.service";
 export const handleWebHook =async (req:Request, res:Response) => {
  try {
        const sig = req.headers["stripe-signature"];
-       console.log(sig);
+
        
     const  webhookSecret = config.stripe.webhookSecret;
     const event = stripe.webhooks.constructEvent(req.body,sig!,webhookSecret!);
-    
-    console.log(event);
+
     
     switch(event.type){
         case 'checkout.session.completed':

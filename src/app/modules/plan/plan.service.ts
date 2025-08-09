@@ -79,7 +79,6 @@ const updatePlanToDB = async (
               },
             ]
           })
-          console.log(paymentLink.url);
           
         payload.paymentLink=paymentLink.url;
     }

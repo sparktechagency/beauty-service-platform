@@ -127,7 +127,6 @@ const userTakeServiceSchema = new Schema<IUserTakeService>(
 userTakeServiceSchema.pre("findOneAndUpdate", async function (next) {
   const update: any = this.getUpdate();
   const user = update?.artiestId;
-  console.log(user);
 
   if (user) {
     await User.findOneAndUpdate(

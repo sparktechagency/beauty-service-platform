@@ -74,8 +74,6 @@ const createUserTakeServiceIntoDB = async (
     );
   }
   if (last_apoinment_date && userData?.last_apoinment_date) {
-    console.log(last_apoinment_date);
-    console.log(serviceDateData);
     const diffInHours = compareDatesInHours(
       last_apoinment_date,
       serviceDateData,
@@ -150,8 +148,6 @@ const createUserTakeServiceIntoDB = async (
           provider.latitude,
           Number(provider.longitude)
         );
-
-        console.log(distance);
         
 
         return distance <= 70;
@@ -271,12 +267,7 @@ const createUserTakeServiceIntoDB = async (
     },
   ]);
 
-  console.log(currentOrder);
-  
-console.log(nearbyProviders);
-
   for (const provider of nearbyProviders) {
-    console.log(provider);
     
     locationHelper({ receiver: provider._id, data: currentOrder! });
   }
@@ -298,7 +289,6 @@ const confirmOrderToDB = async (orderId: ObjectId, userId: JwtPayload) => {
   const plan  = await Plan.findOne({for:USER_ROLES.USER}).lean()
 
   let fee = plan?.price_offer??10
-  console.log(fee);
   order!.app_fee = order.price * (fee / 100);
  
   
@@ -314,7 +304,7 @@ const confirmOrderToDB = async (orderId: ObjectId, userId: JwtPayload) => {
           product_data: {
             name: service?.name || "demo",
           },
-          unit_amount: order.total_amount * 100,
+          unit_amount: Math.round(order.total_amount * 100),
         },
         quantity: 1,
       },
@@ -480,8 +470,6 @@ const getAllServiceAsArtistFromDB = async (
       longitude
     );
 
-    console.log(latitude, longitude);
-
     filterData.forEach((item) => {
       locationHelper({ receiver: user.id, data: item });
     });
@@ -629,7 +617,6 @@ const updateUserTakeServiceIntoDB = async (
   const plan = await Plan.findOne({for:USER_ROLES.ARTIST}).lean()
 
   const artist_app_fee = (isExist?.price * ((plan?.price_offer??10) / 100))
-  console.log(artist_app_fee);
   
 
   const result: any = await UserTakeService.findOneAndUpdate(
@@ -912,7 +899,6 @@ const payoutOrderInDB = async (orderId: string) => {
 
     const packageData: any = subscription?.package;
     const cost = packageData?.price_offer ?? basicPackage?.price_offer ?? 10;
-    console.log(order);
 
     const amount =
       order.price - order?.artist_app_fee!||0
@@ -1575,7 +1561,6 @@ const startOrderService = async (orderId: string) => {
 
 const createOrderToSpecificArtist = async( payload: IUserTakeService & {artist:string},
   userId: JwtPayload)=>{
-    console.log(payload);
     
     if(!payload.artist){
       throw new ApiError(StatusCodes.BAD_REQUEST, "Artist is required");
@@ -1608,8 +1593,6 @@ const createOrderToSpecificArtist = async( payload: IUserTakeService & {artist:s
     );
   }
   if (last_apoinment_date && userData?.last_apoinment_date) {
-    console.log(last_apoinment_date);
-    console.log(serviceDateData);
     const diffInHours = compareDatesInHours(
       last_apoinment_date,
       serviceDateData,
