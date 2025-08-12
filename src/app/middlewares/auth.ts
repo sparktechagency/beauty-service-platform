@@ -4,6 +4,7 @@ import { Secret } from 'jsonwebtoken';
 import config from '../../config';
 import { jwtHelper } from '../../helpers/jwtHelper';
 import ApiError from '../../errors/ApiErrors';
+import { User } from '../modules/user/user.model';
 
 const auth = (...roles: string[]) => async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -29,6 +30,11 @@ const auth = (...roles: string[]) => async (req: Request, res: Response, next: N
             //guard user
             if (roles.length && !roles.includes(verifyUser.role)) {
                 throw new ApiError(StatusCodes.FORBIDDEN,"You don't have permission to access this api");
+            }
+
+            const userData = await User.findById(verifyUser.id);
+            if(!userData || userData.status=="deleted" ){
+                throw new ApiError(StatusCodes.UNAUTHORIZED, 'You are not authorized');
             }
             next();
         }

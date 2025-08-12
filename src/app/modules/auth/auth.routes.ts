@@ -30,10 +30,7 @@ router.post(
     AuthController.verifyEmail
   );
 
-router.post(
-    '/resend-otp',
-    AuthController.resendVerificationEmail
-);
+
 
 
 router.post(

@@ -40,7 +40,7 @@ app.post("/api/webhook/checkr",express.json(),handleCheckrWebhook);
 
 //body parser
 app.use(cors({
-    origin:["https://rahat3000.binarybards.online","http://10.0.80.47:5173","http://31.97.133.34:3000","https://web.oohahplatform.com"]
+    origin:["https://rahat3000.binarybards.online","http://10.0.80.47:5173","http://31.97.133.34:3000","https://web.oohahplatform.com","http://10.10.7.7:4173"]
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

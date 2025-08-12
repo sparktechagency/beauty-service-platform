@@ -22,7 +22,7 @@ router.get(
 
 router.delete(
     '/:id',
-    adminAuth(),
+    auth(USER_ROLES.SUPER_ADMIN),
     AdminController.deleteAdmin
 );
 

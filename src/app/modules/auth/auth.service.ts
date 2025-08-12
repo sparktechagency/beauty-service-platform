@@ -315,8 +315,12 @@ const newAccessTokenToUser = async (token: string) => {
 };
 
 const resendVerificationEmailToDB = async (email: string) => {
+  console.log(email);
+  
   // Find the user by ID
-  const existingUser: any = await User.findOne({ email: email }).lean();
+  const existingUser = await User.findOne({ email: email }).select("authentication name email").lean();
+  
+// console.log(existingUser);
 
   if (!existingUser) {
     throw new ApiError(
@@ -325,14 +329,19 @@ const resendVerificationEmailToDB = async (email: string) => {
     );
   }
 
-  if (existingUser?.isVerified) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "User is already verified!");
-  }
+
+
+
+
+  // if(new Date(existingUser?.authentication?.expireAt||"") > new Date()){
+  //   throw new ApiError(400, "OTP is already sent to your email. Please check your email inbox or spam folder");
+  // }
+
 
   // Generate OTP and prepare email
   const otp = generateOTP();
   const emailValues = {
-    name: existingUser.firstName,
+    name: existingUser.name,
     otp,
     email: existingUser.email,
   };
