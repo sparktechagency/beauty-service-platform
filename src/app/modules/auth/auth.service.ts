@@ -333,9 +333,9 @@ const resendVerificationEmailToDB = async (email: string) => {
 
 
 
-  // if(new Date(existingUser?.authentication?.expireAt||"") > new Date()){
-  //   throw new ApiError(400, "OTP is already sent to your email. Please check your email inbox or spam folder");
-  // }
+  if(new Date(existingUser?.authentication?.expireAt||"") > new Date()){
+    throw new ApiError(400, "OTP is already sent to your email. Please check your email inbox or spam folder");
+  }
 
 
   // Generate OTP and prepare email
