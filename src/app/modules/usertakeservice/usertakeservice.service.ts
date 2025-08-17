@@ -116,7 +116,10 @@ const createUserTakeServiceIntoDB = async (
     throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid address");
   }
   const plan = await Plan.findOne({for:userId.role})
+  const artistAppFee = await Plan.findOne({for:USER_ROLES.ARTIST})
     let fee = plan?.price_offer??10
+    let artistFee = artistAppFee?.price_offer??10
+  data!.artist_app_fee = data.price * (artistFee / 100);
   data!.app_fee = data.price * (fee / 100);
 
   
@@ -127,7 +130,7 @@ const createUserTakeServiceIntoDB = async (
 
   data.service_date = serviceDate as any;
   data.user_totalPrice= Number((data.price + data.app_fee).toFixed(2))
-  data.artist_totalPrice= Number((data.price - data.app_fee).toFixed(2))
+  data.artist_totalPrice= Number((data.price - data.artist_app_fee).toFixed(2))
 
   const result = await UserTakeService.create(data);
   const allProviders = await User.aggregate([
