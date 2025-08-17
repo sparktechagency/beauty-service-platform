@@ -131,6 +131,7 @@ const createUserTakeServiceIntoDB = async (
   data.service_date = serviceDate as any;
   data.user_totalPrice= Number((data.price + data.app_fee).toFixed(2))
   data.artist_totalPrice= Number((data.price - data.artist_app_fee).toFixed(2))
+// console.log(data);
 
   const result = await UserTakeService.create(data);
   const allProviders = await User.aggregate([
@@ -270,9 +271,10 @@ const createUserTakeServiceIntoDB = async (
         },
       ],
     },
-  ]);
+  ]).lean()
 
   for (const provider of nearbyProviders) {
+    console.log(currentOrder);
     
     locationHelper({ receiver: provider._id, data: {
       ...currentOrder,
@@ -591,8 +593,8 @@ const getSingleUserService = async (
     
     price:
       user.role == USER_ROLES.ARTIST
-        ? result.price -(result?.artist_app_fee||0)
-        : result.price + (result?.app_fee||0),
+        ?result.artist_totalPrice|| result.price -(result?.artist_app_fee||0)
+        :result.user_totalPrice|| result.price + (result?.app_fee||0),
   };
 };
 
