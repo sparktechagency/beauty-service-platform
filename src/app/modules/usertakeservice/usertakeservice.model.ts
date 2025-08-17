@@ -117,6 +117,12 @@ const userTakeServiceSchema = new Schema<IUserTakeService>(
     specficOrder: {
       type: Boolean,
       default: false,
+    },
+    user_totalPrice: {
+      type: Number,
+    },
+    artist_totalPrice: {
+      type: Number,
     }
   },
   {

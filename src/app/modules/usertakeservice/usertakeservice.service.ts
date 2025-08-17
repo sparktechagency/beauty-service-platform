@@ -51,7 +51,7 @@ const createUserTakeServiceIntoDB = async (
   }
   const serviceDate = new Date(`${payload.date} ${payload.time}`);
 
-  // console.log(serviceDate.toLocaleString());
+  console.log(serviceDate.toLocaleString());
   
 
   const userData = await User.findById(userId.id);
@@ -126,6 +126,8 @@ const createUserTakeServiceIntoDB = async (
   data.longitude = location.lng;
 
   data.service_date = serviceDate as any;
+  data.user_totalPrice= Number((data.price + data.app_fee).toFixed(2))
+  data.artist_totalPrice= Number((data.price - data.app_fee).toFixed(2))
 
   const result = await UserTakeService.create(data);
   const allProviders = await User.aggregate([
@@ -269,7 +271,10 @@ const createUserTakeServiceIntoDB = async (
 
   for (const provider of nearbyProviders) {
     
-    locationHelper({ receiver: provider._id, data: currentOrder! });
+    locationHelper({ receiver: provider._id, data: {
+      ...currentOrder,
+      price:currentOrder?.artist_totalPrice||currentOrder?.price,
+    } as any });
   }
   await User.findByIdAndUpdate(result.userId, {
     last_apoinment_date: serviceDateData,
@@ -353,6 +358,9 @@ const confirmOrderToDB = async (orderId: ObjectId, userId: JwtPayload) => {
 
   return session.url;
 };
+
+
+//!TODO : add price on extand logic also
 
 export const nearByOrderByLatitudeAndLongitude = async (
   latitude: number,
@@ -621,7 +629,7 @@ const updateUserTakeServiceIntoDB = async (
 
   const result: any = await UserTakeService.findOneAndUpdate(
     { _id: id },
-    { artiestId: user.id, artist_book_date: new Date(), isBooked: true,artist_app_fee: artist_app_fee },
+    { artiestId: user.id, artist_book_date: new Date(), isBooked: true,artist_app_fee: artist_app_fee,artist_totalPrice: Number((isExist?.price - artist_app_fee).toFixed(2)) },
     { new: true }
   ).populate("serviceId");
 
@@ -1219,7 +1227,10 @@ const getAllBookingsFromDB = async (
       price:user.role == USER_ROLES.ARTIST ? (item.price- (item.artist_app_fee?? ((item.price * (artistPlan?.price_offer??(10/100))))??0)) :(item.price+ (item.app_fee ?? (item.price * (userPlan?.price_offer??10/100))??0))  ,
       service_date: new Date(item.service_date).toLocaleString(),
     };
-  });
+  })?.map(item=>({
+    ...item,
+    price: Number(item.price.toFixed(2))
+  }));
 
   return {
     paginationInfo,
@@ -1647,7 +1658,8 @@ const createOrderToSpecificArtist = async( payload: IUserTakeService & {artist:s
   data.service_date = serviceDate as any;
   data.specficOrder= true
   data.artiestId = payload.artist as any 
-
+  data.user_totalPrice = Number((data.price+data.app_fee).toFixed(2))
+  data.artist_totalPrice = Number((data.price-data.app_fee).toFixed(2))
   const result = await UserTakeService.create(data);
 
   const artistData = await User.findById(payload.artist);
@@ -1750,7 +1762,10 @@ const createOrderToSpecificArtist = async( payload: IUserTakeService & {artist:s
     },
   ]);
 
-locationHelper({ receiver: artistData?._id!, data: currentOrder! });
+locationHelper({ receiver: artistData?._id!, data: {
+  ...currentOrder,
+  price:currentOrder?.artist_totalPrice||currentOrder?.price
+} as any });
 
   await User.findByIdAndUpdate(result.userId, {
     last_apoinment_date: serviceDateData,

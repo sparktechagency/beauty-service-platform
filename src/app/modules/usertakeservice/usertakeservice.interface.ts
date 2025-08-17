@@ -34,5 +34,7 @@ export type IUserTakeService = {
   isOnTheWay?:boolean,
   arriveTime?:Date,
   isServiceStart?:boolean,
-  specficOrder?:boolean
+  specficOrder?:boolean,
+  user_totalPrice?:number,
+  artist_totalPrice?:number,
 };
