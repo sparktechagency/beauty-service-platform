@@ -274,7 +274,7 @@ const createUserTakeServiceIntoDB = async (
   ]).lean()
 
   for (const provider of nearbyProviders) {
-    console.log(currentOrder);
+    
     
     locationHelper({ receiver: provider._id, data: {
       ...currentOrder,
@@ -464,7 +464,7 @@ export const nearByOrderByLatitudeAndLongitude = async (
     .map((item) => {
       return {
         ...item,
-        price: item.price - item.price * (10 / 100),
+        price: item.artist_totalPrice||item.price
       };
     });
 
