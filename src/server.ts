@@ -6,7 +6,7 @@ import colors from 'colors';
 import { socketHelper } from "./helpers/socketHelper";
 import { Server } from "socket.io";
 import seedSuperAdmin from "./DB";
-import { cleanUp, deleteExpiredOrders, reminder } from "./cleanup/cleanUp";
+import { cleanUp, deleteExpiredOrders, reminder, subscriberFromDB } from "./cleanup/cleanUp";
 import { compareDatesInHours } from "./shared/timeComparator";
 
 
@@ -30,6 +30,8 @@ async function main() {
 
        deleteExpiredOrders()
 
+       
+
     //    console.log(compareDatesInHours(new Date(), new Date('2025-07-11T14:00:00'), 'America/New_York'))
 
         mongoose.connect(config.database_url as string);
@@ -52,6 +54,8 @@ async function main() {
         socketHelper.socket(io);
         //@ts-ignore
         global.io = io;
+
+        await subscriberFromDB()
 
     } catch (error) {
         console.log(error);
