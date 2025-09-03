@@ -53,7 +53,7 @@ const expireSubscriptions = async ()=>{
     });
 
 
-    const unSubscribedUsers = await User.find({subscription:{$exists:false}}).lean()
+    const unSubscribedUsers = await User.find({subscription:{$exists:false},role:{$in:[USER_ROLES.ARTIST,USER_ROLES.USER]}}).lean()
 
     for(const user of unSubscribedUsers){
         const freePlan = await Plan.findOne({for:user.role}).sort({price:1}).lean()
