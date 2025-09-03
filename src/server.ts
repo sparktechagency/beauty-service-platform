@@ -55,7 +55,6 @@ async function main() {
         //@ts-ignore
         global.io = io;
 
-        await subscriberFromDB()
 
     } catch (error) {
         console.log(error);
