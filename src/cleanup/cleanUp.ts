@@ -131,6 +131,8 @@ export async function subscriberFromDB(){
 
   for(const user of users){
     const freePlan = await Plan.findOne({for:user.role}).sort({price:1}).lean()
+    console.log(freePlan);
+    
     const subscription = await Subscription.create({
         user:user._id,
         package:freePlan?._id,
