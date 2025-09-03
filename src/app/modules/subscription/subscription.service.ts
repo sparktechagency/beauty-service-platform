@@ -217,7 +217,6 @@ const createFreeSubscription = async (userId:ObjectId)=>{
   }
 
   const freePlan = await Plan.findOne({for:user.role,price:{
-    $lte:5
   }}).lean()
 
 

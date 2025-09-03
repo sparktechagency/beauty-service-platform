@@ -9,11 +9,11 @@ import { Socket } from "socket.io";
 const expireSubscriptions = async ()=>{
    try {
     // console.log("==========================================Expire Subscriptions==========================================");
-     const subscriptions = await Subscription.find({
+     let subscriptions = await Subscription.find({
         status: "active",
         currentPeriodEnd: { $lte: new Date() },
     }).lean()
-    
+
     
     subscriptions.forEach(async (subscription) => {
         const subscribePlan:any = await Subscription.findByIdAndUpdate(subscription?._id, {
@@ -35,7 +35,7 @@ const expireSubscriptions = async ()=>{
                 status:"active",
                 currentPeriodStart:new Date(),
                 currentPeriodEnd:new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0),
-                price:firstFreePlan.price,
+                price:firstFreePlan.price||0,
                 customerId:crypto.randomUUID(),
                 subscriptionId:crypto.randomUUID(),
                 trxId:crypto.randomUUID()
@@ -49,6 +49,25 @@ const expireSubscriptions = async ()=>{
             subscription: sub?._id,
         });
     });
+
+
+    const unSubscribedUsers = await User.find({subscription:{$exists:false}}).lean()
+
+    for(const user of unSubscribedUsers){
+        const freePlan = await Plan.findOne({for:user.role}).sort({price:1}).lean()
+        const subscription = await Subscription.create({
+            user:user._id,
+            package:freePlan?._id,
+            status:"active",
+            currentPeriodStart:new Date(),
+            currentPeriodEnd:new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0),
+            price:freePlan?.price||0,
+            customerId:crypto.randomUUID(),
+            subscriptionId:crypto.randomUUID(),
+            trxId:crypto.randomUUID()
+        })
+        await User.findOneAndUpdate({_id:user._id},{subscription:subscription._id},{new:true})
+    }
 
     await User.deleteMany({
         verified: false,
