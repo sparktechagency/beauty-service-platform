@@ -216,8 +216,7 @@ const createFreeSubscription = async (userId:ObjectId)=>{
     throw new ApiError(404,'User not found')
   }
 
-  const freePlan = await Plan.findOne({for:user.role,price:{
-  }}).lean()
+  const freePlan = await Plan.findOne({for:user.role}).lean()
 
 
   
