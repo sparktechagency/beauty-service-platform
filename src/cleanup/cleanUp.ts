@@ -5,6 +5,8 @@ import { UserTakeService } from "../app/modules/usertakeservice/usertakeservice.
 import { UserTakeServiceServices } from "../app/modules/usertakeservice/usertakeservice.service";
 import { Plan } from "../app/modules/plan/plan.model";
 import { Socket } from "socket.io";
+import { SubscriptionService } from "../app/modules/subscription/subscription.service";
+import { USER_ROLES } from "../enums/user";
 
 const expireSubscriptions = async ()=>{
    try {
@@ -127,24 +129,10 @@ export const deleteExpiredOrders = () => {
 };
 
 export async function subscriberFromDB(){
-  const users = await User.find({subscription:{$exists:false}}).lean()
+  const users = await User.find({subscription:{$exists:false},role:{$in:[USER_ROLES.ARTIST,USER_ROLES.USER]}}).lean()
 
   for(const user of users){
-    const freePlan = await Plan.findOne({for:user.role}).sort({price:1}).lean()
-    console.log(freePlan);
-    
-    const subscription = await Subscription.create({
-        user:user._id,
-        package:freePlan?._id,
-        status:"active",
-        currentPeriodStart:new Date(),
-        currentPeriodEnd:new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0),
-        price:freePlan?.price||0,
-        customerId:crypto.randomUUID(),
-        subscriptionId:crypto.randomUUID(),
-        trxId:crypto.randomUUID()
-    })
-    await User.findOneAndUpdate({_id:user._id},{subscription:subscription._id},{new:true})
+    await SubscriptionService.createFreeSubscription(user._id as any)
   }
 
   console.log(users);

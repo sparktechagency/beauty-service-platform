@@ -212,11 +212,14 @@ const subsriprionDetailsFromDB = async (user:JwtPayload)=>{
 
 const createFreeSubscription = async (userId:ObjectId)=>{
   const user = await User.findOne({_id:userId})
+
+  
   if(!user){
     throw new ApiError(404,'User not found')
   }
 
   const freePlan = await Plan.findOne({for:user.role}).lean()
+
 
 
   
