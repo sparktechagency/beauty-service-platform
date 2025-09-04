@@ -113,7 +113,7 @@ export const reminder = () => {
 };
 
 export const deleteExpiredOrders = () => {
-  cron.schedule("*/0.01 * * * *", async () => {
+  cron.schedule("*/10 * * * *", async () => {
     try {
       // console.log("==========================================Deleted expired orders==========================================");
          await expandOrderTimeAndDelete()
@@ -144,52 +144,54 @@ export async function subscriberFromDB(){
 
 const expandOrderTimeAndDelete = async () => {
   try {
-    // console.log("==========================================Deleted expired orders==========================================");
     const now = new Date();
 
-  const minutesAgo = (mins:any) => new Date(now.getTime() - mins * 60 * 1000);
+    const minutesAgo = (mins: number) => new Date(now.getTime() - mins * 60 * 1000);
 
-  const orders_15_10 = await UserTakeService.find({
-    createdAt: { $gte: minutesAgo(1), $lte: minutesAgo(10) },
-    status: "pending",
-    isBooked:false
-  }).lean();
-
-  if(orders_15_10.length>0){
-    for (const order of orders_15_10) {
-      await UserTakeServiceServices.expandAreaForOrder(order?._id, 300);
-      // console.log("Expanded area by 100 for order:", order._id);
-    }
-  }
-
-  const orders_30_25 = await UserTakeService.find({
-    createdAt: { $gte: minutesAgo(1), $lte: minutesAgo(25) },
-    status: "pending",
-    isBooked:false
-  }).lean();
-
-  if(orders_30_25.length>0){
-    for (const order of orders_30_25) {
-      await UserTakeServiceServices.expandAreaForOrder(order?._id, 400);
-      // console.log("Expanded area by 200 for order:", order._id);
-    }
-  }
-
-  const cancelResult = await UserTakeService.updateMany(
-    {
-      createdAt: { $gte: minutesAgo(1), $lte: minutesAgo(30) },
-      status: "pending",
-      isBooked:false
-    },
-    { status: "cancelled" }
-  );
-
-  } catch (error) {
-    console.log(error)
     
+
+    // ✅ last 10–15 mins orders
+    const orders_10_15 = await UserTakeService.find({
+      createdAt: { $gte: minutesAgo(15), $lte: minutesAgo(10) },
+      status: "pending",
+      isBooked: false,
+    }).lean();
+
+    // console.log("10–15 mins old orders:", orders_10_15.length);
+
+    for (const order of orders_10_15) {
+      await UserTakeServiceServices.expandAreaForOrder(order._id, 300);
+    }
+
+    // ✅ last 25–30 mins orders
+    const orders_25_30 = await UserTakeService.find({
+      createdAt: { $gte: minutesAgo(30), $lte: minutesAgo(25) },
+      status: "pending",
+      isBooked: false,
+    }).lean();
+
+    // console.log("25–30 mins old orders:", orders_25_30.length);
+
+    for (const order of orders_25_30) {
+      await UserTakeServiceServices.expandAreaForOrder(order._id, 400);
+    }
+
+    // ✅ cancel all 30+ mins old orders
+    const cancelResult = await UserTakeService.updateMany(
+      {
+        createdAt: { $lte: minutesAgo(30) },
+        status: "pending",
+        isBooked: false,
+      },
+      { status: "cancelled" }
+    );
+
+    console.log("Cancelled orders:", cancelResult.modifiedCount);
+  } catch (error) {
+    console.error(error);
   }
-  // console.log("Cancelled orders:", cancelResult.modifiedCount);
 };
+
 
 
 

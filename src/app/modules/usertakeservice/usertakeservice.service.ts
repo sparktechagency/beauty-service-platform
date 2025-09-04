@@ -51,7 +51,7 @@ const createUserTakeServiceIntoDB = async (
   }
   const serviceDate = new Date(`${payload.date} ${payload.time}`);
 
-  console.log(serviceDate.toLocaleString());
+  // console.log(serviceDate.toLocaleString());
   
 
   const userData = await User.findById(userId.id);
@@ -173,6 +173,9 @@ const createUserTakeServiceIntoDB = async (
 
       return hoursDifference > 4;
     });
+
+    console.log(nearbyProviders);
+    
 
   for (const provider of nearbyProviders) {
     const notificationPayload = {
@@ -1357,32 +1360,7 @@ const expandAreaForOrder = async (order_id: Types.ObjectId, area: number) => {
         isActive: true,
         categories: { $in: [service?._id] },
       },
-    },
-    {
-      $lookup: {
-        from: "subscriptions",
-        localField: "subscription",
-        foreignField: "_id",
-        as: "subscription",
-      },
-    },
-    {
-      $unwind: "$subscription",
-    },
-    {
-      $lookup: {
-        from: "plans",
-        localField: "subscription.package",
-        foreignField: "_id",
-        as: "subscription.package",
-      },
-    },
-    {
-      $unwind: "$subscription.package",
-    },
-    {
-      $sort: { "subscription.package.price": -1 },
-    },
+    }
   ]);
 
   //  📍 Filter by 5km radius
@@ -1396,20 +1374,26 @@ const expandAreaForOrder = async (order_id: Types.ObjectId, area: number) => {
           Number(provider?.longitude)
         );
 
-        return distance <= (area || 50);
+        return distance <= (area || 100);
       }
     })
     .filter((provider) => {
       if (!provider.last_accept_date) {
         return true;
       }
+      if (!provider.last_accept_date) {
+        return true;
+      }
       const lastAcceptDate = new Date(provider.last_accept_date);
-      const timeDifference = currentDate.getTime() - lastAcceptDate.getTime();
-      const minutesDifference = timeDifference / (1000 * 60);
-      const hoursDifference = minutesDifference / 60;
+      const hoursDifference = compareDatesInHours(
+        lastAcceptDate,
+        result?.service_date!,
+      );
 
       return hoursDifference > 4;
     });
+
+    
 
   for (const provider of nearbyProviders) {
     if (provider.deviceToken) {
