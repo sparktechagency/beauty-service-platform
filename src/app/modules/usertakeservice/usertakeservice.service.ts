@@ -155,8 +155,10 @@ const createUserTakeServiceIntoDB = async (
           Number(provider.longitude)
         );
         
+        console.log(distance);
+        
 
-        return distance <= 70;
+        return distance <= 200;
       }
     })
     .filter((provider) => {

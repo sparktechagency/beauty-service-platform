@@ -157,7 +157,7 @@ const expandOrderTimeAndDelete = async () => {
 
   if(orders_15_10.length>0){
     for (const order of orders_15_10) {
-      await UserTakeServiceServices.expandAreaForOrder(order?._id, 100);
+      await UserTakeServiceServices.expandAreaForOrder(order?._id, 300);
       // console.log("Expanded area by 100 for order:", order._id);
     }
   }
@@ -170,7 +170,7 @@ const expandOrderTimeAndDelete = async () => {
 
   if(orders_30_25.length>0){
     for (const order of orders_30_25) {
-      await UserTakeServiceServices.expandAreaForOrder(order?._id, 150);
+      await UserTakeServiceServices.expandAreaForOrder(order?._id, 400);
       // console.log("Expanded area by 200 for order:", order._id);
     }
   }
