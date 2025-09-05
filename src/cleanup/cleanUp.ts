@@ -176,17 +176,14 @@ const expandOrderTimeAndDelete = async () => {
       await UserTakeServiceServices.expandAreaForOrder(order._id, 400);
     }
 
-    // ✅ cancel all 30+ mins old orders
-    const cancelResult = await UserTakeService.updateMany(
-      {
-        createdAt: { $lte: minutesAgo(30) },
-        status: "pending",
-        isBooked: false,
-      },
-      { status: "cancelled" }
-    );
+    await UserTakeService.updateMany({
+      service_date: { $lt: new Date()  },
+      status: "pending",
+      isBooked: false,
+    },{
+      status:"cancelled",
+    })
 
-    console.log("Cancelled orders:", cancelResult.modifiedCount);
   } catch (error) {
     console.error(error);
   }

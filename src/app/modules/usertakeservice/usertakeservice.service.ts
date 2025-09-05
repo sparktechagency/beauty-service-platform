@@ -158,7 +158,7 @@ const createUserTakeServiceIntoDB = async (
         console.log(distance);
         
 
-        return distance <= 200;
+        return distance <= 100;
       }
     })
     .filter((provider) => {
@@ -383,7 +383,6 @@ export const nearByOrderByLatitudeAndLongitude = async (
     status: "pending",
     isBooked: false,
     createdAt: {
-      $gte: fifteenMinutesBefore,
       $lte: currentTime,
     },
   })
@@ -462,7 +461,7 @@ export const nearByOrderByLatitudeAndLongitude = async (
           Number(services.longitude)
         );
 
-        return distance <= 70;
+        return distance <= 100;
       }
       return false;
     })
@@ -1298,7 +1297,8 @@ const paymentOverview = async () => {
 };
 
 const reminderToUsers = async () => {
-  const today = new Date();
+ try {
+   const today = new Date();
   const tommorow = new Date(
     today.getFullYear(),
     today.getMonth(),
@@ -1340,6 +1340,21 @@ const reminderToUsers = async () => {
       });
     }
   }
+
+  const pendingBookings = await UserTakeService.find({
+    service_date: {
+      $gte:new Date()
+    },
+    status: "pending",
+    isBooked: false,
+  }).lean()
+
+  for (const order of pendingBookings) {
+    await UserTakeServiceServices.expandAreaForOrder(order._id, 300);
+  }
+ } catch (error) {
+  console.log(error)
+ }
 };
 
 /// expand Area
