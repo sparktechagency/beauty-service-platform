@@ -80,7 +80,7 @@ const createUserTakeServiceIntoDB = async (
       // "Asia/Dhaka"
     );
 
-    // console.log(diffInHours);
+    console.log(diffInHours);
     
 
     
