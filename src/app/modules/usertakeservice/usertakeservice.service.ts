@@ -68,9 +68,11 @@ const createUserTakeServiceIntoDB = async (
   
   
   if (new Date(serviceDate) < new Date()) {
+    // console.log("in",diffInHours);
+    
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
-      "Please book at least 2 hours in advance to allow time for artists to prepare and travel."
+      "Please Select a valid date and time"
     );
   }
   if (last_apoinment_date && userData?.last_apoinment_date) {
@@ -79,16 +81,46 @@ const createUserTakeServiceIntoDB = async (
       serviceDateData,
       // "Asia/Dhaka"
     );
-
-    console.log(diffInHours);
+;
     
 
     
-    if (diffInHours < 2 && (new Date().getDate() == serviceDateData.getDate())) {
-      throw new ApiError(
-        StatusCodes.FORBIDDEN,
-        "Please book at least 2 hours in advance to allow time for artists to prepare and travel."
-      );
+    if ((new Date().getDate() == serviceDateData.getDate())) {
+
+      const todaysBookings = await UserTakeService.findOne({
+        userId: userId.id,
+        date: {
+          $gte: new Date(new Date().setHours(0, 0, 0, 0)),
+          $lte: new Date(new Date().setHours(23, 59, 59, 999)),
+        },
+        status: "pending",
+        isBooked: false,
+        service_date: {
+          $lte:serviceDateData
+        }
+      }).sort({service_date: -1});
+
+      if (todaysBookings) {
+        const diffInHours = compareDatesInHours(
+          todaysBookings?.service_date!,
+          serviceDateData,
+          // "Asia/Dhaka"
+        );
+        console.log("todaysBookings", todaysBookings);
+        
+        if (diffInHours < 2) {
+          throw new ApiError(
+            StatusCodes.FORBIDDEN,
+            "Please book at least 2 hours in advance to allow time for artists to prepare and travel."
+          );
+        }
+      }
+      
+
+      // throw new ApiError(
+      //   StatusCodes.FORBIDDEN,
+      //   "Please book at least 2 hours in advance to allow time for artists to prepare and travel."
+      // );
     }
   }
   const service = await ServiceManagement.findById(payload.serviceId);
@@ -173,8 +205,6 @@ const createUserTakeServiceIntoDB = async (
 
       return hoursDifference > 4;
     });
-
-    console.log(nearbyProviders);
     
 
   for (const provider of nearbyProviders) {
