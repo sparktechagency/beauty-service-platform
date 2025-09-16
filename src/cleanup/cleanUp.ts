@@ -70,10 +70,6 @@ const expireSubscriptions = async ()=>{
         })
         await User.findOneAndUpdate({_id:user._id},{subscription:subscription._id},{new:true})
     }
-
-    await User.deleteMany({
-        verified: false,
-    })
    } catch (error) {
     console.log(error)
    }
