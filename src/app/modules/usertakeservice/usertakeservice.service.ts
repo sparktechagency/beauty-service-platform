@@ -209,7 +209,7 @@ const createUserTakeServiceIntoDB = async (
 
   for (const provider of nearbyProviders) {
     const notificationPayload = {
-      title: `Someone request for ${service?.name}`,
+      title: `${userData?.name} requested a ${service?.name}`,
       message: "A new service request has been created near you",
       filePath: "request",
       serviceId: result._id,
@@ -218,7 +218,7 @@ const createUserTakeServiceIntoDB = async (
     };
     if (provider.deviceToken) {
       await sendNotificationToFCM({
-        body: `Someone request for ${service?.name}`,
+        body: `${userData?.name} requested a ${service?.name}`,
         title: "New Service Request",
         token: provider.deviceToken,
         data: {
@@ -228,7 +228,7 @@ const createUserTakeServiceIntoDB = async (
     }
     await sendNotifications({
       receiver: [provider._id],
-      title: `Someone request for ${service?.name}`,
+      title: `${userData?.name} requested a ${service?.name}`,
       message: "A new service request has been created near you",
       filePath: "request",
       serviceId: result._id,
@@ -237,7 +237,7 @@ const createUserTakeServiceIntoDB = async (
     });
     if (userData?.deviceToken) {
       await sendNotificationToFCM({
-        body: `Someone request for ${service?.name}`,
+        body: `${userData?.name} requested a ${service?.name}`,
         title: "New Service Request",
         token: userData.deviceToken,
         data: notificationPayload,
@@ -1443,14 +1443,14 @@ const expandAreaForOrder = async (order_id: Types.ObjectId, area: number) => {
   for (const provider of nearbyProviders) {
     if (provider.deviceToken) {
       await sendNotificationToFCM({
-        body: `Someone request for ${service?.name}`,
+        body: `Someone requested a ${service?.name}`,
         title: "New Service Request",
         token: provider.deviceToken,
       });
     }
     await sendNotifications({
       receiver: [provider?._id],
-      title: `Someone request for ${service?.name}`,
+      title: `Someone requested a ${service?.name}`,
       message: "A new service request has been created near you",
       filePath: "request",
       serviceId: result?._id,
@@ -1702,7 +1702,7 @@ const createOrderToSpecificArtist = async( payload: IUserTakeService & {artist:s
 
   if(payload.artist){
     const notificationPayload = {
-      title: `${userData.name} is request for ${service?.name}`,
+      title: `${userData.name} is requested a ${service?.name}`,
       message: "A new service request has been created near you",
       filePath: "request",
       serviceId: result._id,
@@ -1711,7 +1711,7 @@ const createOrderToSpecificArtist = async( payload: IUserTakeService & {artist:s
     };
     try {
      await sendNotificationToFCM({
-        body: `${userData.name} is request for ${service?.name}`,
+        body: `${userData.name} is requested a ${service?.name}`,
         title: "New Service Request",
         token: artistData?.deviceToken!,
         data: {
@@ -1722,7 +1722,7 @@ const createOrderToSpecificArtist = async( payload: IUserTakeService & {artist:s
       
     await sendNotifications({
       receiver: [artistData?._id!],
-      title: `${userData.name} is request for ${service?.name}`,
+      title: `${userData.name} is requested a ${service?.name}`,
       message: "A new service request has been created near you",
       filePath: "request",
       serviceId: result._id,
