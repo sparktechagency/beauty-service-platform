@@ -175,6 +175,10 @@ const createUserTakeServiceIntoDB = async (
       },
     },
   ]);
+  console.log("service", service);
+  
+  console.log("All providers", allProviders);
+  
   const currentDate = new Date();
   //  📍 Filter by 5km radius
   const nearbyProviders = allProviders
@@ -404,7 +408,8 @@ const confirmOrderToDB = async (orderId: ObjectId, userId: JwtPayload) => {
 
 export const nearByOrderByLatitudeAndLongitude = async (
   latitude: number,
-  longitude: number
+  longitude: number,
+  serviceId?: string[]
 ) => {
   const currentTime = new Date();
   const fifteenMinutesBefore = new Date(currentTime.getTime() - 15 * 60 * 1000);
@@ -412,6 +417,7 @@ export const nearByOrderByLatitudeAndLongitude = async (
   const result = await UserTakeService.find({
     status: "pending",
     isBooked: false,
+    serviceId: { $in: serviceId },
     createdAt: {
       $lte: currentTime,
     },
@@ -502,8 +508,18 @@ export const nearByOrderByLatitudeAndLongitude = async (
       };
     });
 
-  return filterData;
+  // suffle filtered data
+  return suffleArray(filterData);
 };
+
+// function suffleArray
+function suffleArray(array: any[]) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
 
 const getAllServiceAsArtistFromDB = async (
   user: JwtPayload,
@@ -511,21 +527,22 @@ const getAllServiceAsArtistFromDB = async (
   longitude: number,
   status: boolean
 ) => {
+   const existingUser = await User.findById(user.id).lean()
   if (status == true) {
     const filterData = await nearByOrderByLatitudeAndLongitude(
       latitude,
-      longitude
+      longitude,
+      existingUser?.categories as any
     );
 
-    filterData.forEach((item) => {
-      locationHelper({ receiver: user.id, data: item });
-    });
+
+   sendPostNotification(filterData?.slice(1, filterData.length),user.id)
   } else {
     locationHelper({ receiver: user.id, data: {} as any });
   }
 
   // Check if user data needs to be updated
-  const existingUser = await User.findById(user.id);
+ 
 
   const userData = await User.findByIdAndUpdate(
     user.id,
@@ -534,6 +551,17 @@ const getAllServiceAsArtistFromDB = async (
   );
   return userData;
 };
+
+
+async function sendPostNotification(data: IUserTakeService[], user: any) {
+  for (let order of data) {
+    locationHelper({ receiver: user, data: order });
+    // ৫ সেকেন্ড delay
+    await new Promise(resolve => setTimeout(resolve, 5000));
+  }
+}
+
+
 
 const getSingleUserService = async (
   user: JwtPayload,
