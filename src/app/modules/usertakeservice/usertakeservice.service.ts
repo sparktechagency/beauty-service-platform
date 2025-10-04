@@ -106,7 +106,6 @@ const createUserTakeServiceIntoDB = async (
           serviceDateData,
           // "Asia/Dhaka"
         );
-        console.log("todaysBookings", todaysBookings);
         
         if (diffInHours < 2) {
           throw new ApiError(
@@ -175,10 +174,7 @@ const createUserTakeServiceIntoDB = async (
       },
     },
   ]);
-  console.log("service", service);
-  
-  console.log("All providers", allProviders);
-  
+
   const currentDate = new Date();
   //  📍 Filter by 5km radius
   const nearbyProviders = allProviders
@@ -191,7 +187,6 @@ const createUserTakeServiceIntoDB = async (
           Number(provider.longitude)
         );
         
-        console.log(distance);
         
 
         return distance <= 100;
@@ -527,6 +522,8 @@ const getAllServiceAsArtistFromDB = async (
   longitude: number,
   status: boolean
 ) => {
+
+  
    const existingUser = await User.findById(user.id).lean()
   if (status == true) {
     const filterData = await nearByOrderByLatitudeAndLongitude(
