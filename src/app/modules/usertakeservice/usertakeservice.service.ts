@@ -554,7 +554,7 @@ async function sendPostNotification(data: IUserTakeService[], user: any) {
   for (let order of data) {
     locationHelper({ receiver: user, data: order });
     // ৫ সেকেন্ড delay
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await new Promise(resolve => setTimeout(resolve, 7000));
   }
 }
 
