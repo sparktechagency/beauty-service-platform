@@ -306,11 +306,13 @@ const updateUserDataById = async (id:string,payload:Partial<IUser>) => {
 }
 
 const addCategoriesToUserInDB = async (userId:string,categories:string[]) => {
+
+  
   const isExistUser = await User.findOne({_id:userId});
   if(!isExistUser){
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
   }
-  const updateDoc = await User.findOneAndUpdate({_id:userId},{$addToSet:{categories}},{
+  const updateDoc = await User.findOneAndUpdate({_id:userId},{categories},{
     new:true
   })
   return updateDoc;

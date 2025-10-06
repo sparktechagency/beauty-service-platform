@@ -123,6 +123,14 @@ const userTakeServiceSchema = new Schema<IUserTakeService>(
     },
     artist_totalPrice: {
       type: Number,
+    },
+    skippers: {
+      type: [
+        {
+          type: Schema.Types.ObjectId,
+          ref: "User",
+        },
+      ],
     }
   },
   {

@@ -81,6 +81,11 @@ router.route("/order-to-artist").post(
   UserTakeServiceController.createOrderToSpecificArtist
 );
 
+router.route("/skip-order/:id").patch(
+  auth(USER_ROLES.ARTIST),
+  UserTakeServiceController.skipOrder
+);
+
 
 
 export const UserTakeServiceRoutes = router;

@@ -175,6 +175,8 @@ const createUserTakeServiceIntoDB = async (
     },
   ]);
 
+
+
   const currentDate = new Date();
   //  📍 Filter by 5km radius
   const nearbyProviders = allProviders
@@ -204,6 +206,9 @@ const createUserTakeServiceIntoDB = async (
 
       return hoursDifference > 4;
     });
+
+
+    
     
 
   for (const provider of nearbyProviders) {
@@ -404,7 +409,8 @@ const confirmOrderToDB = async (orderId: ObjectId, userId: JwtPayload) => {
 export const nearByOrderByLatitudeAndLongitude = async (
   latitude: number,
   longitude: number,
-  serviceId?: string[]
+  serviceId?: string[],
+  userId?: string
 ) => {
   const currentTime = new Date();
   const fifteenMinutesBefore = new Date(currentTime.getTime() - 15 * 60 * 1000);
@@ -413,9 +419,11 @@ export const nearByOrderByLatitudeAndLongitude = async (
     status: "pending",
     isBooked: false,
     serviceId: { $in: serviceId },
-    createdAt: {
-      $lte: currentTime,
+    service_date: {
+      $gte: currentTime,
     },
+    skippers: { $nin: [userId] },
+    
   })
     .populate([
       {
@@ -504,7 +512,7 @@ export const nearByOrderByLatitudeAndLongitude = async (
     });
 
   // suffle filtered data
-  return suffleArray(filterData);
+  return filterData
 };
 
 // function suffleArray
@@ -525,15 +533,21 @@ const getAllServiceAsArtistFromDB = async (
 
   
    const existingUser = await User.findById(user.id).lean()
+
+
+   
   if (status == true) {
     const filterData = await nearByOrderByLatitudeAndLongitude(
       latitude,
       longitude,
-      existingUser?.categories as any
+      existingUser?.categories as any,
+      user.id
     );
 
 
-   sendPostNotification(filterData?.slice(1, filterData.length),user.id)
+    console.log(filterData);
+    
+   sendPostNotification(filterData,user.id)
   } else {
     locationHelper({ receiver: user.id, data: {} as any });
   }
@@ -551,10 +565,11 @@ const getAllServiceAsArtistFromDB = async (
 
 
 async function sendPostNotification(data: IUserTakeService[], user: any) {
+  
   for (let order of data) {
     locationHelper({ receiver: user, data: order });
     // ৫ সেকেন্ড delay
-    await new Promise(resolve => setTimeout(resolve, 7000));
+    await new Promise(resolve => setTimeout(resolve, 10000));
   }
 }
 
@@ -1416,7 +1431,9 @@ const reminderToUsers = async () => {
 
 const expandAreaForOrder = async (order_id: Types.ObjectId, area: number) => {
   try {
-    const result = await UserTakeService.findById(order_id);
+    const result = await UserTakeService.findById(order_id)
+
+
   if (!result) return;
   if(result?.specficOrder){
     return true
@@ -1429,6 +1446,9 @@ const expandAreaForOrder = async (order_id: Types.ObjectId, area: number) => {
         role: USER_ROLES.ARTIST,
         isActive: true,
         categories: { $in: [service?._id] },
+        _id:{
+          $nin: result?.skippers
+        }
       },
     }
   ]);
@@ -1834,6 +1854,14 @@ locationHelper({ receiver: artistData?._id!, data: {
   return result;
 }
 
+const skipOrderIntoDB = async (id: string,user:JwtPayload) => {
+  await UserTakeService.findByIdAndUpdate(id, {
+    $addToSet:{
+      skippers: new Types.ObjectId(user.id)
+    }
+  });
+};
+
 
 
 
@@ -1858,5 +1886,6 @@ export const UserTakeServiceServices = {
   expandAreaForOrder,
   artistOnTheWayStatus,
   startOrderService,
-  createOrderToSpecificArtist
+  createOrderToSpecificArtist,
+  skipOrderIntoDB
 };

@@ -37,4 +37,5 @@ export type IUserTakeService = {
   specficOrder?:boolean,
   user_totalPrice?:number,
   artist_totalPrice?:number,
+  skippers?:Types.ObjectId[]
 };

@@ -168,6 +168,18 @@ const createOrderToSpecificArtist = catchAsync(async (req: Request, res: Respons
   });
 });
 
+
+const skipOrder = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const result = await UserTakeServiceServices.skipOrderIntoDB(id,req.user!);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "UserTakeService updated successfully",
+    data: result,
+  });
+});
+
 export const UserTakeServiceController = {
   createUserTakeService,
   getSingleService,
@@ -181,4 +193,5 @@ export const UserTakeServiceController = {
   changeArtistOntheWay,
   startOrderService,
   createOrderToSpecificArtist,
+  skipOrder
 };
