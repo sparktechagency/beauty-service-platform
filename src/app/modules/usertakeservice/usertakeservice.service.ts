@@ -543,12 +543,13 @@ const getAllServiceAsArtistFromDB = async (
       existingUser?.categories as any,
       user.id
     );
-
-
-    console.log(filterData);
+    console.log(status, "status", filterData.length, "filterData");
+    
     
    sendPostNotification(filterData,user.id)
   } else {
+    console.log(status, "status");
+    
     locationHelper({ receiver: user.id, data: {} as any });
   }
 
