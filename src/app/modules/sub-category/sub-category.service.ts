@@ -46,13 +46,13 @@ const getAllSubCategoryFromDB = async (category?: string) => {
 const getAServiceFromDB = async (
   category: string,
   query: Record<string, any>,
-  user: JwtPayload
+  user?: JwtPayload
 ) => {
   if (!Types.ObjectId.isValid(category)) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid category ID");
   }
 
-  const UserData = await User.findById(user.id);
+  const UserData = await User.findById(user?.id);
   
 
   const limit = parseInt(query.limit as string) || 10;
@@ -131,7 +131,7 @@ const getAServiceFromDB = async (
       services:item.services?.filter((service:any)=>{
         return (
           !service.statePrices ||
-          service.statePrices.some((state:any)=>state.state === UserData?.state)
+          (!UserData || service.statePrices.some((state:any)=>state.state === UserData?.state))
         )
       })?.map((service:any)=>{
         return {

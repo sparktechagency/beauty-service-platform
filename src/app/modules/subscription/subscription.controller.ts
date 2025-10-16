@@ -71,6 +71,8 @@ const overView = catchAsync(async(req:Request,res:Response)=>{
 const PlansData = catchAsync(async(req:Request,res:Response)=>{
     const user = req.user;
     const result = await SubscriptionService.subsriprionDetailsFromDB(user);
+    console.log(result);
+    
     sendResponse(res, {
         statusCode: StatusCodes.OK,
         success: true,

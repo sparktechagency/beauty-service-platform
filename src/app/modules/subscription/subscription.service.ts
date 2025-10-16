@@ -10,6 +10,7 @@ import { paginateHelper } from "../../../helpers/paginateHelper";
 import { date } from "zod";
 import { IPlan } from "../plan/plan.interface";
 import { ObjectId } from "mongoose";
+import { USER_ROLES } from "../../../enums/user";
 
 const subscriptionToDB = async (user: JwtPayload, priceId: string) => {
 
@@ -192,21 +193,18 @@ const overViewOfSubscription = async (query: Record<string, any>) => {
 
 
 const subsriprionDetailsFromDB = async (user:JwtPayload)=>{
-  const subscription = await Subscription.findOne({user:user.id}).populate('package').lean()
+  const subscription = await Subscription.findOne({user:user?.id}).populate('package').lean()
 
 
 
-  if(!subscription){
-    return {subscription:{}}
-  }
-    const packageData = subscription.package as any as IPlan
+    const packageData = subscription?.package as any as IPlan
   const allPackageOffers = await Plan.find({status:{
     $ne:'deleted'
-  },for:packageData?.for},{name:1,price_offer:1}).sort({price_offer:1}).lean()
+  },for:packageData?packageData.for:USER_ROLES.USER},{name:1,price_offer:1}).sort({price_offer:1}).lean()
   
   
 
-  return {priceOffer:packageData.price_offer,allPackageOffers}
+  return {priceOffer:packageData? packageData.price_offer:allPackageOffers[0]?.price_offer,allPackageOffers}
 }
 
 

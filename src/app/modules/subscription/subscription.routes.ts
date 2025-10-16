@@ -5,6 +5,7 @@ import { SubscriptionController } from "./subscription.controller";
 import validateRequest from "../../middlewares/validateRequest";
 import { SubscriptionValidation } from "./subscription.validation";
 import adminAuth from "../../middlewares/adminAuth";
+import tempAuth from "../../middlewares/tempAuth";
 const router = express.Router();
 
 router.post("/",
@@ -26,7 +27,7 @@ router.get("/details",
     auth(), 
     SubscriptionController.subscriptionDetails
 );
-router.get('/plan-details',auth(),SubscriptionController.PlansData)
+router.get('/plan-details',tempAuth(),SubscriptionController.PlansData)
 router.get("/overview",
     adminAuth([ADMIN_BADGE.AH_ENGAGEMENT]),
     SubscriptionController.overView)

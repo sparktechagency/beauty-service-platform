@@ -6,6 +6,7 @@ import fileUploadHandler from "../../middlewares/fileUploadHandler";
 import validateRequest from "../../middlewares/validateRequest";
 import { SubCategoryValidations } from "./sub-category.validation";
 import { getSingleFilePath } from "../../../shared/getFilePath";
+import tempAuth from "../../middlewares/tempAuth";
 
 const router = express.Router();
 // * Create sub-category
@@ -53,12 +54,7 @@ router.get(
 // * Get all service management base on sub-category
 router.get(
   "/service-management/:id",
-  auth(
-    USER_ROLES.SUPER_ADMIN,
-    USER_ROLES.ADMIN,
-    USER_ROLES.ARTIST,
-    USER_ROLES.USER
-  ),
+  tempAuth(),
   SubCategoryController.getAllServiceFromDB
 );
 
