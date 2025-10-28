@@ -8,6 +8,7 @@ import { User } from "../user/user.model";
 import { USER_ROLES } from "../../../enums/user";
 import { pipeline } from "winston-daily-rotate-file";
 import unlinkFile from "../../../shared/unlinkFile";
+import { getAddressDetailsUsingLatLong } from "../../../helpers/locationHelper";
 
 const createSubCategoryIntoDB = async (payload: ISubCategory) => {
   const exist = await SubCategory.findOne({ name: payload.name,status:{$ne:"deleted"} });
@@ -46,13 +47,31 @@ const getAllSubCategoryFromDB = async (category?: string) => {
 const getAServiceFromDB = async (
   category: string,
   query: Record<string, any>,
-  user?: JwtPayload
+  user?: JwtPayload,
+  lat?:string,
+  long?:string
 ) => {
   if (!Types.ObjectId.isValid(category)) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid category ID");
   }
 
-  const UserData = await User.findById(user?.id);
+  let state ='';
+
+
+  let UserData = await User.findById(user?.id);
+
+    if(lat && long && !UserData?.state){
+    state = await getAddressDetailsUsingLatLong(Number(lat),Number(long));
+    if(state){
+      UserData={
+        state
+      } as any
+
+    }
+  }
+
+
+  
   
 
   const limit = parseInt(query.limit as string) || 10;
