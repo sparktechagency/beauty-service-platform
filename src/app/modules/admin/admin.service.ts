@@ -23,7 +23,7 @@ const createAdminToDB = async (payload: IUser): Promise<IUser> => {
 };
 
 const deleteAdminFromDB = async (id: any): Promise<IUser | undefined> => {
-    const isExistAdmin = await User.findByIdAndDelete(id);
+    const isExistAdmin = await User.findOneAndDelete({ _id: id, role: 'ADMIN' });
     if (!isExistAdmin) {
         throw new ApiError(StatusCodes.BAD_REQUEST, 'Failed to delete Admin');
     }
