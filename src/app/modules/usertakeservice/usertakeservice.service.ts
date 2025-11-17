@@ -1304,6 +1304,7 @@ const getAllBookingsFromDB = async (
   const fixedData = data.map((item: any) => {
     return {
       ...item,
+      //@ts-ignore
       price:user.role == USER_ROLES.ARTIST ? (item.price- (item.artist_app_fee?? ((item.price * (artistPlan?.price_offer??(10/100))))??0)) :(item.price+ (item.app_fee ?? (item.price * (userPlan?.price_offer??10/100))??0))  ,
       service_date: new Date(item.service_date).toLocaleString(),
     };

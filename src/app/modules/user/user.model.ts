@@ -208,7 +208,7 @@ userSchema.pre("save", async function (next) {
   //check user
   const isExist = await User.findOne({ email: this.email,status:{
     $ne:"deleted"
-  },verified:true });
+  },verified:true,role:this.role });
   if (isExist) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "Email already exist!");
   }
