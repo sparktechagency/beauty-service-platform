@@ -27,7 +27,7 @@ const loginUserFromDB = async (payload: ILoginData) => {
   const { email, password } = payload;
   const isExistUser: any = await User.findOne({ email,status:{
     $ne: "deleted"
-  },verified:true,...(!payload?.deviceToken ? {role:USER_ROLES.ADMIN}:{})}).select("+password");
+  },verified:true,...(!payload?.deviceToken ? {role:{$in:[USER_ROLES.ADMIN,USER_ROLES.SUPER_ADMIN]}}:{})}).select("+password");
   if (!isExistUser) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
   }
