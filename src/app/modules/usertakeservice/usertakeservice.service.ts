@@ -180,7 +180,7 @@ const createUserTakeServiceIntoDB = async (
   const currentDate = new Date();
   //  📍 Filter by 5km radius
   const nearbyProviders = allProviders
-    .filter((provider) => {
+    .filter((provider:any) => {
       if (provider.latitude && provider.longitude) {
         const distance = calculateDistanceInKm(
           result.latitude,
@@ -194,7 +194,7 @@ const createUserTakeServiceIntoDB = async (
         return distance <= 100;
       }
     })
-    .filter((provider) => {
+    .filter((provider:any) => {
       if (!provider.last_accept_date) {
         return true;
       }
