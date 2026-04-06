@@ -1293,11 +1293,13 @@ const getAllBookingsFromDB = async (
     let price = item.price;
 
     if (user.role === USER_ROLES.ARTIST) {
+
       const fee =
-        item.artist_app_fee && item.artist_app_fee > 0
+        (item.artist_app_fee && item.artist_app_fee) > 0
           ? item.artist_app_fee
           : item.price * artistFeePercent;
-
+          console.log(fee, (item.price * artistFeePercent),item.artist_app_fee);
+          
       price = item.price - fee;
     } else {
       const fee =
