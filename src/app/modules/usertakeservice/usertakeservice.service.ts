@@ -1291,7 +1291,8 @@ const getAllBookingsFromDB = async (
 
   const fixedData = data.map((item: any) => {
     let price = item.price;
-
+    console.log(price);
+    
     if (user.role === USER_ROLES.ARTIST) {
 
       const fee =
