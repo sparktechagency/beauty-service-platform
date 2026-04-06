@@ -10,7 +10,7 @@ const createVerifyEmailZodSchema = z.object({
 const createLoginZodSchema = z.object({
     body: z.object({
         email: z.string({ required_error: 'Email is required' }),
-        password: z.string({ required_error: 'Password is required' }).optional(),
+        password: z.string({ required_error: 'Password is required' }),
         deviceToken: z.string({ required_error: 'Device token is required' }).optional(),
     })
 });
