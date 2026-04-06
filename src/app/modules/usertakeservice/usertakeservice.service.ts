@@ -1294,14 +1294,16 @@ const getAllBookingsFromDB = async (
 
     if (user.role === USER_ROLES.ARTIST) {
       const fee =
-        item.artist_app_fee ??
-        item.price * artistFeePercent;
+        item.artist_app_fee && item.artist_app_fee > 0
+          ? item.artist_app_fee
+          : item.price * artistFeePercent;
 
       price = item.price - fee;
     } else {
       const fee =
-        item.app_fee ??
-        item.price * userFeePercent;
+        item.user_app_fee && item.user_app_fee > 0
+          ? item.user_app_fee
+          : item.price * userFeePercent;
 
       price = item.price + fee;
     }
