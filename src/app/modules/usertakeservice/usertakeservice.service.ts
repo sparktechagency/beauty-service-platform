@@ -1205,113 +1205,113 @@ const getAllBookingsFromDB = async (
   user: JwtPayload,
   query: Record<string, any>
 ) => {
+  const isAdmin = [USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN].includes(user.role);
+
+  const baseQuery = isAdmin
+    ? {}
+    : {
+        $or: [
+          { userId: user.id },
+          { artiestId: user.id },
+        ],
+      };
+
   const result = new QueryBuilder(
-    UserTakeService.find(
-      [USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN].includes(user.role)
-        ? {}
-        : {
-            $or: [
-              {
-                userId: user.id,
-              },
-              {
-                artiestId: user.id,
-              },
-            ],
-          }
-    ),
+    UserTakeService.find(baseQuery),
     query
   )
     .sort()
     .filter()
     .paginate();
-  const paginationInfo = await result.getPaginationInfo();
 
-  const data = await result.modelQuery
-    .populate([
-      {
-        path: "serviceId",
-        select: ["name", "category", "subCategory", "image"],
-        populate: [
-          {
+  const [paginationInfo, data, artistPlan, userPlan] = await Promise.all([
+    result.getPaginationInfo(),
+    result.modelQuery
+      .populate([
+        {
+          path: "serviceId",
+          select: ["name", "category", "subCategory", "image"],
+          populate: {
             path: "category",
             select: ["name"],
           },
-        ],
-      },
-      {
-        path: "userId",
-        select: [
-          "name",
-          "email",
-          "phone",
-          "profile",
-          "isActive",
-          "status",
-          "subscription",
-          "location",
-        ],
-        populate: [
-          {
+        },
+        {
+          path: "userId",
+          select: [
+            "name",
+            "email",
+            "phone",
+            "profile",
+            "isActive",
+            "status",
+            "subscription",
+            "location",
+          ],
+          populate: {
             path: "subscription",
             select: ["package", "status"],
-            populate: [
-              {
-                path: "package",
-                select: ["name", "price", "price_offer"],
-              },
-            ],
+            populate: {
+              path: "package",
+              select: ["name", "price", "price_offer"],
+            },
           },
-        ],
-      },
-      {
-        path: "artiestId",
-        select: [
-          "name",
-          "email",
-          "phone",
-          "profile",
-          "isActive",
-          "status",
-          "subscription",
-          "location",
-        ],
-        populate: [
-          {
+        },
+        {
+          path: "artiestId",
+          select: [
+            "name",
+            "email",
+            "phone",
+            "profile",
+            "isActive",
+            "status",
+            "subscription",
+            "location",
+          ],
+          populate: {
             path: "subscription",
             select: ["package", "status"],
-            populate: [
-              {
-                path: "package",
-                select: ["name", "price", "price_offer"],
-              },
-            ],
+            populate: {
+              path: "package",
+              select: ["name", "price", "price_offer"],
+            },
           },
-        ],
-      },
-    ])
-    .lean()
-    .exec();
-  
-  const artistPlan = await Plan.findOne({
-    for:USER_ROLES.ARTIST,
-  }).lean()
+        },
+      ])
+      .lean()
+      .exec(),
 
-  const userPlan = await Plan.findOne({
-    for:USER_ROLES.USER,
-  }).lean()
+    Plan.findOne({ for: USER_ROLES.ARTIST }).lean(),
+    Plan.findOne({ for: USER_ROLES.USER }).lean(),
+  ]);
+
+  const artistFeePercent = artistPlan?.price_offer ?? 0.1;
+  const userFeePercent = userPlan?.price_offer ?? 0.1;
 
   const fixedData = data.map((item: any) => {
+    let price = item.price;
+
+    if (user.role === USER_ROLES.ARTIST) {
+      const fee =
+        item.artist_app_fee ??
+        item.price * artistFeePercent;
+
+      price = item.price - fee;
+    } else {
+      const fee =
+        item.app_fee ??
+        item.price * userFeePercent;
+
+      price = item.price + fee;
+    }
+
     return {
       ...item,
-      //@ts-ignore
-      price:user.role == USER_ROLES.ARTIST ? (item.price- (item.artist_app_fee?? ((item.price * (artistPlan?.price_offer??(10/100))))??0)) :(item.price+ (item.app_fee ?? (item.price * (userPlan?.price_offer??10/100))??0))  ,
+      price: Number(price.toFixed(2)),
       service_date: new Date(item.service_date).toLocaleString(),
     };
-  })?.map(item=>({
-    ...item,
-    price: Number(item.price.toFixed(2))
-  }));
+  });
 
   return {
     paginationInfo,
