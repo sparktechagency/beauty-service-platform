@@ -1288,10 +1288,11 @@ const getAllBookingsFromDB = async (
 
   const artistFeePercent = artistPlan?.price_offer ?? 0.1;
   const userFeePercent = userPlan?.price_offer ?? 0.1;
+console.log(data[0].price);
 
   const fixedData = data.map((item: any) => {
     let price = item.price;
-    console.log(price);
+ 
     
     if (user.role === USER_ROLES.ARTIST) {
 
