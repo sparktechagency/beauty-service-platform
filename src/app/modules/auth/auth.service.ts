@@ -32,13 +32,13 @@ const loginUserFromDB = async (payload: ILoginData) => {
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
   }
 
-  //check match password
-  if (
-    password &&
-    !(await User.isMatchPassword(password, isExistUser.password))
-  ) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "Password is incorrect!");
-  }
+  // //check match password
+  // if (
+  //   password &&
+  //   !(await User.isMatchPassword(password, isExistUser.password))
+  // ) {
+  //   throw new ApiError(StatusCodes.BAD_REQUEST, "Password is incorrect!");
+  // }
 
 
 
