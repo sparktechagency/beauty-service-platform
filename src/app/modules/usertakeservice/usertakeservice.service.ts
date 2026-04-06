@@ -1300,6 +1300,9 @@ const getAllBookingsFromDB = async (
           ? item.artist_app_fee
           : (item.price * artistFeePercent)/100;
           console.log(fee, (item.price * artistFeePercent),item.artist_app_fee);
+          if(!item.artist_app_fee){
+            UserTakeService.updateOne({ _id: item._id }, { artist_app_fee: fee })
+          }
           
       price = item.price - fee;
     } else {
@@ -1307,7 +1310,6 @@ const getAllBookingsFromDB = async (
         item.app_fee && item.app_fee > 0
           ? item.app_fee
           : (item.price * userFeePercent)/100;
-
       price = item.price + fee;
     }
 
